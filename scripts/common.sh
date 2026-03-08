@@ -79,7 +79,7 @@ trim() {
 # =============================================================================
 
 check_jq() {
-    if ! command -v jq &> /dev/null; then
+    if ! command -v jq &>/dev/null; then
         log_error "jq is required but not installed. Install with: apt install jq"
         return 1
     fi
@@ -114,7 +114,7 @@ json_set() {
     local tmp_file
     tmp_file=$(mktemp)
 
-    if jq "$path = $value" -- "$file" > "$tmp_file"; then
+    if jq "$path = $value" -- "$file" >"$tmp_file"; then
         if mv -- "$tmp_file" "$file"; then
             return 0
         fi
@@ -138,7 +138,7 @@ json_append_array() {
     local tmp_file
     tmp_file=$(mktemp)
 
-    if jq "$path += [$value]" -- "$file" > "$tmp_file"; then
+    if jq "$path += [$value]" -- "$file" >"$tmp_file"; then
         if mv -- "$tmp_file" "$file"; then
             return 0
         fi
@@ -199,19 +199,31 @@ parse_session_id() {
         local name_val="${BASH_REMATCH[4]}"
 
         if [[ -n "$phase_var" ]]; then
-            is_valid_identifier "$phase_var" || { log_error "Invalid variable name: $phase_var"; return 1; }
+            is_valid_identifier "$phase_var" || {
+                log_error "Invalid variable name: $phase_var"
+                return 1
+            }
             printf -v "$phase_var" '%s' "$phase_val"
         fi
         if [[ -n "$session_var" ]]; then
-            is_valid_identifier "$session_var" || { log_error "Invalid variable name: $session_var"; return 1; }
+            is_valid_identifier "$session_var" || {
+                log_error "Invalid variable name: $session_var"
+                return 1
+            }
             printf -v "$session_var" '%s' "$session_val"
         fi
         if [[ -n "$suffix_var" ]]; then
-            is_valid_identifier "$suffix_var" || { log_error "Invalid variable name: $suffix_var"; return 1; }
+            is_valid_identifier "$suffix_var" || {
+                log_error "Invalid variable name: $suffix_var"
+                return 1
+            }
             printf -v "$suffix_var" '%s' "$suffix_val"
         fi
         if [[ -n "$name_var" ]]; then
-            is_valid_identifier "$name_var" || { log_error "Invalid variable name: $name_var"; return 1; }
+            is_valid_identifier "$name_var" || {
+                log_error "Invalid variable name: $name_var"
+                return 1
+            }
             printf -v "$name_var" '%s' "$name_val"
         fi
         return 0
@@ -297,7 +309,7 @@ is_session_completed() {
     local completed
     completed=$(get_completed_sessions)
 
-    if grep -Fxq -- "$session_id" <<< "$completed"; then
+    if grep -Fxq -- "$session_id" <<<"$completed"; then
         return 0
     else
         return 1
@@ -315,7 +327,7 @@ is_session_number_completed() {
     local pattern
     pattern=$(printf "phase%02d-session%02d" "$phase" "$session_num")
 
-    if grep -q "^${pattern}" <<< "$completed"; then
+    if grep -q "^${pattern}" <<<"$completed"; then
         return 0
     else
         return 1
@@ -451,19 +463,26 @@ detect_monorepo() {
 
     # Check workspace indicators in priority order
     if [[ -f "pnpm-workspace.yaml" ]]; then
-        detected="true"; indicator="pnpm-workspace.yaml"
+        detected="true"
+        indicator="pnpm-workspace.yaml"
     elif [[ -f "package.json" ]] && jq -e '.workspaces' -- "package.json" &>/dev/null; then
-        detected="true"; indicator="package.json workspaces"
+        detected="true"
+        indicator="package.json workspaces"
     elif [[ -f "turbo.json" ]]; then
-        detected="true"; indicator="turbo.json"
+        detected="true"
+        indicator="turbo.json"
     elif [[ -f "nx.json" ]]; then
-        detected="true"; indicator="nx.json"
+        detected="true"
+        indicator="nx.json"
     elif [[ -f "Cargo.toml" ]] && grep -q '^\[workspace\]' "Cargo.toml" 2>/dev/null; then
-        detected="true"; indicator="Cargo.toml workspace"
+        detected="true"
+        indicator="Cargo.toml workspace"
     elif [[ -f "go.work" ]]; then
-        detected="true"; indicator="go.work"
+        detected="true"
+        indicator="go.work"
     elif [[ -f "lerna.json" ]]; then
-        detected="true"; indicator="lerna.json"
+        detected="true"
+        indicator="lerna.json"
     fi
 
     if [[ "$detected" == "true" ]]; then
@@ -593,11 +612,11 @@ resolve_package_context() {
 
 _has_package_manifest() {
     local dir="$1"
-    [[ -f "$dir/package.json" ]] || \
-    [[ -f "$dir/Cargo.toml" ]] || \
-    [[ -f "$dir/go.mod" ]] || \
-    [[ -f "$dir/pyproject.toml" ]] || \
-    [[ -f "$dir/setup.py" ]]
+    [[ -f "$dir/package.json" ]] \
+        || [[ -f "$dir/Cargo.toml" ]] \
+        || [[ -f "$dir/go.mod" ]] \
+        || [[ -f "$dir/pyproject.toml" ]] \
+        || [[ -f "$dir/setup.py" ]]
 }
 
 _detect_stack_hint() {
@@ -640,12 +659,14 @@ _extract_pnpm_globs() {
                 local val="${trimmed#- }"
                 val=$(trim "$val")
                 # Remove surrounding quotes
-                val="${val%\"}"; val="${val#\"}"
-                val="${val%\'}"; val="${val#\'}"
+                val="${val%\"}"
+                val="${val#\"}"
+                val="${val%\'}"
+                val="${val#\'}"
                 [[ -n "$val" ]] && printf '%s\n' "$val"
             fi
         fi
-    done < "pnpm-workspace.yaml"
+    done <"pnpm-workspace.yaml"
 }
 
 # Parse workspace globs from package.json (npm/yarn format)
@@ -676,7 +697,10 @@ _extract_go_dirs() {
             continue
         fi
         if [[ "$in_use" == true ]]; then
-            [[ "$trimmed" == ")" ]] && { in_use=false; continue; }
+            [[ "$trimmed" == ")" ]] && {
+                in_use=false
+                continue
+            }
             trimmed="${trimmed#./}"
             [[ -n "$trimmed" ]] && printf '%s\n' "$trimmed"
         elif [[ "$trimmed" == use\ ./* ]]; then
@@ -684,7 +708,7 @@ _extract_go_dirs() {
             dir=$(trim "$dir")
             [[ -n "$dir" ]] && printf '%s\n' "$dir"
         fi
-    done < "go.work" 2>/dev/null
+    done <"go.work" 2>/dev/null
 }
 
 # =============================================================================
@@ -812,7 +836,7 @@ check_spec_system() {
 # =============================================================================
 
 show_common_help() {
-    cat << 'EOF'
+    cat <<'EOF'
 Apex Spec System - Common Utilities
 
 Functions available after sourcing common.sh:

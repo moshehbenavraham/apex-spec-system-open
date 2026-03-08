@@ -383,4 +383,3 @@ Package breakdown:
 - apps/api: N sessions, N concerns, N findings
 - (cross-cutting): N sessions, N concerns, N findings
 ```
-

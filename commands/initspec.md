@@ -554,4 +554,3 @@ Next Steps:
 5. Repeat step 4 until all sessions in the phase are complete
 6. Run /carryforward (optional) to capture lessons learned, then /phasebuild for next phase
 ```
-

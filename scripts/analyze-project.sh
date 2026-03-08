@@ -12,6 +12,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=common.sh
 source "${SCRIPT_DIR}/common.sh"
 
 # =============================================================================
@@ -74,7 +75,8 @@ output_json() {
 
     # Build candidate sessions array
     local candidates_json="[]"
-    local prd_dir="${SPEC_SYSTEM_DIR}/PRD/phase_$(printf '%02d' "$current_phase")"
+    local prd_dir
+    prd_dir="${SPEC_SYSTEM_DIR}/PRD/phase_$(printf '%02d' "$current_phase")"
 
     if [[ -d "$prd_dir" ]]; then
         while IFS= read -r file; do
@@ -134,9 +136,9 @@ output_json() {
     # Convert monorepo_flag string to proper JSON value
     local monorepo_json
     case "$monorepo_flag" in
-        true)  monorepo_json="true" ;;
+        true) monorepo_json="true" ;;
         false) monorepo_json="false" ;;
-        *)     monorepo_json="null" ;;
+        *) monorepo_json="null" ;;
     esac
 
     # Build final JSON output
@@ -235,7 +237,7 @@ analyze_current() {
 
         if [[ -d "$session_dir" ]]; then
             echo "Files:"
-            ls -la "$session_dir" 2>/dev/null | tail -n +2
+            find "$session_dir" -maxdepth 1 -type f -printf '  %f\n' 2>/dev/null | sort
         else
             echo "  (directory not created yet)"
         fi
@@ -248,7 +250,8 @@ analyze_next_candidates() {
     local current_phase
     current_phase=$(get_current_phase)
 
-    local prd_dir="${SPEC_SYSTEM_DIR}/PRD/phase_$(printf '%02d' "$current_phase")"
+    local prd_dir
+    prd_dir="${SPEC_SYSTEM_DIR}/PRD/phase_$(printf '%02d' "$current_phase")"
 
     echo ""
     echo "Next Session Candidates (Phase $current_phase):"
@@ -320,7 +323,7 @@ show_summary() {
 # =============================================================================
 
 show_usage() {
-    cat << 'EOF'
+    cat <<'EOF'
 Usage: analyze-project.sh [OPTIONS]
 
 Analyze project state for session recommendations.
@@ -392,7 +395,7 @@ main() {
                 PACKAGE_FILTER="$2"
                 shift 2
                 ;;
-            --help|-h)
+            --help | -h)
                 show_usage
                 exit 0
                 ;;

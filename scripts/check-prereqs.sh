@@ -12,6 +12,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=common.sh
 source "${SCRIPT_DIR}/common.sh"
 
 # =============================================================================
@@ -99,7 +100,7 @@ split_csv() {
     [[ -z "$input" ]] && return 0
 
     local IFS=','
-    read -r -a parts <<< "$input" || true
+    read -r -a parts <<<"$input" || true
 
     for item in "${parts[@]}"; do
         item="$(trim "$item")"
@@ -172,13 +173,13 @@ check_required_tools() {
     while IFS= read -r tool; do
         [[ -z "$tool" ]] && continue
 
-        if command -v "$tool" &> /dev/null; then
+        if command -v "$tool" &>/dev/null; then
             local version=""
             # Try to get version for common tools
             case "$tool" in
                 node) version=$(node --version 2>&1 | head -1 || echo "unknown") ;;
                 npm) version=$(npm --version 2>&1 | head -1 || echo "unknown") ;;
-                python|python3) version=$("$tool" --version 2>&1 | head -1 || echo "unknown") ;;
+                python | python3) version=$("$tool" --version 2>&1 | head -1 || echo "unknown") ;;
                 docker) version=$(docker --version 2>&1 | head -1 || echo "unknown") ;;
                 git) version=$(git --version 2>&1 | head -1 || echo "unknown") ;;
                 go) version=$(go version 2>&1 | head -1 || echo "unknown") ;;
@@ -275,21 +276,30 @@ check_database() {
     # Detect DB type
     local db_type="unknown"
     if [[ -f ".env" ]]; then
-        if grep -q "postgresql://" .env 2>/dev/null; then db_type="PostgreSQL"
-        elif grep -q "mysql://" .env 2>/dev/null; then db_type="MySQL"
-        elif grep -q "mongodb://" .env 2>/dev/null; then db_type="MongoDB"
+        if grep -q "postgresql://" .env 2>/dev/null; then
+            db_type="PostgreSQL"
+        elif grep -q "mysql://" .env 2>/dev/null; then
+            db_type="MySQL"
+        elif grep -q "mongodb://" .env 2>/dev/null; then
+            db_type="MongoDB"
         fi
     fi
     set_check_result "database" "type" "pass" "$db_type"
 
     # Detect migration tool
     local migration_tool="none"
-    if [[ -f "prisma/schema.prisma" ]]; then migration_tool="prisma"
-    elif [[ -f "drizzle.config.ts" || -f "drizzle.config.js" ]]; then migration_tool="drizzle"
-    elif [[ -f "alembic.ini" ]]; then migration_tool="alembic"
-    elif [[ -f "knexfile.js" || -f "knexfile.ts" ]]; then migration_tool="knex"
-    elif [[ -f "diesel.toml" ]]; then migration_tool="diesel"
-    elif [[ -f "sqlc.yaml" || -f "sqlc.yml" ]]; then migration_tool="sqlc"
+    if [[ -f "prisma/schema.prisma" ]]; then
+        migration_tool="prisma"
+    elif [[ -f "drizzle.config.ts" || -f "drizzle.config.js" ]]; then
+        migration_tool="drizzle"
+    elif [[ -f "alembic.ini" ]]; then
+        migration_tool="alembic"
+    elif [[ -f "knexfile.js" || -f "knexfile.ts" ]]; then
+        migration_tool="knex"
+    elif [[ -f "diesel.toml" ]]; then
+        migration_tool="diesel"
+    elif [[ -f "sqlc.yaml" || -f "sqlc.yml" ]]; then
+        migration_tool="sqlc"
     fi
 
     if [[ "$migration_tool" != "none" ]]; then
@@ -337,7 +347,7 @@ check_environment() {
 
     local failed=0
     local has_jq=false
-    if command -v jq &> /dev/null; then
+    if command -v jq &>/dev/null; then
         has_jq=true
     fi
 
@@ -398,7 +408,7 @@ check_environment() {
     fi
 
     # Check git (optional but noted)
-    if command -v git &> /dev/null; then
+    if command -v git &>/dev/null; then
         local git_version
         git_version=$(git --version 2>/dev/null | head -1 || echo "unknown")
         if [[ "$OUTPUT_MODE" == "human" ]]; then
@@ -604,7 +614,7 @@ check_workspace_tools() {
 # =============================================================================
 
 show_usage() {
-    cat << 'EOF'
+    cat <<'EOF'
 Usage: check-prereqs.sh [OPTIONS]
 
 Check prerequisites for a session.
@@ -713,7 +723,7 @@ main() {
                 run_any=true
                 shift
                 ;;
-            -t|--tools)
+            -t | --tools)
                 if [[ $# -lt 2 ]]; then
                     log_error "Missing value for $1"
                     show_usage
@@ -728,7 +738,7 @@ main() {
                 run_any=true
                 shift
                 ;;
-            -f|--files)
+            -f | --files)
                 if [[ $# -lt 2 ]]; then
                     log_error "Missing value for $1"
                     show_usage
@@ -743,7 +753,7 @@ main() {
                 run_any=true
                 shift
                 ;;
-            -p|--prereqs)
+            -p | --prereqs)
                 if [[ $# -lt 2 ]]; then
                     log_error "Missing value for $1"
                     show_usage
@@ -753,7 +763,7 @@ main() {
                 run_any=true
                 shift 2
                 ;;
-            -e|--env)
+            -e | --env)
                 env_only=true
                 run_any=true
                 shift
@@ -767,7 +777,7 @@ main() {
                 run_any=true
                 shift 2
                 ;;
-            -h|--help)
+            -h | --help)
                 show_usage
                 exit 0
                 ;;
