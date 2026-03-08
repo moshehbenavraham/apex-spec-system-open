@@ -158,10 +158,9 @@ qimpl <work-file>
 
 **Behavior**: Reads the work file for session goals and prior context, verifies details
 against the actual codebase, then implements methodically with senior-engineer rigor.
-Stops the session when approaching 50% context window consumption (roughly 12 file reads
-or 30 tool calls, whichever comes first) to maintain output quality. Updates the work
-file on exit with progress, remaining work, and notes for session continuity. Never
-assumes or guesses -- uses web tools to verify uncertain details.
+Stops after approximately 30 tool executions or when the session feels overloaded to
+maintain output quality. Updates the work file on exit with progress, remaining work,
+and notes for session continuity. Never assumes or guesses -- looks up uncertain details.
 
 ---
 
@@ -179,8 +178,9 @@ document, convert, or review partner work) covering backend code, infrastructure
 CLI commands, APIs, and databases. Analyzes existing codebase patterns before making
 changes. Verifies all work file details against actual code. Works autonomously through
 all tasks without asking permission. Supports merging multiple draft plans, validating a
-partner engineer's audit, and converting between formats. Stops at 50% context window
-consumption (12 reads or 30 tool calls) and updates the work file for session continuity.
+partner engineer's audit, and converting between formats. Stops after approximately 30
+tool executions or when the session feels overloaded and updates the work file for
+session continuity.
 
 ---
 
@@ -194,12 +194,12 @@ qfrontdev <work-file>
 ```
 
 **Behavior**: Reads the work file for session goals (implement, audit, plan, fix, document,
-or refactor) and activates the frontend-design skill for design guidance. Verifies all
-referenced details against the actual codebase before writing code. Works autonomously
-through all tasks in the work file, applying a quality gate (responsive, accessible,
-consistent, complete, performant) to every change. Targets Linear/Vercel/Stripe-level
-polish as the minimum standard. Stops at 50% context window consumption (12 reads or
-30 tool calls) and updates the work file for session continuity.
+or refactor) with a designer's eye for quality. Verifies all referenced details against
+the actual codebase before writing code. Works autonomously through all tasks in the work
+file, applying a quality gate (responsive, accessible, consistent, complete, performant)
+to every change. Targets Linear/Vercel/Stripe-level polish as the minimum standard.
+Stops after approximately 30 tool executions or when the session feels overloaded and
+updates the work file for session continuity.
 
 ---
 

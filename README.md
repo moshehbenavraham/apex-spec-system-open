@@ -1,6 +1,6 @@
 # Apex Spec System
 
-**Version: 2.0.4-codex**
+**Version: 2.0.5-codex**
 
 A specification-driven workflow system for AI-assisted development, packaged as
 an Agent Skill following the [Agent Skills standard](https://agentskills.io).
@@ -166,13 +166,14 @@ workspaces, Go modules, Lerna.
 | Phase | Name | Status |
 |-------|------|--------|
 | 00 | Proof of Concept | Complete |
-| 01 | Full Command Migration | In Progress |
+| 01 | Full Command Migration | Complete |
 | 02 | Documentation and Polish | Not Started |
 | 03 | Distribution | Not Started |
 
 Phase 00 established the orchestrator SKILL.md and converted 4 core commands
 (initspec, createprd, plansession, implement) to platform-neutral reference
-files. Phase 01 will convert the remaining 18 commands.
+files. Phase 01 converted the remaining 18 commands and 3 doc files, with
+full regression verification across all 25 reference files.
 
 See [PRD](.spec_system/PRD/PRD.md) for the full roadmap.
 
