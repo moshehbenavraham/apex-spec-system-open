@@ -24,17 +24,17 @@ jobs:
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq bats
-          sudo mkdir -p /usr/lib/bats
-          sudo git clone --depth 1 https://github.com/bats-core/bats-support.git /usr/lib/bats/bats-support
-          sudo git clone --depth 1 https://github.com/bats-core/bats-assert.git /usr/lib/bats/bats-assert
+          sudo mkdir -p /usr/local/lib/bats
+          sudo git clone --depth 1 https://github.com/bats-core/bats-support.git /usr/local/lib/bats/bats-support
+          sudo git clone --depth 1 https://github.com/bats-core/bats-assert.git /usr/local/lib/bats/bats-assert
 
       - name: Install bats and helpers (macOS)
         if: runner.os == 'macOS'
         run: |
           brew install bats-core
-          sudo mkdir -p /usr/lib/bats
-          sudo git clone --depth 1 https://github.com/bats-core/bats-support.git /usr/lib/bats/bats-support
-          sudo git clone --depth 1 https://github.com/bats-core/bats-assert.git /usr/lib/bats/bats-assert
+          sudo mkdir -p /usr/local/lib/bats
+          sudo git clone --depth 1 https://github.com/bats-core/bats-support.git /usr/local/lib/bats/bats-support
+          sudo git clone --depth 1 https://github.com/bats-core/bats-assert.git /usr/local/lib/bats/bats-assert
 
       - name: Create minimal spec system for testing
         run: |

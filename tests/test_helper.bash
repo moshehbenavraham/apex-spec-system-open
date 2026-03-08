@@ -1,9 +1,21 @@
 #!/usr/bin/env bash
 # test_helper.bash - Shared setup for bats tests
 
-# Load bats helpers
-load '/usr/lib/bats/bats-support/load'
-load '/usr/lib/bats/bats-assert/load'
+# Load bats helpers (search multiple paths for cross-platform support)
+_bats_lib=""
+for _candidate in /usr/local/lib/bats /usr/lib/bats; do
+    if [[ -d "${_candidate}/bats-support" ]]; then
+        _bats_lib="${_candidate}"
+        break
+    fi
+done
+if [[ -z "${_bats_lib}" ]]; then
+    echo "ERROR: bats-support not found in /usr/local/lib/bats or /usr/lib/bats" >&2
+    exit 1
+fi
+load "${_bats_lib}/bats-support/load"
+load "${_bats_lib}/bats-assert/load"
+unset _bats_lib _candidate
 
 # Project root (parent of tests/)
 PROJECT_ROOT="$(cd "$(dirname "${BATS_TEST_FILENAME}")/.." && pwd)"

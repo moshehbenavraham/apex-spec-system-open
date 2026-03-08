@@ -113,9 +113,9 @@ jobs:
 
       - name: Install bats-support and bats-assert
         run: |
-          sudo mkdir -p /usr/lib/bats
-          sudo git clone --depth 1 https://github.com/bats-core/bats-support.git /usr/lib/bats/bats-support
-          sudo git clone --depth 1 https://github.com/bats-core/bats-assert.git /usr/lib/bats/bats-assert
+          sudo mkdir -p /usr/local/lib/bats
+          sudo git clone --depth 1 https://github.com/bats-core/bats-support.git /usr/local/lib/bats/bats-support
+          sudo git clone --depth 1 https://github.com/bats-core/bats-assert.git /usr/local/lib/bats/bats-assert
 
       - name: Create minimal spec system for testing
         run: |
