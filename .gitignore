@@ -1,5 +1,8 @@
 # .gitignore
 
+# Spec system (project-specific state)
+.spec_system/
+
 # Project root directories
 /tmp/
 /tests/
