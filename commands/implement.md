@@ -9,14 +9,14 @@ Execute each task in the session's task list, updating progress as you go.
 
 ## RULES
 
-1. **Make NO assumptions.** Before editing, read the relevant code and comments; pattern‑match precisely, validate systematically.
-2. **Follow `CONVENTIONS.md`.** All code must follow project‑specific coding standards.
-3. **ASCII‑only characters** and Unix LF line endings in all output.
-4. **Never lie and implement exactly what’s in the spec** – no lying, no extra features, no refactoring unrelated code.
-5. **Update `tasks.md` immediately** after completing each task – never batch checkbox updates.
-6. **Write tests as specified** – ensure they pass before moving on.
-7. **Ensure logging and error handling** – no silent failures.
-8. **Prefer cohesive, moderately sized modules** – avoid multi‑thousand‑line god files; if a file grows beyond ~400–600 LOC or multiple responsibilities, schedule a refactor.
+1. **Make NO assumptions.** Before editing, read the relevant code and comments; pattern-match precisely, validate systematically.
+2. **Follow `CONVENTIONS.md`.** All code must follow project-specific coding standards.
+3. **ASCII-only characters** and Unix LF line endings in all output.
+4. **Never lie and implement exactly what's in the spec** - no lying, no extra features, no refactoring unrelated code.
+5. **Update `tasks.md` immediately** after completing each task - never batch checkbox updates.
+6. **Write tests as specified** - ensure they pass before moving on.
+7. **Ensure logging and error handling** - no silent failures.
+8. **Prefer cohesive, moderately sized modules** - avoid multi-thousand-line god files; if a file grows beyond ~400-600 LOC or multiple responsibilities, schedule a refactor.
 9. **Behavioral correctness over speed** - Code must handle edge cases, cleanup, and failure paths before a task is marked done. A checked task with a behavioral bug costs 10x more to find in a later audit.
 
 ### No Deferral Policy

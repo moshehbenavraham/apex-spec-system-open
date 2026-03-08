@@ -77,14 +77,14 @@ Creates Phase 01 structure with session stubs:
 
 ```
 .spec_system/PRD/phase_01/
-├── README.md
-├── session_01_project_structure_python_setup.md
-├── session_02_docker_compose_postgresql.md
-├── session_03_database_extensions_init.md
-├── session_04_litestar_application_skeleton.md
-├── session_05_alembic_migrations_framework.md
-├── session_06_redis_celery_configuration.md
-└── session_07_development_tooling_documentation.md
+|-- README.md
+|-- session_01_project_structure_python_setup.md
+|-- session_02_docker_compose_postgresql.md
+|-- session_03_database_extensions_init.md
+|-- session_04_litestar_application_skeleton.md
+|-- session_05_alembic_migrations_framework.md
+|-- session_06_redis_celery_configuration.md
+\-- session_07_development_tooling_documentation.md
 ```
 
 ---

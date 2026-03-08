@@ -113,7 +113,7 @@ Apex Spec is designed for **solo developer + AI** workflows. However, teams can 
 
 ```
 Team                          Individual
-─────                         ──────────
+-----                         ----------
 Collaborate on PRD     ->     Developer claims session
 Define phases          ->     Runs session workflow solo
 Review phase structure ->     Commits via standard git
@@ -128,7 +128,7 @@ Review phase structure ->     Commits via standard git
 
 ```
 Developer A (Driver)          Developer B (Navigator)
-────────────────────          ─────────────────────────
+--------------------          -------------------------
 Runs Claude commands          Reviews output
 Executes implementation       Catches issues early
 Marks tasks complete          Suggests improvements
@@ -144,7 +144,7 @@ Marks tasks complete          Suggests improvements
 
 ```
 Developer                     Team
-─────────                     ────
+---------                     ----
 Complete session       ->
 /validate              ->     Review validation.md
                        <-     Feedback

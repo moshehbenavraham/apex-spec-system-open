@@ -1,0 +1,22 @@
+root = true
+
+[*]
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+indent_style = space
+indent_size = 2
+
+[*.sh]
+indent_size = 4
+# shfmt flags: -ci (indent switch cases) -bn (binary ops start new line)
+shell_variant = bash
+switch_case_indent = true
+binary_next_line = true
+
+[*.md]
+trim_trailing_whitespace = false
+
+[Makefile]
+indent_style = tab

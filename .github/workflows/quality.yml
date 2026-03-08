@@ -1,0 +1,84 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  shellcheck:
+    name: Lint (shellcheck)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: Run shellcheck
+        run: |
+          find scripts/ -name '*.sh' -type f \
+            | xargs shellcheck --source-path=scripts
+
+  shfmt:
+    name: Format (shfmt)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install shfmt
+        run: |
+          SHFMT_VERSION="3.8.0"
+          curl -sS "https://github.com/mvdan/sh/releases/download/v${SHFMT_VERSION}/shfmt_v${SHFMT_VERSION}_linux_amd64" \
+            -L -o /usr/local/bin/shfmt
+          chmod +x /usr/local/bin/shfmt
+
+      - name: Check formatting
+        run: |
+          shfmt -ci -bn -i 4 -d scripts/
+
+  encoding:
+    name: ASCII encoding
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check ASCII-only encoding
+        run: |
+          FAILED=0
+          while IFS= read -r -d '' file; do
+            if LC_ALL=C grep -Pn '[^\x00-\x7F]' "$file" > /dev/null 2>&1; then
+              echo "Non-ASCII characters in: $file"
+              LC_ALL=C grep -Pn '[^\x00-\x7F]' "$file"
+              FAILED=1
+            fi
+          done < <(find . -type f \( -name '*.sh' -o -name '*.md' -o -name '*.yml' -o -name '*.yaml' -o -name '*.json' \) \
+            -not -path './.git/*' -print0)
+          if [ "$FAILED" -eq 1 ]; then
+            echo "::error::Non-ASCII characters detected. See CONVENTIONS.md encoding rules."
+            exit 1
+          fi
+          echo "All files pass ASCII-only check."
+
+      - name: Check LF line endings
+        run: |
+          FAILED=0
+          while IFS= read -r -d '' file; do
+            if grep -Pl '\r' "$file" > /dev/null 2>&1; then
+              echo "CRLF line endings in: $file"
+              FAILED=1
+            fi
+          done < <(find . -type f \( -name '*.sh' -o -name '*.md' -o -name '*.yml' -o -name '*.yaml' -o -name '*.json' \) \
+            -not -path './.git/*' -print0)
+          if [ "$FAILED" -eq 1 ]; then
+            echo "::error::CRLF line endings detected. Use LF only."
+            exit 1
+          fi
+          echo "All files use LF line endings."
