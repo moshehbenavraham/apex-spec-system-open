@@ -23,3 +23,12 @@ repos:
         args: ["--markdown-linebreak-ext=md"]
       - id: mixed-line-ending
         args: ["--fix=lf"]
+
+  - repo: local
+    hooks:
+      - id: bats
+        name: bats tests
+        entry: bats tests/
+        language: system
+        pass_filenames: false
+        files: '\.(sh|bats|bash)$'

@@ -1,0 +1,82 @@
+name: Security
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    name: Secrets scanning (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install gitleaks
+        run: |
+          GITLEAKS_VERSION="8.18.4"
+          curl -sSL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            -o gitleaks.tar.gz
+          tar -xzf gitleaks.tar.gz
+          sudo mv gitleaks /usr/local/bin/
+
+      - name: Run gitleaks
+        run: gitleaks detect --source . --verbose
+
+  sensitive-files:
+    name: Sensitive file detection
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for sensitive files
+        run: |
+          FAILED=0
+          for pattern in ".env" ".env.local" ".env.production" \
+            "credentials.json" "secrets.json" \
+            "id_rsa" "id_ed25519" "*.pem" "*.key"; do
+            while IFS= read -r -d '' found; do
+              echo "::error::Sensitive file detected: $found"
+              FAILED=1
+            done < <(find . -name "$pattern" -not -path './.git/*' -print0 2>/dev/null)
+          done
+          if [ "$FAILED" -eq 1 ]; then
+            echo "::error::Sensitive files found in repository. Remove and update .gitignore."
+            exit 1
+          fi
+          echo "No sensitive files detected."
+
+  script-security:
+    name: Script security patterns
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for dangerous patterns in scripts
+        run: |
+          FAILED=0
+          while IFS= read -r -d '' script; do
+            if grep -nE 'curl\s.*\|\s*(bash|sh)' "$script"; then
+              echo "::error file=${script}::Piping curl to shell detected"
+              FAILED=1
+            fi
+            if grep -nE '\beval\b' "$script"; then
+              echo "::warning file=${script}::eval usage detected -- verify safety"
+            fi
+          done < <(find scripts/ -name '*.sh' -type f -print0)
+          if [ "$FAILED" -eq 1 ]; then
+            echo "::error::Dangerous patterns found. See above."
+            exit 1
+          fi
+          echo "No dangerous patterns detected."
