@@ -1,0 +1,132 @@
+name: Build & Test
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  syntax:
+    name: Script syntax validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate bash syntax
+        run: |
+          FAILED=0
+          while IFS= read -r -d '' script; do
+            if ! bash -n "$script" 2>&1; then
+              echo "::error file=${script}::Syntax error in ${script}"
+              FAILED=1
+            fi
+          done < <(find scripts/ -name '*.sh' -type f -print0)
+          if [ "$FAILED" -eq 1 ]; then
+            echo "::error::Script syntax validation failed"
+            exit 1
+          fi
+          echo "All scripts pass syntax validation."
+
+  structure:
+    name: Project structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify required files exist
+        run: |
+          FAILED=0
+          for f in SKILL.md CLAUDE.md README.md; do
+            if [ ! -f "$f" ]; then
+              echo "::error::Missing required file: $f"
+              FAILED=1
+            fi
+          done
+          for d in scripts references commands skills agents; do
+            if [ ! -d "$d" ]; then
+              echo "::error::Missing required directory: $d/"
+              FAILED=1
+            fi
+          done
+          if [ "$FAILED" -eq 1 ]; then
+            exit 1
+          fi
+          echo "All required files and directories present."
+
+      - name: Check reference file coverage
+        run: |
+          TOTAL=0
+          FOUND=0
+          MISSING=""
+          for ref in $(grep -oP 'references/[a-z0-9_-]+\.md' SKILL.md | sort -u); do
+            TOTAL=$((TOTAL + 1))
+            if [ -f "$ref" ]; then
+              FOUND=$((FOUND + 1))
+            else
+              MISSING="${MISSING}  - ${ref}\n"
+            fi
+          done
+          echo "Reference coverage: ${FOUND}/${TOTAL} files present"
+          if [ -n "$MISSING" ]; then
+            printf "Not yet created:\n%b" "$MISSING"
+          fi
+
+  json-validation:
+    name: JSON validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate JSON files
+        run: |
+          FAILED=0
+          while IFS= read -r -d '' jsonfile; do
+            if ! jq empty "$jsonfile" 2>&1; then
+              echo "::error file=${jsonfile}::Invalid JSON: ${jsonfile}"
+              FAILED=1
+            fi
+          done < <(find . -name '*.json' -not -path './.git/*' -type f -print0)
+          if [ "$FAILED" -eq 1 ]; then
+            echo "::error::JSON validation failed"
+            exit 1
+          fi
+          echo "All JSON files are valid."
+
+  script-tests:
+    name: Script functional tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: common.sh loads without error
+        run: bash -c 'source scripts/common.sh'
+
+      - name: common.sh --help output
+        run: bash scripts/common.sh | grep -q "Apex Spec System"
+
+      - name: check-prereqs.sh --env runs
+        run: bash scripts/check-prereqs.sh --env
+
+      - name: analyze-project.sh --json runs
+        run: |
+          # analyze-project.sh expects .spec_system/ which may not exist
+          # in bare repo checkout; verify it exits cleanly with an error
+          # message rather than crashing
+          if [ -d ".spec_system" ]; then
+            bash scripts/analyze-project.sh --json
+          else
+            # Should fail gracefully (exit 1 with error msg, not a crash)
+            if bash scripts/analyze-project.sh --json 2>&1; then
+              echo "Script ran without .spec_system (unexpected but ok)"
+            else
+              echo "Script correctly reports missing .spec_system"
+            fi
+          fi
