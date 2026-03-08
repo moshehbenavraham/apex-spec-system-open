@@ -139,7 +139,7 @@
 | Build & Test | configured | .github/workflows/test.yml |
 | Security | configured | .github/workflows/security.yml |
 | Integration | configured | .github/workflows/integration.yml |
-| Operations | partially configured | .github/workflows/release.yml |
+| Operations | configured | .github/workflows/release.yml, .github/dependabot.yml |
 
 ## Infrastructure
 
