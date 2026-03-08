@@ -1,0 +1,249 @@
+name: Integration
+
+on:
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  cross-platform-tests:
+    name: Bats tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install bats and helpers (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq bats
+          sudo mkdir -p /usr/lib/bats
+          sudo git clone --depth 1 https://github.com/bats-core/bats-support.git /usr/lib/bats/bats-support
+          sudo git clone --depth 1 https://github.com/bats-core/bats-assert.git /usr/lib/bats/bats-assert
+
+      - name: Install bats and helpers (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          brew install bats-core
+          sudo mkdir -p /usr/lib/bats
+          sudo git clone --depth 1 https://github.com/bats-core/bats-support.git /usr/lib/bats/bats-support
+          sudo git clone --depth 1 https://github.com/bats-core/bats-assert.git /usr/lib/bats/bats-assert
+
+      - name: Create minimal spec system for testing
+        run: |
+          mkdir -p .spec_system
+          cat > .spec_system/state.json <<'ENDJSON'
+          {
+            "version": "2.0",
+            "project_name": "ci-test",
+            "current_phase": 0,
+            "current_session": null,
+            "monorepo": false,
+            "phases": {},
+            "completed_sessions": []
+          }
+          ENDJSON
+
+      - name: Run bats test suite
+        run: bats tests/
+
+  reference-integrity:
+    name: SKILL.md reference integrity
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify all SKILL.md references resolve
+        run: |
+          FAILED=0
+          TOTAL=0
+          while IFS= read -r ref; do
+            TOTAL=$((TOTAL + 1))
+            if [ ! -f "$ref" ]; then
+              echo "::error::Missing reference: $ref"
+              FAILED=$((FAILED + 1))
+            fi
+          done < <(grep -oP 'references/[a-z0-9_-]+\.md' SKILL.md | sort -u)
+          echo "Reference integrity: $((TOTAL - FAILED))/${TOTAL} files present"
+          if [ "$FAILED" -gt 0 ]; then
+            echo "::error::${FAILED} reference(s) missing. All SKILL.md references must resolve."
+            exit 1
+          fi
+          echo "All references resolve."
+
+      - name: Verify command and skill directories exist
+        run: |
+          FAILED=0
+          for dir in commands skills agents; do
+            if [ ! -d "$dir" ]; then
+              echo "::error::Missing directory: $dir/"
+              FAILED=1
+            else
+              count=$(find "$dir" -type f | wc -l)
+              echo "$dir/: $count files"
+            fi
+          done
+          if [ "$FAILED" -eq 1 ]; then
+            exit 1
+          fi
+          echo "All component directories present."
+
+  script-integration:
+    name: Cross-script integration
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify all scripts source common.sh successfully
+        run: |
+          FAILED=0
+          for script in scripts/*.sh; do
+            [ -f "$script" ] || continue
+            name=$(basename "$script")
+            # Skip common.sh itself
+            if [ "$name" = "common.sh" ]; then
+              continue
+            fi
+            # Check that the script sources common.sh
+            if grep -q 'source.*common\.sh' "$script"; then
+              echo "OK: $name sources common.sh"
+            else
+              echo "::warning file=${script}::$name does not source common.sh"
+            fi
+          done
+
+      - name: Create integration test environment
+        run: |
+          mkdir -p /tmp/integration-test/.spec_system/specs
+          cat > /tmp/integration-test/.spec_system/state.json <<'ENDJSON'
+          {
+            "version": "2.0",
+            "project_name": "integration-test",
+            "current_phase": 0,
+            "current_session": null,
+            "monorepo": false,
+            "phases": {
+              "0": {
+                "name": "Test Phase",
+                "status": "in_progress",
+                "session_count": 1
+              }
+            },
+            "completed_sessions": [],
+            "next_session_history": []
+          }
+          ENDJSON
+
+      - name: Test check-prereqs end-to-end
+        run: |
+          cd /tmp/integration-test
+          export SPEC_SYSTEM_DIR="/tmp/integration-test/.spec_system"
+          export STATE_FILE="${SPEC_SYSTEM_DIR}/state.json"
+
+          # Test --env flag
+          bash "$GITHUB_WORKSPACE/scripts/check-prereqs.sh" --env
+          echo "check-prereqs --env: PASS"
+
+          # Test --json --env flag
+          output=$(bash "$GITHUB_WORKSPACE/scripts/check-prereqs.sh" --json --env)
+          echo "$output" | jq empty
+          overall=$(echo "$output" | jq -r '.overall')
+          if [ "$overall" != "pass" ]; then
+            echo "::error::check-prereqs --json --env: overall != pass (got: $overall)"
+            exit 1
+          fi
+          echo "check-prereqs --json --env: PASS"
+
+          # Test --tools flag
+          bash "$GITHUB_WORKSPACE/scripts/check-prereqs.sh" --tools "bash,jq,git"
+          echo "check-prereqs --tools: PASS"
+
+      - name: Test analyze-project end-to-end
+        run: |
+          cd /tmp/integration-test
+          export SPEC_SYSTEM_DIR="/tmp/integration-test/.spec_system"
+          export STATE_FILE="${SPEC_SYSTEM_DIR}/state.json"
+
+          # Test human output
+          bash "$GITHUB_WORKSPACE/scripts/analyze-project.sh"
+          echo "analyze-project (human): PASS"
+
+          # Test JSON output
+          output=$(bash "$GITHUB_WORKSPACE/scripts/analyze-project.sh" --json)
+          echo "$output" | jq empty
+          project=$(echo "$output" | jq -r '.project')
+          if [ "$project" != "integration-test" ]; then
+            echo "::error::analyze-project --json: project != integration-test (got: $project)"
+            exit 1
+          fi
+          echo "analyze-project --json: PASS"
+
+      - name: Test common.sh state operations end-to-end
+        run: |
+          cd /tmp/integration-test
+          export SPEC_SYSTEM_DIR="/tmp/integration-test/.spec_system"
+          export STATE_FILE="${SPEC_SYSTEM_DIR}/state.json"
+          export SPECS_DIR="${SPEC_SYSTEM_DIR}/specs"
+
+          source "$GITHUB_WORKSPACE/scripts/common.sh"
+
+          # Verify initial state
+          phase=$(get_current_phase)
+          if [ "$phase" != "0" ]; then
+            echo "::error::Expected phase 0, got: $phase"
+            exit 1
+          fi
+          echo "Initial state read: PASS"
+
+          # Set and read session
+          set_current_session "phase00-session01-integration-test"
+          session=$(get_current_session)
+          if [ "$session" != "phase00-session01-integration-test" ]; then
+            echo "::error::Expected session ID, got: $session"
+            exit 1
+          fi
+          echo "Set/get session: PASS"
+
+          # Add completed session
+          add_completed_session "phase00-session01-integration-test"
+          count=$(get_completed_sessions_count)
+          if [ "$count" != "1" ]; then
+            echo "::error::Expected 1 completed session, got: $count"
+            exit 1
+          fi
+          echo "Add completed session: PASS"
+
+          # Clear session
+          clear_current_session
+          session=$(get_current_session)
+          if [ "$session" != "null" ]; then
+            echo "::error::Expected null after clear, got: $session"
+            exit 1
+          fi
+          echo "Clear session: PASS"
+
+          # Session ID parsing round-trip
+          id=$(build_session_id 1 3 "feature-work")
+          if [ "$id" != "phase01-session03-feature-work" ]; then
+            echo "::error::build_session_id failed: $id"
+            exit 1
+          fi
+          p=$(get_phase_from_session_id "$id")
+          s=$(get_session_number_from_id "$id")
+          n=$(get_session_name_from_id "$id")
+          if [ "$p" != "01" ] || [ "$s" != "03" ] || [ "$n" != "feature-work" ]; then
+            echo "::error::Session ID round-trip failed: p=$p s=$s n=$n"
+            exit 1
+          fi
+          echo "Session ID round-trip: PASS"
+
+          echo "All state operations: PASS"
