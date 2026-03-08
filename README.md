@@ -1,36 +1,14 @@
 # Apex Spec System
 
-**Version: 2.0.5-codex**
+**Version: 2.0.6-codex**
 
 A specification-driven workflow system for AI-assisted development, packaged as
 an Agent Skill following the [Agent Skills standard](https://agentskills.io).
 
-Ported from the original Claude Code plugin to work with Codex CLI and any
-agent tool that supports the Agent Skills standard.
-
-## Overview
-
-The Apex Spec System breaks large projects into manageable, well-scoped
-implementation sessions that fit within AI context windows and human attention
-spans.
+Break large projects into manageable, well-scoped implementation sessions that
+fit within AI context windows and human attention spans.
 
 **Philosophy**: `1 session = 1 spec = 2-4 hours (12-25 tasks)`
-
-## Quick Start
-
-```bash
-# Install to your skills directory
-git clone https://github.com/[org]/apex-spec-system-open.git ~/.agents/skills/apex-spec
-```
-
-Then invoke:
-
-```
-$apex-spec
-```
-
-Or let the skill activate implicitly when working in a project with a
-`.spec_system/` directory.
 
 ## Requirements
 
@@ -42,9 +20,68 @@ Or let the skill activate implicitly when working in a project with a
 
 Verify with: `bash scripts/check-prereqs.sh --env`
 
-## The Workflow
+## Quick Start
 
-### Stage 1: Initialize (Once)
+```bash
+# 1. Install the skill (see Installation below)
+# 2. Initialize spec system in your project
+$apex-spec initspec
+
+# 3. Create a PRD from your requirements doc
+$apex-spec createprd
+
+# 4. Build the first phase structure
+$apex-spec phasebuild
+
+# 5. Plan and implement sessions
+$apex-spec plansession
+$apex-spec implement
+$apex-spec validate
+$apex-spec updateprd
+```
+
+The skill also activates implicitly when working in a project with a
+`.spec_system/` directory.
+
+## Installation
+
+### Method 1: Git Clone (Recommended)
+
+Clone directly into your agent skills directory:
+
+```bash
+git clone https://github.com/aiwithapex/apex-spec-system-open.git \
+  ~/.agents/skills/apex-spec
+```
+
+### Method 2: Skill Installer
+
+If your agent supports skill installation commands:
+
+```bash
+# Codex CLI
+codex install-skill https://github.com/aiwithapex/apex-spec-system-open.git
+```
+
+### Method 3: Manual Download
+
+Download and extract to your skills directory:
+
+```bash
+mkdir -p ~/.agents/skills/apex-spec
+curl -L https://github.com/aiwithapex/apex-spec-system-open/archive/refs/heads/master.tar.gz \
+  | tar xz --strip-components=1 -C ~/.agents/skills/apex-spec
+```
+
+After installation, verify: `ls ~/.agents/skills/apex-spec/SKILL.md`
+
+## The 13-Command Workflow
+
+The workflow has 3 distinct stages. See
+[references/workflow-overview.md](references/workflow-overview.md) for the
+complete quick-reference.
+
+### Stage 1: Initialization (One-Time Setup)
 
 ```
 initspec      ->  Set up spec system in project
@@ -53,7 +90,7 @@ createuxprd   ->  Generate UX PRD from design docs (optional)
 phasebuild    ->  Create first phase structure
 ```
 
-### Stage 2: Session Workflow (Repeat)
+### Stage 2: Session Workflow (Repeat Until Phase Complete)
 
 ```
 plansession   ->  Analyze project, create spec + task checklist
@@ -87,21 +124,31 @@ phasebuild    ->  Create next phase structure
 | qbackenddev | Autonomous backend development |
 | pullndoc | Pull and document upstream changes |
 
+## Session Limits
+
+| Limit | Value |
+|-------|-------|
+| Maximum tasks | 25 |
+| Maximum duration | 4 hours |
+| Ideal task count | 12-25 (sweet spot: 20) |
+| Objectives | Single clear objective |
+
 ## Repository Structure
 
 ```
-.
-|-- SKILL.md              # Root orchestrator (entry point)
-|-- AGENTS.md             # Agent custom instructions
+apex-spec-system-open/
+|-- SKILL.md              # Root orchestrator (skill entry point)
+|-- AGENTS.md             # Project instructions for AI agents
+|-- CLAUDE.md             # Claude Code custom instructions
 |-- agents/
-|   \-- openai.yaml       # Codex CLI metadata
-|-- references/           # Command reference files (1 per command)
+|   \-- openai.yaml       # Codex CLI UI metadata
+|-- references/           # Command reference files (26 total)
 |-- scripts/              # Bash utilities for project analysis
-|-- commands/             # Original Claude Code source files
-\-- docs/                 # Documentation
+|-- commands/             # Original Claude Code source files (archive)
+\-- docs/                 # Development documentation
 ```
 
-## Project Structure (After Initialization)
+### Project Structure (After Initialization)
 
 Running the initspec workflow step creates this in your project:
 
@@ -121,9 +168,9 @@ your-project/
 
 ## Monorepo Support
 
-The system auto-detects monorepo structures. Single `.spec_system/` at the
-repo root. Sessions reference their target package in metadata, not in
-directory names. Sessions interleave across packages within a phase.
+The system auto-detects monorepo structures. A single `.spec_system/` lives at
+the repo root. Sessions reference their target package in metadata, not in
+directory names.
 
 Supported workspace managers: pnpm, npm workspaces, Turborepo, Nx, Cargo
 workspaces, Go modules, Lerna.
@@ -139,21 +186,13 @@ workspaces, Go modules, Lerna.
 - **ASCII Enforcement**: Avoid encoding issues that break code generation
 - **Platform Neutral**: Works with any agent tool supporting Agent Skills
 
-## Session Limits
-
-| Limit | Value |
-|-------|-------|
-| Maximum tasks | 25 |
-| Maximum duration | 4 hours |
-| Ideal task count | 12-25 (sweet spot: 20) |
-| Objectives | Single clear objective |
-
 ## Documentation
 
 - [Architecture](docs/ARCHITECTURE.md) - Skill structure and design decisions
 - [Development Guide](docs/development.md) - Local setup, testing, contributing
-- [Usage Guidance](docs/GUIDANCE.md) - When to use, workflow modes, team patterns
-- [Production Walkthrough](docs/WALKTHROUGH.md) - Real-world examples
+- [Usage Guidance](references/guidance.md) - When to use, workflow modes, team patterns
+- [Production Walkthrough](references/walkthrough.md) - Real-world examples
+- [Workflow Quick-Reference](references/workflow-overview.md) - 13-command overview
 - [Contributing](CONTRIBUTING.md) - Branch conventions, commit style, PR process
 - [ADRs](docs/adr/) - Architecture decision records
 
@@ -167,13 +206,8 @@ workspaces, Go modules, Lerna.
 |-------|------|--------|
 | 00 | Proof of Concept | Complete |
 | 01 | Full Command Migration | Complete |
-| 02 | Documentation and Polish | Not Started |
+| 02 | Documentation and Polish | In Progress |
 | 03 | Distribution | Not Started |
-
-Phase 00 established the orchestrator SKILL.md and converted 4 core commands
-(initspec, createprd, plansession, implement) to platform-neutral reference
-files. Phase 01 converted the remaining 18 commands and 3 doc files, with
-full regression verification across all 25 reference files.
 
 See [PRD](.spec_system/PRD/PRD.md) for the full roadmap.
 

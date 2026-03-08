@@ -1,12 +1,17 @@
-# Apex Spec System - Claude Code Plugin Skill
+# Apex Spec System
 
-## A specification-driven workflow system for AI-assisted development.
+A specification-driven workflow system for AI-assisted development.
 
 Philosophy: 1 session = 1 spec = 2-4 hours (12-25 tasks)
 
-## When updating version, update it in all the following files:
+## Version
 
-README.md
-SKILL.md
+When updating version, update it in all the following files:
 
-# Details - See @SKILL.md
+- README.md
+- SKILL.md (frontmatter version field)
+
+## Details
+
+See AGENTS.md for project context, conventions, and directory layout.
+See SKILL.md for the complete workflow reference and command dispatch.

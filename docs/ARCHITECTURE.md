@@ -17,22 +17,23 @@ apex-spec-system-open/
 |-- CLAUDE.md                 # Claude Code custom instructions
 |-- agents/
 |   \-- openai.yaml           # Codex CLI UI metadata
-|-- references/               # Command reference files (1 per command)
+|-- references/               # Command reference files (25 total)
 |   |-- initspec.md           # Initialize spec system
 |   |-- createprd.md          # Generate PRD
 |   |-- plansession.md        # Plan session
 |   |-- implement.md          # Execute implementation
-|   \-- (18 more planned)     # Remaining commands (Phase 01)
+|   |-- validate.md           # Verify session completeness
+|   |-- updateprd.md          # Mark session complete
+|   |-- (16 more commands)    # All 22 commands converted
+|   |-- guidance.md           # Usage guidance
+|   |-- utilities.md          # Utility commands reference
+|   \-- walkthrough.md        # Real-world walkthrough
 |-- scripts/                  # Bash utilities
 |   |-- analyze-project.sh    # Deterministic project state analysis
 |   |-- check-prereqs.sh      # Environment verification
 |   \-- common.sh             # Shared functions
-|-- commands/                 # Original Claude Code command files (source)
-|-- docs/                     # Documentation
-|   |-- GUIDANCE.md           # Usage guidance
-|   |-- UTILITIES.md          # Utility commands reference
-|   \-- WALKTHROUGH.md        # Real-world walkthrough
-\-- skills/                   # Legacy skill directory (pre-port)
+|-- commands/                 # Original Claude Code command files (source/archive)
+\-- docs/                     # Project documentation
 ```
 
 ## Dispatch Flow

@@ -26,12 +26,12 @@ No build step -- the skill is plain files.
 | Directory | Contents |
 |-----------|----------|
 | `SKILL.md` | Root orchestrator (dispatch table, workflow overview) |
-| `references/` | One markdown file per command (22 total when complete) |
+| `references/` | Platform-neutral reference files (25 total: 22 commands + 3 docs) |
 | `scripts/` | Bash utilities for project analysis |
 | `agents/` | Codex CLI metadata (openai.yaml) |
 | `commands/` | Original Claude Code command files (source for conversion) |
 | `docs/` | Project documentation |
-| `skills/` | Legacy skill directory (pre-port) |
+| `skills/` | Legacy skill directory (pre-port, archived) |
 | `.spec_system/` | Spec system state for this project's own development |
 
 ## Dev Scripts

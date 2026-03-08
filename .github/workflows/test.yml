@@ -100,17 +100,22 @@ jobs:
           echo "All JSON files are valid."
 
   script-tests:
-    name: Script functional tests
+    name: Script functional tests (bats)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: common.sh loads without error
-        run: bash -c 'source scripts/common.sh'
+      - name: Install bats and helpers
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq bats
 
-      - name: common.sh --help output
-        run: bash scripts/common.sh | grep -q "Apex Spec System"
+      - name: Install bats-support and bats-assert
+        run: |
+          sudo mkdir -p /usr/lib/bats
+          sudo git clone --depth 1 https://github.com/bats-core/bats-support.git /usr/lib/bats/bats-support
+          sudo git clone --depth 1 https://github.com/bats-core/bats-assert.git /usr/lib/bats/bats-assert
 
       - name: Create minimal spec system for testing
         run: |
@@ -127,8 +132,5 @@ jobs:
           }
           ENDJSON
 
-      - name: check-prereqs.sh --env runs
-        run: bash scripts/check-prereqs.sh --env
-
-      - name: analyze-project.sh --json runs
-        run: bash scripts/analyze-project.sh --json
+      - name: Run bats test suite
+        run: bats tests/
