@@ -112,21 +112,23 @@ jobs:
       - name: common.sh --help output
         run: bash scripts/common.sh | grep -q "Apex Spec System"
 
+      - name: Create minimal spec system for testing
+        run: |
+          mkdir -p .spec_system
+          cat > .spec_system/state.json <<'ENDJSON'
+          {
+            "version": "2.0",
+            "project_name": "ci-test",
+            "current_phase": 0,
+            "current_session": null,
+            "monorepo": false,
+            "phases": {},
+            "completed_sessions": []
+          }
+          ENDJSON
+
       - name: check-prereqs.sh --env runs
         run: bash scripts/check-prereqs.sh --env
 
       - name: analyze-project.sh --json runs
-        run: |
-          # analyze-project.sh expects .spec_system/ which may not exist
-          # in bare repo checkout; verify it exits cleanly with an error
-          # message rather than crashing
-          if [ -d ".spec_system" ]; then
-            bash scripts/analyze-project.sh --json
-          else
-            # Should fail gracefully (exit 1 with error msg, not a crash)
-            if bash scripts/analyze-project.sh --json 2>&1; then
-              echo "Script ran without .spec_system (unexpected but ok)"
-            else
-              echo "Script correctly reports missing .spec_system"
-            fi
-          fi
+        run: bash scripts/analyze-project.sh --json
