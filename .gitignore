@@ -1,0 +1,9 @@
+# .gitignore
+
+# Project root directories
+/tmp/
+/tests/
+/logs/
+/archive/
+/test_data/
+/EXAMPLE/
