@@ -63,6 +63,7 @@ shellcheck scripts/*.sh
 | SKILL.md | Root orchestrator (entry point) |
 | references/ | 26 command reference files |
 | scripts/ | Bash utilities |
+| apex-infinite-cli/ | Autonomous session manager (Python CLI) |
 | commands/ | Original Claude Code source (archive) |
 | docs/ | Development documentation |
 
