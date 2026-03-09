@@ -9,3 +9,10 @@
 /archive/
 /test_data/
 /EXAMPLE/
+
+# Python
+__pycache__/
+*.pyc
+
+# Environment / secrets
+.env

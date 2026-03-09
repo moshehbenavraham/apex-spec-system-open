@@ -17,7 +17,7 @@ apex-spec-system-open/
 |-- CLAUDE.md                 # Claude Code custom instructions
 |-- agents/
 |   \-- openai.yaml           # Codex CLI UI metadata
-|-- references/               # Command reference files (25 total)
+|-- references/               # Command reference files (26 total)
 |   |-- initspec.md           # Initialize spec system
 |   |-- createprd.md          # Generate PRD
 |   |-- plansession.md        # Plan session

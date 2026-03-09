@@ -14,7 +14,7 @@
 ## Local Setup
 
 ```bash
-git clone https://github.com/[org]/apex-spec-system-open.git
+git clone https://github.com/aiwithapex/apex-spec-system-open.git
 cd apex-spec-system-open
 pre-commit install
 ```
@@ -26,7 +26,7 @@ No build step -- the skill is plain files.
 | Directory | Contents |
 |-----------|----------|
 | `SKILL.md` | Root orchestrator (dispatch table, workflow overview) |
-| `references/` | Platform-neutral reference files (25 total: 22 commands + 3 docs) |
+| `references/` | Platform-neutral reference files (26 total: 22 commands + 4 docs) |
 | `scripts/` | Bash utilities for project analysis |
 | `agents/` | Codex CLI metadata (openai.yaml) |
 | `commands/` | Original Claude Code command files (source for conversion) |

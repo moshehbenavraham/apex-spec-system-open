@@ -1,6 +1,6 @@
 # Apex Spec System
 
-**Version: 2.0.7-codex**
+**Version: 2.0.8-codex**
 
 A specification-driven workflow system for AI-assisted development, packaged as
 an Agent Skill following the [Agent Skills standard](https://agentskills.io).
@@ -190,6 +190,8 @@ workspaces, Go modules, Lerna.
 
 - [Architecture](docs/ARCHITECTURE.md) - Skill structure and design decisions
 - [Development Guide](docs/development.md) - Local setup, testing, contributing
+- [Onboarding](docs/onboarding.md) - Zero-to-hero checklist
+- [Deployment](docs/deployment.md) - Installation, CI/CD, release process
 - [Usage Guidance](references/guidance.md) - When to use, workflow modes, team patterns
 - [Production Walkthrough](references/walkthrough.md) - Real-world examples
 - [Workflow Quick-Reference](references/workflow-overview.md) - 13-command overview
@@ -206,7 +208,7 @@ workspaces, Go modules, Lerna.
 |-------|------|--------|
 | 00 | Proof of Concept | Complete |
 | 01 | Full Command Migration | Complete |
-| 02 | Documentation and Polish | In Progress |
+| 02 | Documentation and Polish | Complete |
 | 03 | Distribution | Not Started |
 
 See [PRD](.spec_system/PRD/PRD.md) for the full roadmap.

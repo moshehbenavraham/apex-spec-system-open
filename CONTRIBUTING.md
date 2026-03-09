@@ -11,7 +11,7 @@
 ## Setup
 
 ```bash
-git clone https://github.com/[org]/apex-spec-system-open.git
+git clone https://github.com/aiwithapex/apex-spec-system-open.git
 cd apex-spec-system-open
 ```
 
