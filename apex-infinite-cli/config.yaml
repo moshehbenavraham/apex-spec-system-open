@@ -1,6 +1,12 @@
 # Choose active provider: ollama | grok | openai
 provider: ollama
 
+# Codex CLI agent configuration
+codex:
+  binary: "codex"
+  exec_flags: "--dangerously-auto-approve"
+  model_reasoning_effort: "high"
+
 providers:
   ollama:
     base_url: "http://localhost:11434/v1"

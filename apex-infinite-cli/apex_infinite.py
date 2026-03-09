@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # pylint: disable=too-many-lines
-"""Apex Spec System Infinite CLI - Autonomous Claude Code session manager.
+"""Apex Spec System Infinite CLI - Autonomous Codex CLI session manager.
 
-Replaces the n8n "Apex Spec System Infinite" workflow with a standalone
-Python CLI using SQLite, subprocess, and terminal output.
+Drives the Apex Spec System workflow via Codex CLI subprocess calls,
+with SQLite history, LLM-based manager decisions, and terminal output.
 """
 
 import json
@@ -47,10 +47,8 @@ KNOWN_COMMANDS = {
     "phasebuild",
 }
 
-# n8n routes "implement" but the SSH node runs "/implementation"
-COMMAND_ALIASES = {
-    "implement": "implementation",
-}
+# Codex skill commands use canonical names; no aliases needed currently
+COMMAND_ALIASES = {}
 
 COMMAND_TIMEOUT = 1800  # 30 minutes
 DEFAULT_MAX_ITERATIONS = 50
@@ -458,6 +456,17 @@ def get_llm_client(config):
     )
 
 
+def get_agent_config(config):
+    """Read codex agent settings from config. Returns dict with binary, exec_flags, model_reasoning_effort."""
+    defaults = {
+        "binary": "codex",
+        "exec_flags": "--dangerously-auto-approve",
+        "model_reasoning_effort": "high",
+    }
+    codex_cfg = config.get("codex", {}) or {}
+    return {k: codex_cfg.get(k, v) for k, v in defaults.items()}
+
+
 # ---------------------------------------------------------------------------
 # Database layer
 # ---------------------------------------------------------------------------
@@ -499,14 +508,14 @@ def db_fetch_history(path, limit=15):
     return [dict(r) for r in rows]
 
 
-def db_log(path, cc_response, ai_output, ai_reason, help_or_done_msg=None):
+def db_log(path, agent_response, ai_output, ai_reason, help_or_done_msg=None):
     """Log an iteration to the database."""
     conn = sqlite3.connect(str(DB_PATH))
     conn.execute(
         """INSERT INTO history (path, cc_response, ai_decision_output,
            ai_decision_reason, help_or_done_msg)
            VALUES (?, ?, ?, ?, ?)""",
-        (path, cc_response, ai_output, ai_reason, help_or_done_msg),
+        (path, agent_response, ai_output, ai_reason, help_or_done_msg),
     )
     conn.commit()
     conn.close()
@@ -537,21 +546,21 @@ def db_show_history(path=None):
     table.add_column("Path", style="cyan", max_width=30)
     table.add_column("AI Output", style="green", max_width=20)
     table.add_column("AI Reason", max_width=40)
-    table.add_column("CC Response", max_width=40)
+    table.add_column("Agent Response", max_width=40)
     table.add_column("Help/Done", style="yellow", max_width=20)
     table.add_column("Time", style="dim", width=19)
 
     for row in rows:
         row = dict(row)
-        cc_resp = (row["cc_response"] or "")[:80]
+        resp = (row["cc_response"] or "")[:80]
         if len(row.get("cc_response") or "") > 80:
-            cc_resp += "..."
+            resp += "..."
         table.add_row(
             str(row["id"]),
             row["path"],
             row["ai_decision_output"] or "",
             (row["ai_decision_reason"] or "")[:80],
-            cc_resp,
+            resp,
             row["help_or_done_msg"] or "",
             row["created_at"] or "",
         )
@@ -565,19 +574,19 @@ def db_show_history(path=None):
 
 
 def aggregate_history(records):
-    """Replicate n8n 'Aggregate Results' JS node.
+    """Format history records for LLM summarization.
 
-    Format: [Task N: name]\nAgent: cc_response\nManager: ai_decision
+    Format: [Task N: name]\nAgent: response\nManager: ai_decision
     """
     parts = []
     for i, rec in enumerate(records, 1):
         name = f"{rec.get('path', 'unknown')}_{rec.get('id', i)}"
-        cc = rec.get("cc_response", "") or ""
+        response = rec.get("cc_response", "") or ""
         decision = (
-            f"Manger - Output: {rec.get('ai_decision_output', '')} "
+            f"Manager - Output: {rec.get('ai_decision_output', '')} "
             f"| Reason: {rec.get('ai_decision_reason', '')}"
         )
-        parts.append(f"[Task {i}: {name}]\nAgent: {cc}\nManager: {decision}")
+        parts.append(f"[Task {i}: {name}]\nAgent: {response}\nManager: {decision}")
     return "\n\n".join(parts)
 
 
@@ -625,11 +634,11 @@ def llm_summarize(client, model, records):
     return _llm_call_with_retry(client, model, messages)
 
 
-def llm_manager_decide(client, model, cc_response, ceo_msg, summary):
+def llm_manager_decide(client, model, agent_response, ceo_msg, summary):
     """Get manager LLM decision. Matches n8n 'LLM Generate Response' node."""
-    # Exact n8n user message template
+    # User message template (system prompt references deferred to Session 02)
     user_msg = (
-        f"IF EXISTS, CLAUDE CODE SENIOR DEVELOPER LATEST MESSAGE:\n{cc_response}\n\n"
+        f"IF EXISTS, CLAUDE CODE SENIOR DEVELOPER LATEST MESSAGE:\n{agent_response}\n\n"
         f"IF EXISTS, CEO'S INSTRUCTIONS:\n{ceo_msg}\n\n"
         f"HISTORICAL INTERACTIONS SUMMARY:\n{summary}"
     )
@@ -672,65 +681,60 @@ def llm_manager_decide(client, model, cc_response, ceo_msg, summary):
 # ---------------------------------------------------------------------------
 
 
-def build_claude_prompt(output_cmd, raw_output):
-    """Build the claude -p prompt string.
+def build_codex_prompt(output_cmd, raw_output):
+    """Build the prompt string for codex exec.
 
-    Known commands: ULTRATHINK - activate plugin skill apex-spec -- .../cmd
-    Custom: ULTRATHINK - {raw output}
+    Known commands: invoke apex-spec skill command via natural language prompt.
+    Custom: pass raw output as the prompt.
     """
     cmd_lower = output_cmd.strip().lower().lstrip("/")
 
     if cmd_lower in KNOWN_COMMANDS:
         actual_cmd = COMMAND_ALIASES.get(cmd_lower, cmd_lower)
-        return (
-            f"ULTRATHINK - activate plugin skill apex-spec -- "
-            f"after activating the plugin skill run command /{actual_cmd}"
-        )
-    # CUSTOM-INSTRUCTIONS fallback (exact n8n pattern)
-    return f"ULTRATHINK - {raw_output}"
+        return f"Run the apex-spec skill command /{actual_cmd}"
+    # Custom instructions fallback
+    return raw_output
 
 
-def execute_claude(path, prompt, dry_run=False, verbose=False):
-    """Run claude subprocess in project directory. Returns stdout."""
+def execute_codex(path, prompt, agent_cfg, dry_run=False, verbose=False):
+    """Run codex exec subprocess in project directory. Returns stdout."""
     expanded_path = os.path.expanduser(path)
+    binary = agent_cfg["binary"]
+    exec_flags = agent_cfg["exec_flags"]
 
     if dry_run:
         console.print(f"  [dim][DRY RUN] Would execute in {expanded_path}:[/dim]")
         console.print(
-            f'  [dim]claude -p "{prompt}" --dangerously-skip-permissions[/dim]'
+            f'  [dim]{binary} exec {exec_flags} "{prompt}"[/dim]'
         )
         return f"[DRY RUN] Command: {prompt}"
 
-    console.print(f"  [dim]Executing claude in {expanded_path}...[/dim]")
+    console.print(f"  [dim]Executing {binary} in {expanded_path}...[/dim]")
 
     try:
-        # Clear CLAUDECODE env var to allow nested sessions
-        env = os.environ.copy()
-        env.pop("CLAUDECODE", None)
+        cmd = [binary, "exec", *exec_flags.split(), prompt]
 
         result = subprocess.run(
-            ["claude", "-p", prompt, "--dangerously-skip-permissions"],
+            cmd,
             cwd=expanded_path,
             capture_output=True,
             text=True,
             timeout=COMMAND_TIMEOUT,
-            env=env,
             check=False,
         )
 
         output = result.stdout
-        # If stdout is empty, use stderr (claude -p sometimes outputs there)
         if not output.strip() and result.stderr.strip():
             output = result.stderr
 
         if result.returncode != 0:
             error_msg = result.stderr or "Unknown error"
             output = f"[ERROR exit code {result.returncode}]\nstdout: {result.stdout}\nstderr: {error_msg}"
-            console.print(f"  [red]Claude exited with code {result.returncode}[/red]")
+            console.print(f"  [red]Codex exited with code {result.returncode}[/red]")
 
         if verbose:
             console.print(
-                Panel(output[:2000], title="CC Response (full)", border_style="blue")
+                Panel(output[:2000], title="Agent Response (full)", border_style="blue")
             )
         else:
             truncated = output[:500]
@@ -738,20 +742,20 @@ def execute_claude(path, prompt, dry_run=False, verbose=False):
                 truncated += (
                     f"\n... ({len(output)} chars total, use --verbose for full)"
                 )
-            console.print(Panel(truncated, title="CC Response", border_style="blue"))
+            console.print(Panel(truncated, title="Agent Response", border_style="blue"))
 
         return output
 
     except subprocess.TimeoutExpired:
-        msg = f"[TIMEOUT] Claude command timed out after {COMMAND_TIMEOUT}s"
+        msg = f"[TIMEOUT] Codex command timed out after {COMMAND_TIMEOUT}s"
         console.print(f"  [red]{msg}[/red]")
         return msg
     except FileNotFoundError:
-        msg = "[ERROR] 'claude' command not found. Is Claude Code CLI installed?"
+        msg = f"[ERROR] '{binary}' command not found. Is Codex CLI installed?"
         console.print(f"  [red]{msg}[/red]")
         return msg
     except Exception as e:  # pylint: disable=broad-exception-caught
-        msg = f"[ERROR] Failed to execute claude: {e}"
+        msg = f"[ERROR] Failed to execute {binary}: {e}"
         console.print(f"  [red]{msg}[/red]")
         return msg
 
@@ -797,7 +801,8 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
     global _INTERRUPTED  # pylint: disable=global-statement
 
     client, model = get_llm_client(config)
-    cc_response = ""
+    agent_cfg = get_agent_config(config)
+    agent_response = ""
     ceo_msg = ceo_message or ""
     iteration = 0
 
@@ -833,7 +838,7 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
             }
         else:
             console.print("  Manager deciding next action...")
-            decision = llm_manager_decide(client, model, cc_response, ceo_msg, summary)
+            decision = llm_manager_decide(client, model, agent_response, ceo_msg, summary)
 
         output_val = decision.get("output", "").strip()
         reason_val = decision.get("reason", "")
@@ -850,7 +855,7 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
             console.print(f"[yellow]Reason: {reason_val}[/yellow]")
             notify("Apex Infinite - HELP", reason_val)
             db_log(
-                path, cc_response, output_val, reason_val, help_or_done_msg=reason_val
+                path, agent_response, output_val, reason_val, help_or_done_msg=reason_val
             )
             ceo_input = console.input("[bold]CEO response (or 'quit'): [/bold]")
             if ceo_input.strip().lower() == "quit":
@@ -864,7 +869,7 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
             notify("Apex Infinite - ALL DONE!", "Project complete!")
             db_log(
                 path,
-                cc_response,
+                agent_response,
                 output_val,
                 reason_val,
                 help_or_done_msg="ALL DONE BABY!",
@@ -872,14 +877,14 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
             console.print(f"\n[bold]Total iterations: {iteration}[/bold]")
             break
 
-        # 4. Build prompt and execute claude
-        prompt = build_claude_prompt(output_lower, output_val)
+        # 4. Build prompt and execute codex
+        prompt = build_codex_prompt(output_lower, output_val)
         console.print(f"  [dim]Prompt: {prompt[:100]}...[/dim]")
 
-        cc_response = execute_claude(path, prompt, dry_run=dry_run, verbose=verbose)
+        agent_response = execute_codex(path, prompt, agent_cfg, dry_run=dry_run, verbose=verbose)
 
         # 5. Log to DB
-        db_log(path, cc_response, output_val, reason_val)
+        db_log(path, agent_response, output_val, reason_val)
 
         # 6. Clear CEO message after first use
         ceo_msg = ""
@@ -920,10 +925,10 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
     help=f"Safety limit (default: {DEFAULT_MAX_ITERATIONS})",
 )
 @click.option(
-    "--dry-run", is_flag=True, help="Show what would execute without running claude"
+    "--dry-run", is_flag=True, help="Show what would execute without running codex"
 )
-@click.option("--verbose", is_flag=True, help="Show full CC output")
-@click.version_option(version="1.0.0", prog_name="apex-infinite")
+@click.option("--verbose", is_flag=True, help="Show full agent output")
+@click.version_option(version="2.0.0", prog_name="apex-infinite")
 def main(  # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals,too-many-branches,too-many-statements
     project_path,
     start,
@@ -936,7 +941,7 @@ def main(  # pylint: disable=too-many-arguments,too-many-positional-arguments,to
     dry_run,
     verbose,
 ):
-    """Apex Spec System Infinite CLI - Autonomous Claude Code session manager."""
+    """Apex Spec System Infinite CLI - Autonomous Codex CLI session manager."""
 
     # Init database
     db_init()

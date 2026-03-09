@@ -4,16 +4,41 @@ All notable changes to the Apex Spec System are documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.10-codex] - 2026-03-09
+
+### Added
+- Skills Catalog submission (PR #244 to openai/skills .experimental catalog)
+- Method 4 installation via $skill-installer from catalog
+- Catalog-specific README for submission package
+
+### Changed
+- README.md updated with Method 4 installation and Phase 03 status
+
 ## [2.0.8-codex] - 2026-03-09
 
 ### Added
 - CHANGELOG.md covering Phases 00-02
 - Enhanced release workflow with pre-release verification checks
+  (ASCII encoding, version sync, file inventory, script executability)
 - Codex CLI installation instructions in release notes
+- Annotated tag v2.0.8-codex with automated GitHub Release
 
-## [Unreleased]
+---
 
-Phase 03 (Distribution) work in progress.
+## Phase 03 - Distribution
+
+### Session 02: Catalog Submission
+- Forked openai/skills and submitted PR #244 (skills/.experimental/apex-spec/)
+- Created catalog-specific README and LICENSE.txt for submission package
+- Validated 33-file submission (SKILL.md, 26 references, 3 scripts, openai.yaml)
+- Added Method 4 (Skills Catalog) installation to README.md
+- Updated Phase 03 status to Complete
+
+### Session 01: Release Workflow and Tagging
+- Created CHANGELOG.md with phase-by-phase history
+- Enhanced release.yml with 4 verification steps (ASCII, version sync, file inventory, executability)
+- Rewrote release body template for Codex CLI audience
+- Tagged v2.0.8-codex and published GitHub Release
 
 ---
 
