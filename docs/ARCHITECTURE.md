@@ -15,6 +15,7 @@ apex-spec-system-open/
 |-- SKILL.md                  # Root orchestrator (entry point)
 |-- AGENTS.md                 # Custom instructions for AI agents
 |-- CLAUDE.md                 # Claude Code custom instructions
+|-- CHANGELOG.md              # Version history
 |-- agents/
 |   \-- openai.yaml           # Codex CLI UI metadata
 |-- references/               # Command reference files (26 total)
@@ -32,6 +33,11 @@ apex-spec-system-open/
 |   |-- analyze-project.sh    # Deterministic project state analysis
 |   |-- check-prereqs.sh      # Environment verification
 |   \-- common.sh             # Shared functions
+|-- apex-infinite-cli/        # Autonomous session manager
+|   |-- apex_infinite.py      # Main CLI (~1000 lines Python)
+|   |-- config.yaml           # LLM provider and Codex agent config
+|   |-- tests/                # pytest test suite (54 tests)
+|   \-- n8n-workflow/         # Original n8n workflow (reference archive)
 |-- commands/                 # Original Claude Code command files (source/archive)
 \-- docs/                     # Project documentation
 ```
@@ -119,6 +125,40 @@ Currently maintained as separate repos:
 - **apex-spec-system-open** (this repo) -- Codex CLI skill, ported
 
 Long-term goal: cross-compatible single format that works on both platforms.
+
+## Apex Infinite CLI
+
+The `apex-infinite-cli/` directory contains an autonomous session manager -- a
+standalone Python CLI that runs the full Apex Spec System workflow in a loop
+without human intervention.
+
+### Components
+
+| Component | Purpose |
+|-----------|---------|
+| `apex_infinite.py` | Main CLI entry point (~1000 lines) |
+| `config.yaml` | LLM provider selection and Codex agent config |
+| `tests/` | pytest test suite (54 tests) |
+| `n8n-workflow/` | Original n8n workflow JSON (reference archive) |
+
+### How It Works
+
+1. Manager LLM decides the next workflow command
+2. CLI executes `codex exec` with the chosen command
+3. Response is logged to SQLite (`~/.apex-infinite/history.db`)
+4. Loop repeats until `alldonebaby` or max iterations
+
+### Tech Stack
+
+| Technology | Purpose |
+|------------|---------|
+| Python 3.10+ | CLI runtime |
+| SQLite (WAL mode) | Interaction history |
+| OpenAI-compatible API | Manager and summarizer LLM calls |
+| Codex CLI (`codex exec`) | Agent execution subprocess |
+| pytest + pytest-mock | Test suite |
+
+See [apex-infinite-cli/README-apex-infinite-cli.md](../apex-infinite-cli/README-apex-infinite-cli.md) for usage details.
 
 ## Key Decisions
 

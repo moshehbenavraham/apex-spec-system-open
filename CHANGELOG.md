@@ -4,6 +4,28 @@ All notable changes to the Apex Spec System are documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.0.13-codex] - 2026-03-09
+
+### Added
+- Apex Infinite CLI ported to Codex CLI (Phase 04 complete)
+- Codex agent configuration section in config.yaml (binary, exec_flags, model_reasoning_effort)
+- 54-test pytest suite for prompt generation and system prompt validation
+- Test infrastructure (conftest.py, tests/ directory)
+
+### Changed
+- apex_infinite.py: All Claude Code references replaced with Codex CLI equivalents
+- Subprocess execution: claude -> codex exec with configurable flags
+- Prompt generation: ULTRATHINK pattern replaced with natural language skill invocation
+- MANAGER_SYSTEM_PROMPT and SUMMARIZER_SYSTEM_PROMPT rewritten for Codex CLI
+- Variable names: cc_response -> agent_response, build_claude_prompt -> build_codex_prompt
+- CLI version bumped to 2.0.0, help text updated
+- README-apex-infinite-cli.md updated for Codex CLI usage
+- COMMAND_ALIASES cleared (Codex skill uses canonical command names)
+
+### Removed
+- CLAUDECODE environment variable handling (not needed for Codex CLI)
+- implement -> implementation alias (Codex skill uses canonical /implement)
+
 ## [2.0.10-codex] - 2026-03-09
 
 ### Added
@@ -22,6 +44,31 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   (ASCII encoding, version sync, file inventory, script executability)
 - Codex CLI installation instructions in release notes
 - Annotated tag v2.0.8-codex with automated GitHub Release
+
+---
+
+## Phase 04 - Apex Infinite CLI (Codex Port)
+
+### Session 03: Config, README, and Validation
+- Updated architecture diagram and documentation to Codex CLI
+- Usage examples, CLI flags, config docs, .env.example updated
+- 54-test suite passed, dry-run validated, ASCII/LF verified
+- Tagged as v1.1.0 (apex-infinite-cli version)
+
+### Session 02: System Prompt Rewrite and Testing
+- Rewrote MANAGER_SYSTEM_PROMPT (18 Claude Code references replaced)
+- Updated SUMMARIZER_SYSTEM_PROMPT with agent-neutral language
+- Updated llm_manager_decide() user-message template
+- Created 54-test pytest suite across 5 test classes
+- Removed all slash-command syntax from system prompts
+
+### Session 01: Core Subprocess and Prompt Conversion
+- Added codex configuration section to config.yaml
+- Renamed build_claude_prompt -> build_codex_prompt with new prompt pattern
+- Renamed execute_claude -> execute_codex using codex exec subprocess
+- Added get_agent_config() for configurable binary and flags
+- Renamed cc_response -> agent_response throughout
+- Updated CLI version, help text, module docstrings
 
 ---
 

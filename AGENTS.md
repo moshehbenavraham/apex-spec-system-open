@@ -6,7 +6,7 @@ Philosophy: 1 session = 1 spec = 2-4 hours (12-25 tasks)
 
 ## Version
 
-Current version: 2.0.11-codex
+Current version: 2.0.13-codex
 
 When updating version, update it in all the following files:
 

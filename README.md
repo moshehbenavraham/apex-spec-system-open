@@ -153,6 +153,7 @@ apex-spec-system-open/
 |   \-- openai.yaml       # Codex CLI UI metadata
 |-- references/           # Command reference files (26 total)
 |-- scripts/              # Bash utilities for project analysis
+|-- apex-infinite-cli/    # Autonomous session manager (Python CLI)
 |-- commands/             # Original Claude Code source files (archive)
 \-- docs/                 # Development documentation
 ```
@@ -219,6 +220,7 @@ workspaces, Go modules, Lerna.
 | 01 | Full Command Migration | Complete |
 | 02 | Documentation and Polish | Complete |
 | 03 | Distribution | Complete |
+| 04 | Apex Infinite CLI (Codex Port) | Complete |
 
 See [PRD](.spec_system/PRD/PRD.md) for the full roadmap.
 

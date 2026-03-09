@@ -1,0 +1,26 @@
+# Code Owners
+# These owners will be requested for review on PRs touching their areas.
+
+# Default owner for everything
+* @aiwithapex
+
+# Skill orchestrator and dispatch
+SKILL.md @aiwithapex
+AGENTS.md @aiwithapex
+
+# Reference files (command definitions)
+references/ @aiwithapex
+
+# Scripts (project analysis, prerequisites)
+scripts/ @aiwithapex
+
+# Apex Infinite CLI (autonomous session manager)
+apex-infinite-cli/ @aiwithapex
+
+# CI/CD workflows
+.github/ @aiwithapex
+
+# Documentation
+docs/ @aiwithapex
+README.md @aiwithapex
+CONTRIBUTING.md @aiwithapex

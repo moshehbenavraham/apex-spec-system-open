@@ -29,8 +29,10 @@ No build step -- the skill is plain files.
 | `references/` | Platform-neutral reference files (26 total: 22 commands + 4 docs) |
 | `scripts/` | Bash utilities for project analysis |
 | `agents/` | Codex CLI metadata (openai.yaml) |
+| `apex-infinite-cli/` | Autonomous session manager (Python CLI) |
 | `commands/` | Original Claude Code command files (source for conversion) |
 | `docs/` | Project documentation |
+| `tests/` | Root-level tests (bats) |
 | `skills/` | Legacy skill directory (pre-port, archived) |
 | `.spec_system/` | Spec system state for this project's own development |
 
@@ -100,6 +102,17 @@ grep -c 'references/' SKILL.md
 # List reference files
 ls references/*.md
 ```
+
+### Apex Infinite CLI Testing
+
+```bash
+cd apex-infinite-cli
+pip install -r requirements.txt -r requirements-dev.txt
+pytest tests/ -v
+```
+
+The test suite covers prompt generation, system prompt content, JSON parsing,
+and build_codex_prompt parametrized across all 13 known commands.
 
 ### Encoding Testing
 

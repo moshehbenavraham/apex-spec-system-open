@@ -47,7 +47,7 @@ All Apex Spec commands are recognized and routed through the plugin activation p
 | Phase transition | `audit`, `pipeline`, `infra`, `carryforward`, `documents`, `phasebuild` |
 | Terminal | `help` (pauses for CEO input), `alldonebaby` (stops loop) |
 
-Any output not matching a known command is sent as custom instructions via the `ULTRATHINK - {raw output}` fallback, allowing the manager LLM to give ad-hoc instructions to Codex CLI (e.g., "Fix the two failing tests then rerun /validate").
+Any output not matching a known command is sent as custom instructions directly to Codex CLI, allowing the manager LLM to give ad-hoc instructions (e.g., "Fix the two failing tests then rerun validate").
 
 ## Install
 
@@ -153,7 +153,6 @@ Interaction history is stored at `~/.apex-infinite/history.db` (SQLite with WAL 
 
 - **Nesting**: The CLI launches `codex exec` subprocesses. Codex CLI does not require special environment variable handling for nested invocations.
 - **Slash tolerance**: The manager LLM sometimes outputs `/plansession` instead of `plansession`. The CLI strips leading slashes before routing.
-- **implement -> /implementation**: The n8n workflow routes "implement" but the actual SSH command runs `/implementation`. The CLI preserves this alias.
 - **LLM retries**: Both LLM calls (summarizer and manager) retry 3 times with a 5-second wait between attempts, matching the original n8n workflow's `retryOnFail` + `waitBetweenTries: 5000`.
 - **Reference workflow**: The original n8n workflow JSON is preserved in `n8n-workflow/` for reference.
 
