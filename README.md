@@ -1,6 +1,6 @@
 # Apex Spec System
 
-**Version: 2.0.12-codex**
+**Version: 2.0.13-codex**
 
 A specification-driven workflow system for AI-assisted development, packaged as
 an Agent Skill following the [Agent Skills standard](https://agentskills.io).
