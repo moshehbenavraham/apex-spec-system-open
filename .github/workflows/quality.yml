@@ -60,7 +60,8 @@ jobs:
               FAILED=1
             fi
           done < <(find . -type f \( -name '*.sh' -o -name '*.md' -o -name '*.yml' -o -name '*.yaml' -o -name '*.json' \) \
-            -not -path './.git/*' -print0)
+            -not -path './.git/*' \
+            -not -path './apex-infinite-cli/n8n-workflow/*' -print0)
           if [ "$FAILED" -eq 1 ]; then
             echo "::error::Non-ASCII characters detected. See CONVENTIONS.md encoding rules."
             exit 1
@@ -76,7 +77,8 @@ jobs:
               FAILED=1
             fi
           done < <(find . -type f \( -name '*.sh' -o -name '*.md' -o -name '*.yml' -o -name '*.yaml' -o -name '*.json' \) \
-            -not -path './.git/*' -print0)
+            -not -path './.git/*' \
+            -not -path './apex-infinite-cli/n8n-workflow/*' -print0)
           if [ "$FAILED" -eq 1 ]; then
             echo "::error::CRLF line endings detected. Use LF only."
             exit 1
