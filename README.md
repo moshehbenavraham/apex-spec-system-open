@@ -1,6 +1,6 @@
 # Apex Spec System
 
-**Version: 2.0.9-codex**
+**Version: 2.0.10-codex**
 
 A specification-driven workflow system for AI-assisted development, packaged as
 an Agent Skill following the [Agent Skills standard](https://agentskills.io).
@@ -71,6 +71,15 @@ Download and extract to your skills directory:
 mkdir -p ~/.agents/skills/apex-spec
 curl -L https://github.com/aiwithapex/apex-spec-system-open/archive/refs/heads/master.tar.gz \
   | tar xz --strip-components=1 -C ~/.agents/skills/apex-spec
+```
+
+### Method 4: Skills Catalog (Experimental)
+
+Install from the [openai/skills](https://github.com/openai/skills) catalog
+using the skill installer inside Codex:
+
+```
+$skill-installer install the apex-spec skill from the .experimental folder
 ```
 
 After installation, verify: `ls ~/.agents/skills/apex-spec/SKILL.md`
@@ -209,7 +218,7 @@ workspaces, Go modules, Lerna.
 | 00 | Proof of Concept | Complete |
 | 01 | Full Command Migration | Complete |
 | 02 | Documentation and Polish | Complete |
-| 03 | Distribution | Not Started |
+| 03 | Distribution | Complete |
 
 See [PRD](.spec_system/PRD/PRD.md) for the full roadmap.
 
