@@ -56,8 +56,21 @@ Note the initialization in the commit message.
 
 ### 3. Stage all changes
 
-Run `git add -A` to stage every non-gitignored file in the repository. This includes
-work from outside the current session that the user may have pending.
+Before staging, review `git status` output for files that should NOT be committed.
+Watch for and exclude:
+
+- **Secrets/credentials**: `.env`, `*.pem`, `*.key`, credentials files, API keys
+- **Build artifacts**: `__pycache__/`, `*.pyc`, `node_modules/`, `dist/`, `build/`
+- **OS/editor junk**: `.DS_Store`, `Thumbs.db`, `.vscode/settings.json`, `*.swp`
+- **Large binaries**: database files, media assets, compiled binaries
+
+If any of these are present and not already covered by `.gitignore`, add the
+appropriate entries to `.gitignore` BEFORE staging. Then run `git add -A` to stage
+every non-gitignored file in the repository. This includes work from outside the
+current session that the user may have pending.
+
+After staging, run `git diff --cached --stat` and scan the file list one more time
+to confirm nothing sensitive or unintended slipped through.
 
 ### 4. Commit
 
