@@ -64,7 +64,6 @@ shellcheck scripts/*.sh
 | references/ | 26 command reference files |
 | scripts/ | Bash utilities |
 | apex-infinite-cli/ | Autonomous session manager (Python CLI) |
-| commands/ | Original Claude Code source (archive) |
 | docs/ | Development documentation |
 
 ### 4. Make Changes

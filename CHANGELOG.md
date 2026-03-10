@@ -150,4 +150,3 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### [1.6.12-beta]
 - Original Claude Code plugin implementation
-- Source files preserved in commands/ directory (archive)

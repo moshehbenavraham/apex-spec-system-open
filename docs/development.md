@@ -30,7 +30,6 @@ No build step -- the skill is plain files.
 | `scripts/` | Bash utilities for project analysis |
 | `agents/` | Codex CLI metadata (openai.yaml) |
 | `apex-infinite-cli/` | Autonomous session manager (Python CLI) |
-| `commands/` | Original Claude Code command files (source for conversion) |
 | `docs/` | Project documentation |
 | `tests/` | Root-level tests (bats) |
 | `skills/` | Legacy skill directory (pre-port, archived) |
@@ -46,22 +45,20 @@ No build step -- the skill is plain files.
 | `shfmt -d scripts/*.sh` | Check script formatting |
 | `pre-commit run --all-files` | Run all pre-commit hooks |
 
-## Converting a Command File
+## Editing a Command Reference
 
-To convert a command from `commands/` to `references/`:
+All active workflow definitions live in `references/`.
 
-1. Copy `commands/<name>.md` to `references/<name>.md`
-2. Strip the YAML frontmatter (`---name:...---` block)
-3. Change heading from `# /<name> Command` to `# <name>`
-4. Replace `${CLAUDE_PLUGIN_ROOT}/scripts/` with local-first pattern
-5. Replace `/commandname` slash syntax with workflow step names
-6. Replace tool directives with generic verbs
-7. Remove co-author references
-8. Verify ASCII encoding: `LC_ALL=C grep -n '[^[:print:][:space:]]' references/<name>.md`
-9. Verify line count is under 500: `wc -l references/<name>.md`
-10. Verify the dispatch table in SKILL.md routes to the new file
+When updating a workflow step:
 
-See `.spec_system/CONVENTIONS.md` for the full style guide.
+1. Edit `references/<name>.md` directly
+2. Keep the first line as `# <name>`
+3. Use platform-neutral language and local-first script resolution
+4. Verify ASCII encoding: `LC_ALL=C grep -n '[^[:print:][:space:]]' references/<name>.md`
+5. Verify line count is under 500: `wc -l references/<name>.md`
+6. Verify the dispatch table in SKILL.md routes to the file
+
+See `docs/CONVENTIONS.md` for the full style guide.
 
 ## Validation Checklist
 
@@ -114,11 +111,18 @@ pytest tests/ -v
 The test suite covers prompt generation, system prompt content, JSON parsing,
 and build_codex_prompt parametrized across all 13 known commands.
 
+Deep-dive docs for the CLI live in `docs/apex-infinite-cli/`:
+
+- `operator-runbook.md` for day-to-day operation
+- `history-db.md` for SQLite storage details
+- `prompt-contract.md` for manager and summarizer behavior
+- `troubleshooting.md` for common failures and recovery paths
+
 ### CI Release Verification
 
 The `release.yml` workflow runs 4 verification steps before publishing a release:
 
-1. **ASCII encoding** -- Validates all skill files contain only ASCII (0-127). Excludes `commands/` and `apex-infinite-cli/` (archived/separate).
+1. **ASCII encoding** -- Validates all skill files contain only ASCII (0-127). Excludes `apex-infinite-cli/` (separate Python tool).
 2. **Version sync** -- Confirms the version in `SKILL.md` frontmatter matches `README.md`.
 3. **File inventory** -- Checks that at least 26 reference files and 3 scripts are present.
 4. **Script executability** -- Verifies all `.sh` files in `scripts/` have the execute bit set.

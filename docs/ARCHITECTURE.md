@@ -38,7 +38,6 @@ apex-spec-system-open/
 |   |-- config.yaml           # LLM provider and Codex agent config
 |   |-- tests/                # pytest test suite (54 tests)
 |   \-- n8n-workflow/         # Original n8n workflow (reference archive)
-|-- commands/                 # Original Claude Code command files (source/archive)
 \-- docs/                     # Project documentation
 ```
 
@@ -159,6 +158,13 @@ without human intervention.
 | pytest + pytest-mock | Test suite |
 
 See [apex-infinite-cli/README-apex-infinite-cli.md](../apex-infinite-cli/README-apex-infinite-cli.md) for usage details.
+
+Deep-dive docs:
+
+- [Operator runbook](apex-infinite-cli/operator-runbook.md)
+- [History DB reference](apex-infinite-cli/history-db.md)
+- [Prompt contract](apex-infinite-cli/prompt-contract.md)
+- [Troubleshooting guide](apex-infinite-cli/troubleshooting.md)
 
 ## Key Decisions
 

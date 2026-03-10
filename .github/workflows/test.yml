@@ -48,7 +48,7 @@ jobs:
               FAILED=1
             fi
           done
-          for d in scripts references commands skills agents; do
+          for d in scripts references agents; do
             if [ ! -d "$d" ]; then
               echo "::error::Missing required directory: $d/"
               FAILED=1

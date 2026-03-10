@@ -1,6 +1,6 @@
 # Apex Infinite CLI
 
-Autonomous OpenAI Codex Code session manager -- a standalone Python CLI that runs the full Apex Spec System workflow in an infinite loop without human intervention.
+Autonomous OpenAI Codex CLI session manager -- a standalone Python CLI that runs the full Apex Spec System workflow in an infinite loop without human intervention.
 
 Originally powered by an n8n workflow with Airtable, Slack, and SSH nodes, this CLI replaces all of that with SQLite, subprocess, and terminal output in a single ~1000-line Python file.
 
@@ -38,7 +38,7 @@ The manager LLM can also output `help` to pause for CEO (human) input, or give c
 
 ## Supported Commands
 
-All Apex Spec commands are recognized and routed through the plugin activation prompt:
+All Apex Spec commands are recognized and routed through the skill invocation prompt:
 
 | Stage | Commands |
 |-------|----------|
@@ -166,6 +166,13 @@ The test suite has 54 tests across 5 classes:
 | TestUserMessageTemplate | 4 | Mock LLM integration, message assembly |
 | TestBuildCodexPrompt | 18 | Parametrized across all 13 known commands + edge cases |
 | TestJsonParsing | 2 | json_mode parsing and regex fallback |
+
+## Deep-Dive Docs
+
+- [Operator runbook](../docs/apex-infinite-cli/operator-runbook.md)
+- [History DB reference](../docs/apex-infinite-cli/history-db.md)
+- [Prompt contract](../docs/apex-infinite-cli/prompt-contract.md)
+- [Troubleshooting guide](../docs/apex-infinite-cli/troubleshooting.md)
 
 ## Notes
 

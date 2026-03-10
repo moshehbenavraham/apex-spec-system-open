@@ -36,14 +36,14 @@ jobs:
               LC_ALL=C grep -Pn '[^\x00-\x7F]' "$f"
               FAILURES=$((FAILURES + 1))
             fi
-          done < <(find . -type f \( -name '*.md' -o -name '*.yml' -o -name '*.yaml' -o -name '*.sh' -o -name '*.json' \) -not -path './.git/*' -not -path './.spec_system/*' -not -path './commands/*' -not -path './apex-infinite-cli/*')
+          done < <(find . -type f \( -name '*.md' -o -name '*.yml' -o -name '*.yaml' -o -name '*.sh' -o -name '*.json' \) -not -path './.git/*' -not -path './.spec_system/*' -not -path './apex-infinite-cli/*')
           echo "Checking for CRLF line endings..."
           while IFS= read -r f; do
             if grep -Pq '\r$' "$f" 2>/dev/null; then
               echo "FAIL: CRLF in $f"
               FAILURES=$((FAILURES + 1))
             fi
-          done < <(find . -type f \( -name '*.md' -o -name '*.yml' -o -name '*.yaml' -o -name '*.sh' -o -name '*.json' \) -not -path './.git/*' -not -path './.spec_system/*' -not -path './commands/*' -not -path './apex-infinite-cli/*')
+          done < <(find . -type f \( -name '*.md' -o -name '*.yml' -o -name '*.yaml' -o -name '*.sh' -o -name '*.json' \) -not -path './.git/*' -not -path './.spec_system/*' -not -path './apex-infinite-cli/*')
           if [[ "$FAILURES" -gt 0 ]]; then
             echo "::error::Found $FAILURES encoding violations"
             exit 1

@@ -6,7 +6,7 @@ Philosophy: 1 session = 1 spec = 2-4 hours (12-25 tasks)
 
 ## Version
 
-Current version: 2.0.13-codex
+Current version: 2.0.15-codex
 
 When updating version, update it in all the following files:
 
@@ -29,7 +29,7 @@ documents in references/.
 - Scripts use bash + jq only; no additional dependencies
 - Commands use local-first script resolution: check .spec_system/scripts/ before
   falling back to scripts/
-- See .spec_system/CONVENTIONS.md for complete coding standards
+- See docs/CONVENTIONS.md for complete coding standards
 
 ## Directory Layout
 
@@ -40,7 +40,6 @@ documents in references/.
 | scripts/ | Bash utilities (analyze-project.sh, check-prereqs.sh, common.sh) |
 | agents/ | Codex CLI metadata (openai.yaml) |
 | apex-infinite-cli/ | Autonomous session manager (Python CLI, see its own README) |
-| commands/ | Original Claude Code source files (archive, not active) |
 | docs/ | Development documentation (ARCHITECTURE.md, development.md, adr/) |
 
 ## Workflow Reference

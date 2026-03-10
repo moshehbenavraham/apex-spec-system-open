@@ -1,6 +1,6 @@
 # Apex Spec System
 
-**Version: 2.0.14-codex**
+**Version: 2.0.15-codex**
 
 A specification-driven workflow system for AI-assisted development, packaged as
 an Agent Skill following the [Agent Skills standard](https://agentskills.io).
@@ -155,7 +155,6 @@ apex-spec-system-open/
 |-- references/           # Command reference files (26 total)
 |-- scripts/              # Bash utilities for project analysis
 |-- apex-infinite-cli/    # Autonomous session manager (Python CLI)
-|-- commands/             # Original Claude Code source files (archive)
 \-- docs/                 # Development documentation
 ```
 
@@ -201,6 +200,8 @@ workspaces, Go modules, Lerna.
 
 - [Architecture](docs/ARCHITECTURE.md) - Skill structure and design decisions
 - [Development Guide](docs/development.md) - Local setup, testing, contributing
+- [Apex Infinite CLI](apex-infinite-cli/README-apex-infinite-cli.md) - Autonomous session manager overview and usage
+- [Apex Infinite CLI Deep-Dive](docs/apex-infinite-cli/operator-runbook.md) - Runbook, DB, prompt, and troubleshooting docs
 - [Onboarding](docs/onboarding.md) - Zero-to-hero checklist
 - [Deployment](docs/deployment.md) - Installation, CI/CD, release process
 - [Usage Guidance](references/guidance.md) - When to use, workflow modes, team patterns
