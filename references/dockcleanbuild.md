@@ -17,34 +17,49 @@ Note: Docker commands MAY require `sudo` if you are not in the `docker` group.
 
 ## Steps
 
-### 1. Clean Docker build cache
+### 1. Discover the Docker environment
+
+Before running any Docker commands, inspect the project to determine the correct
+compose configuration:
+
+- List all compose files present (`docker-compose.yml`, `compose.yml`, `compose.yaml`,
+  `docker-compose.yaml`, `docker-compose.override.yml`, and any environment-specific
+  variants like `docker-compose.prod.yml`, `docker-compose.dev.yml`, etc.)
+- Check for a `.env` file or `COMPOSE_FILE` / `COMPOSE_PROFILES` environment variables
+  that select specific files or profiles
+- Check which containers and images are currently running (`sudo docker compose ps`,
+  `sudo docker ps`) to understand the active setup
+- If multiple compose configurations exist, ask the user which one to target rather
+  than guessing
+- Use the identified configuration (e.g., `sudo docker compose -f <file> ...`) for
+  all subsequent commands
+
+### 2. Clean Docker build cache
 
 Run `sudo docker builder prune -af` to remove all build cache entries.
 
 Report the amount of space reclaimed.
 
-### 2. Remove stale images
+### 3. Remove stale images
 
 Run `sudo docker image prune -f` to remove dangling images.
 
 Report the number of images removed and space reclaimed.
 
-### 3. Stop and remove project containers
+### 4. Stop and remove project containers
 
-Identify the project's Docker Compose file(s) (`docker-compose.yml`, `docker-compose.yaml`,
-`compose.yml`, `compose.yaml`, or variants).
-
-Run `sudo docker compose down` (without `-v` to preserve volumes) to stop and remove
+Using the compose configuration identified in step 1, run
+`sudo docker compose down` (without `-v` to preserve volumes) to stop and remove
 the project's containers and networks.
 
 Report which containers were stopped and removed.
 
-### 4. Build from source
+### 5. Build from source
 
 Run the project's build step if one exists (e.g., `npm run build`, `cargo build`, etc.).
 If no build step is apparent, skip this step and note it.
 
-### 5. Rebuild Docker images from scratch
+### 6. Rebuild Docker images from scratch
 
 First, build the primary Dockerfile:
 ```bash
@@ -59,7 +74,7 @@ sudo docker build --no-cache -f <Dockerfile> -t <appropriate-tag> .
 
 Report the full build output for each image, including any warnings or notices.
 
-### 6. Bring containers back up
+### 7. Bring containers back up
 
 Run `sudo docker compose up -d` to start the containers in detached mode.
 
@@ -72,7 +87,7 @@ Do not proceed until every service is up.**
 
 Report the status of each container.
 
-### 7. Final cleanup
+### 8. Final cleanup
 
 Run `sudo docker image prune -f` to remove any intermediate or dangling images
 left over from the build process.

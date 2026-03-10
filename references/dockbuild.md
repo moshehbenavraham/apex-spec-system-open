@@ -14,7 +14,24 @@ Note: Docker commands MAY require `sudo` if you are not in the `docker` group.
 
 ## Steps
 
-### 1. Run Docker Compose build
+### 1. Discover the Docker environment
+
+Before running any Docker commands, inspect the project to determine the correct
+compose configuration:
+
+- List all compose files present (`docker-compose.yml`, `compose.yml`, `compose.yaml`,
+  `docker-compose.yaml`, `docker-compose.override.yml`, and any environment-specific
+  variants like `docker-compose.prod.yml`, `docker-compose.dev.yml`, etc.)
+- Check for a `.env` file or `COMPOSE_FILE` / `COMPOSE_PROFILES` environment variables
+  that select specific files or profiles
+- Check which containers and images are currently running (`sudo docker compose ps`,
+  `sudo docker ps`) to understand the active setup
+- If multiple compose configurations exist, ask the user which one to target rather
+  than guessing
+- Use the identified configuration (e.g., `sudo docker compose -f <file> ...`) for
+  all subsequent commands
+
+### 2. Run Docker Compose build
 
 Execute:
 ```bash
@@ -23,11 +40,11 @@ sudo docker compose up -d --build 2>&1 | tee /dev/stderr
 
 Capture the complete output.
 
-### 2. Verify container status
+### 3. Verify container status
 
 Run `sudo docker compose ps` to confirm all containers are running.
 
-### 3. Report results
+### 4. Report results
 
 Present:
 - The full build output

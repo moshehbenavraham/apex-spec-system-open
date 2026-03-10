@@ -39,6 +39,7 @@ documents in references/.
 | references/ | 26 command reference files (1 per command + 4 docs) |
 | scripts/ | Bash utilities (analyze-project.sh, check-prereqs.sh, common.sh) |
 | agents/ | Codex CLI metadata (openai.yaml) |
+| apex-infinite-cli/ | Autonomous session manager (Python CLI, see its own README) |
 | commands/ | Original Claude Code source files (archive, not active) |
 | docs/ | Development documentation (ARCHITECTURE.md, development.md, adr/) |
 

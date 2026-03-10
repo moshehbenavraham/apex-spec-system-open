@@ -149,12 +149,31 @@ Two ways to inject human guidance:
 
 Interaction history is stored at `~/.apex-infinite/history.db` (SQLite with WAL mode).
 
+## Testing
+
+```bash
+cd apex-infinite-cli
+pip install -r requirements.txt -r requirements-dev.txt
+pytest tests/ -v
+```
+
+The test suite has 54 tests across 5 classes:
+
+| Class | Tests | Coverage |
+|-------|-------|----------|
+| TestManagerSystemPrompt | 12 | Content validation, forbidden strings, structure |
+| TestSummarizerSystemPrompt | 5 | Prompt content and formatting |
+| TestUserMessageTemplate | 4 | Mock LLM integration, message assembly |
+| TestBuildCodexPrompt | 18 | Parametrized across all 13 known commands + edge cases |
+| TestJsonParsing | 2 | json_mode parsing and regex fallback |
+
 ## Notes
 
 - **Nesting**: The CLI launches `codex exec` subprocesses. Codex CLI does not require special environment variable handling for nested invocations.
 - **Slash tolerance**: The manager LLM sometimes outputs `/plansession` instead of `plansession`. The CLI strips leading slashes before routing.
 - **LLM retries**: Both LLM calls (summarizer and manager) retry 3 times with a 5-second wait between attempts, matching the original n8n workflow's `retryOnFail` + `waitBetweenTries: 5000`.
 - **Reference workflow**: The original n8n workflow JSON is preserved in `n8n-workflow/` for reference.
+- **DB column naming**: The SQLite `cc_response` column name is preserved for backward compatibility with existing databases. Python variable names use `agent_response` but the DB schema was not migrated to avoid breaking existing history.
 
 ## Requirements
 

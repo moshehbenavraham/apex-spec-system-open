@@ -114,6 +114,17 @@ pytest tests/ -v
 The test suite covers prompt generation, system prompt content, JSON parsing,
 and build_codex_prompt parametrized across all 13 known commands.
 
+### CI Release Verification
+
+The `release.yml` workflow runs 4 verification steps before publishing a release:
+
+1. **ASCII encoding** -- Validates all skill files contain only ASCII (0-127). Excludes `commands/` and `apex-infinite-cli/` (archived/separate).
+2. **Version sync** -- Confirms the version in `SKILL.md` frontmatter matches `README.md`.
+3. **File inventory** -- Checks that at least 26 reference files and 3 scripts are present.
+4. **Script executability** -- Verifies all `.sh` files in `scripts/` have the execute bit set.
+
+All 4 checks must pass before a GitHub Release is created.
+
 ### Encoding Testing
 
 ```bash
