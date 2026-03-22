@@ -10,7 +10,7 @@ description: >
   "quick frontend", "quick backend", "pull upstream",
   or when working in a project containing a .spec_system/ directory.
   Philosophy: 1 session = 1 spec = 2-4 hours (12-25 tasks).
-version: 2.0.15-codex
+version: 2.0.16-codex
 ---
 
 # Apex Spec Workflow
@@ -87,6 +87,10 @@ updateprd      ->  Sync PRD, mark session complete
                       until ALL phase sessions complete
 ```
 
+After a successful `plansession` run that creates the session spec and task checklist, the next workflow command is always `implement`.
+
+After a successful `updateprd` run, the next workflow command has two paths: return to `plansession` if the phase still has unfinished sessions; otherwise exit the session loop and begin Phase Transition at `audit`.
+
 ### Stage 3: PHASE TRANSITION (After All Previous Phase Sessions Are Complete)
 
 ```
@@ -113,6 +117,8 @@ phasebuild         ->  Create next phase structure
       v
                    ->  Return to Stage 2 for new phase
 ```
+
+`carryforward` does not jump directly to `plansession`. The usual handoff is `carryforward -> documents -> [User Action] manual testing and LLM audit -> phasebuild`; however, run `phasebuild` only if `PRD.md` still defines another unfinished phase. If `PRD.md` has no remaining phase, the workflow ends after `documents` and the project is complete.
 
 ### Utility Commands (Safe at Any Time)
 

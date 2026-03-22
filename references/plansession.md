@@ -2,6 +2,8 @@
 
 Analyze project state, recommend the next session, create its specification, and generate the task checklist -- all in one step.
 
+When `plansession` succeeds and creates `spec.md` plus `tasks.md`, the next workflow command is always `implement`. Do not jump directly from a successful `plansession` run to `validate`, `updateprd`, `audit`, `pipeline`, `infra`, `documents`, `phasebuild`, or another `plansession`.
+
 ## Rules
 
 1. **Script first** - Always run `analyze-project.sh --json` before any analysis
@@ -99,6 +101,8 @@ Using the deterministic state + semantic understanding:
 If multiple sessions ready: Choose based on dependencies, complexity, project flow.
 If session blocked: Recommend alternative with explanation.
 If phase complete: Suggest running phasebuild for the next phase.
+
+If Step 3 results in a completed session plan with a new `spec.md` and `tasks.md`, the handoff is fixed: `plansession -> implement`.
 
 ### 4. Create Session Directory and Specification
 
@@ -466,4 +470,4 @@ After creating spec.md and tasks.md, summarize to the user:
 - Estimated duration
 - Key parallelization opportunities
 
-Prompt them to run the implement workflow step to begin.
+Prompt them to run the `implement` workflow step next. Be explicit that after a successful `plansession` run, `implement` is always the next workflow command.

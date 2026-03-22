@@ -4,14 +4,14 @@ Verify that all session requirements are met before marking the session complete
 
 ## Rules
 
-1. **PASS requires ALL of**: 100% tasks complete, all deliverables exist, all files ASCII-encoded with LF endings, all tests passing, all success criteria met, no security or GDPR violations, no critical behavioral quality violations (when BQC applies)
+1. **PASS requires ALL of**: 100% tasks complete, all deliverables exist, all files ASCII-encoded with LF endings, all tests passing, all success criteria met, database/schema alignment verified when the session touches the DB layer, no security or GDPR violations, no critical behavioral quality violations (when BQC applies)
 2. **Any single failure = overall FAIL** - no partial passes
 3. **Script first** - run `analyze-project.sh --json` before any analysis
 4. Conventions compliance is a spot-check, not exhaustive - flag obvious violations only
 
 ### No Deferral Policy
 
-- If a validation check fails and YOU can fix it (encoding issues, missing directories, failing tests with obvious fixes), FIX IT and re-validate
+- If a validation check fails and YOU can fix it (encoding issues, missing directories, failing tests with obvious fixes, missing schema artifacts, unapplied migrations), FIX IT and re-validate
 - The ONLY valid reason to report a FAIL back to the user is when the fix requires their input, credentials, or decisions only a human can make
 - "The environment isn't set up" is NOT a valid FAIL -- setting it up IS the task
 - If you report a FAIL for something you could have fixed, that is a **critical failure**
@@ -61,7 +61,7 @@ Using the `current_session` value from the script output, read all session docum
 - `.spec_system/specs/[current-session]/security-compliance.md` - Prior security report (if exists from previous validation run)
 - `.spec_system/CONVENTIONS.md` - Project coding conventions (if exists)
 
-**CONVENTIONS.md** is used in the Quality Gates check (section 3.E) to verify code follows project conventions for naming, structure, error handling, testing, etc.
+**CONVENTIONS.md** is used in the Quality Gates check (section 3.F) to verify code follows project conventions for naming, structure, error handling, testing, etc.
 
 ### 3. Run Validation Checks
 
@@ -108,24 +108,34 @@ Run the project's test suite:
 4. Only after all tests pass (0 failures) may you mark Test Verification as PASS
 5. If a failure is genuinely unrelated (e.g., flaky network test), you must PROVE it by showing the test also fails on the pre-session commit -- do not assume
 
-#### E. Success Criteria
+#### E. Database/Schema Alignment (if relevant)
+If the session changes persisted data shape, constraints, indexes, migrations, seeds, or other DB-layer behavior that project conventions track in versioned artifacts:
+- Verify the matching schema artifact exists in the session changes (migration, schema file, SQL patch, DDL, ORM metadata update, seed/test fixture update, etc.)
+- Verify application code and schema artifacts describe the same tables, columns, constraints, indexes, and generated types
+- Run the relevant migration status, schema diff, or apply/validate command to confirm there is no drift and the artifact works locally
+- If conventions require reversible migrations, rollback support, or seed updates, verify those are present
+- FAIL if implementation expects DB changes that are not represented in project-tracked schema artifacts, or if the artifacts exist but were not verified
+
+If the session includes no DB-layer changes, mark this check N/A with a brief justification.
+
+#### F. Success Criteria
 From spec.md success criteria:
 - Check each functional requirement
 - Verify testing requirements met
 - Confirm quality gates passed
 
-#### F. Conventions Compliance (if CONVENTIONS.md exists)
+#### G. Conventions Compliance (if CONVENTIONS.md exists)
 Spot-check deliverables against project conventions:
 - **Naming**: Functions, variables, files follow naming conventions
 - **Structure**: Files are organized according to file structure conventions
 - **Error Handling**: Follows the project's error handling approach
 - **Comments**: Explain "why" not "what", no commented-out code
 - **Testing**: Tests follow project testing philosophy
-- **Database** (if Database Layer conventions exist): Migration naming follows convention, model/table naming matches convention, required columns present on new tables, indexes on foreign keys
+- **Database** (if Database Layer conventions exist): Migration naming follows convention, model/table naming matches convention, required columns present on new tables, indexes on foreign keys, and schema artifacts live in the expected location
 
 Note: This is a spot-check, not exhaustive. Flag obvious violations only.
 
-#### G. Security & GDPR Compliance
+#### H. Security & GDPR Compliance
 
 Review **only files created or modified in this session** (use deliverables from spec.md and git diff against the pre-session commit). Skip files not touched by this session.
 
@@ -152,7 +162,7 @@ Review **only files created or modified in this session** (use deliverables from
 - Hardcoded secrets and injection vulnerabilities are always FAIL regardless of scope
 - **Monorepo**: Scope the review to files within the declared package boundary (from Step 1a). Cross-cutting sessions review all modified files.
 
-#### H. Behavioral Quality Spot-Check
+#### I. Behavioral Quality Spot-Check
 
 Determine whether a BQC applies: does this session produce application code?
 
@@ -297,6 +307,7 @@ Create `validation.md` in the session directory:
 | Files Exist | PASS/FAIL | X/Y files |
 | ASCII Encoding | PASS/FAIL | [issues] |
 | Tests Passing | PASS/FAIL | X/Y tests |
+| Database/Schema Alignment | PASS/FAIL/N/A | [issues or "N/A -- no DB-layer changes"] |
 | Quality Gates | PASS/FAIL | [issues] |
 | Conventions | PASS/SKIP | [issues or "No CONVENTIONS.md"] |
 | Security & GDPR | PASS/FAIL/N/A | [issues] |
@@ -366,7 +377,23 @@ Create `validation.md` in the session directory:
 
 ---
 
-## 5. Success Criteria
+## 5. Database/Schema Alignment
+
+### Status: PASS/FAIL/N/A
+
+*N/A if the session introduced no DB-layer changes.*
+
+- [x] Matching schema artifact exists for each relevant DB-layer change
+- [x] Code and schema artifacts are aligned
+- [x] Migration/status/diff check passed locally
+- [x] Seed or rollback updates included when conventions require them
+
+### Issues Found
+[List issues or "None" or "N/A -- no DB-layer changes"]
+
+---
+
+## 6. Success Criteria
 
 From spec.md:
 
@@ -385,7 +412,7 @@ From spec.md:
 
 ---
 
-## 6. Conventions Compliance
+## 7. Conventions Compliance
 
 ### Status: PASS/SKIP
 
@@ -404,7 +431,7 @@ From spec.md:
 
 ---
 
-## 7. Security & GDPR Compliance
+## 8. Security & GDPR Compliance
 
 ### Status: PASS/FAIL/N/A
 
@@ -421,7 +448,7 @@ From spec.md:
 
 ---
 
-## 8. Behavioral Quality Spot-Check
+## 9. Behavioral Quality Spot-Check
 
 ### Status: PASS/WARN/FAIL/N/A
 
@@ -495,4 +522,4 @@ Update `.spec_system/state.json` based on validation result:
 
 ## Output
 
-Report PASS/FAIL with a summary of each check. If PASS, prompt updateprd. If FAIL, list issues with suggested fixes and prompt re-run of validate.
+Report PASS/FAIL with a summary of each check, including database/schema alignment when relevant. If PASS, prompt updateprd. If FAIL, list issues with suggested fixes and prompt re-run of validate.

@@ -40,6 +40,9 @@ technical PRD.
 
 Repeat this cycle for each session in the phase.
 
+Important: after a successful `plansession` run that creates `spec.md` and `tasks.md`, the next workflow command is always `implement`.
+Important: after a successful `updateprd` run, return to `plansession` if the phase still has unfinished sessions; otherwise begin Phase Transition at `audit`.
+
 ### Stage 3: Phase Transition (After All Phase Sessions Complete)
 
 | Step | Command | Purpose |
@@ -51,6 +54,8 @@ Repeat this cycle for each session in the phase.
 | 5 | documents | Audit and update project documentation |
 | - | (manual) | Manual testing and LLM audit (highly recommended) |
 | 6 | phasebuild | Create next phase structure, return to Stage 2 |
+
+Important: `carryforward` does not lead directly to `plansession`. Finish `documents`, then manual testing and LLM audit, then `phasebuild` only if `PRD.md` still defines another unfinished phase. Only after `phasebuild` do you return to Stage 2 with `plansession`. If `PRD.md` has no remaining phase, the workflow ends and the project is complete.
 
 ## Workflow Diagram
 
@@ -70,6 +75,9 @@ phasebuild              updateprd ------+         carryforward
                                                       |
                                                       v
                                                   documents
+                                                      |
+                                                      v
+                                          [manual testing + LLM audit]
                                                       |
                                                       v
                                                   phasebuild --> Stage 2

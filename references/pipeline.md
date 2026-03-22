@@ -2,6 +2,8 @@
 
 Add and validate CI/CD workflows one bundle at a time.
 
+This is the second command in the Phase Transition stage. If `pipeline` finishes with unresolved CI failures or review items that block completion, fix them and rerun `pipeline`. If the current `pipeline` run passes, the next workflow command is `infra`. Do not jump directly from `pipeline` to `carryforward`, `documents`, `phasebuild`, or `plansession`.
+
 ## Billing Failures
 
 CI failures can be caused by **billing/usage limits** (e.g., exhausted GitHub Actions minutes), not code issues. If CI fails and you suspect a billing issue, **run the equivalent steps locally** to validate. If local runs pass, treat the bundle as validated and proceed. Note in the REPORT that validation was done locally.
@@ -113,6 +115,8 @@ Compare CI/CD table in CONVENTIONS.md against 5-bundle master list:
 - Build list of missing bundles in priority order
 
 If all bundles configured: "All CI/CD workflows configured. Jumping to Step 5"
+
+Important: `pipeline` is one bundle per run and one run per phase. You do NOT need all 5 bundles configured before moving to `infra`. The gate for leaving `pipeline` is that the workflows and review follow-up for the current run are validated, while any remaining bundles are deferred to future phases.
 
 ### Step 3: SELECT
 
@@ -334,11 +338,17 @@ REPORT
 
 ### Step 9: RECOMMEND
 
-- **CI failures remain**: List required actions, validate locally and fix within this run
-- **PR has unresolved items**: Report status, note what needs manual response
-- **PR is ready**: Confirm all checks passing and reviews addressed, recommend merge
-- **Bundles remain**: Note which bundle comes next (it will be added in a future phase's pipeline run)
-- **All 5 bundles configured and passing**: Recommend infra
+- **CI failures remain**: List required actions and rerun `pipeline`. Do not recommend `infra` yet.
+- **PR has unresolved items**: Report status, note what needs manual response, and do not recommend `infra` yet.
+- **PR is ready**: Confirm all checks passing and reviews addressed. If the current `pipeline` run is otherwise complete, still recommend `infra` as the next workflow command.
+- **Bundles remain**: Note which bundle comes next in a future phase's `pipeline` run. Remaining bundles do not block the current `pipeline -> infra` handoff.
+- **Current run passes**: Recommend `infra` as the immediate next workflow command.
+- **All 5 bundles configured and passing**: Confirm `pipeline` is fully mature for the current project state, and still recommend `infra` as the immediate next workflow command.
+
+Be explicit in the user-facing report:
+- `pipeline -> infra` is the required Phase Transition handoff
+- `carryforward` comes only after `infra`
+- Returning to `plansession` does not happen until the next phase has been created via `phasebuild`
 
 ## Dry Run Output
 

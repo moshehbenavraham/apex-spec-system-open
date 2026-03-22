@@ -2,6 +2,8 @@
 
 Add and validate production infrastructure one bundle at a time.
 
+This is the third command in the Phase Transition stage. If `infra` finishes with unresolved validation failures, fix them and rerun `infra`. If the current `infra` run passes, recommend `carryforward` as the next workflow command. Do not jump directly from `infra` to `documents`, `phasebuild`, or `plansession` unless the user explicitly chooses to skip the optional `carryforward` step.
+
 ## Rules
 
 1. **One bundle per run** - add one, validate all
@@ -100,6 +102,8 @@ Compare Infrastructure table against 4-bundle master list:
 Build list of missing bundles in priority order.
 
 If all bundles configured: "All infrastructure configured. Jumping to Step 5 to Validate."
+
+Important: `infra` is one bundle per run. You do NOT need all 4 bundles configured before moving to `carryforward`. The gate for leaving `infra` is that the components handled in the current run are validated, while any remaining bundles are deferred to future phases.
 
 ### Step 3: SELECT
 
@@ -290,9 +294,15 @@ Required setup:
 
 ### Step 9: RECOMMEND
 
-- **Validation failures remain**: List required actions, prompt rerun of infra
-- **Bundles remain**: Note remaining bundles, recommend rerun of infra
-- **All 4 bundles configured and validated**: Recommend documents
+- **Validation failures remain**: List required actions and rerun `infra`. Do not recommend `carryforward` yet.
+- **Bundles remain**: Note which bundle comes next in a future phase's `infra` run. Remaining bundles do not block the current `infra -> carryforward` handoff.
+- **Current run passes**: Recommend `carryforward` as the immediate next workflow command. Note that it is optional but recommended; if the user explicitly skips it, proceed to `documents`.
+- **All 4 bundles configured and validated**: Confirm `infra` is fully mature for the current project state, and still recommend `carryforward` as the immediate next workflow command.
+
+Be explicit in the user-facing report:
+- `infra -> carryforward` is the recommended Phase Transition handoff
+- `documents` comes after `carryforward`, or directly after `infra` only if the user intentionally skips the optional `carryforward` step
+- Returning to `plansession` does not happen until the next phase has been created via `phasebuild`
 
 ## Dry Run Output
 

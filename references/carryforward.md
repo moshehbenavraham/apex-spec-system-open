@@ -6,7 +6,7 @@ Extract key insights from the just-completed phase and update two living documen
 
 Be ruthlessly selective: only the most impactful lessons deserve space.
 
-Run after completing a phase, before phasebuild. Optional but recommended for phases with significant discoveries, novel problems, or 4+ sessions.
+Run after completing a phase, after `infra`, and before `documents`. Optional but recommended for phases with significant discoveries, novel problems, or 4+ sessions. Do not jump directly to `plansession` from here: the next command is `documents`, then recommended manual testing and LLM audit, then `phasebuild`, and only then does the workflow return to `plansession` for the new phase.
 
 ## Rules
 
@@ -110,6 +110,15 @@ Read every `security-compliance.md` from the just-completed phase's sessions. Me
 ### 7. Report Summary
 
 Tell the user what was updated.
+
+### 8. Recommend the Exact Handoff
+
+In the completion message, state the post-carryforward sequence explicitly:
+- Next command: `documents`
+- After `documents`: perform manual testing and LLM audit (highly recommended)
+- Then run `phasebuild` to create the next phase structure
+- `plansession` resumes only after `phasebuild` has created the next phase
+- Do not recommend `plansession` directly from `carryforward`
 
 ## CONSIDERATIONS.md Format
 
@@ -368,10 +377,14 @@ Key additions:
 - [Lesson] Brief description
 - [Security] Brief description (if any new findings)
 
-Ready for the documents workflow step to maintain project documentation.
+Next Steps:
+1. Run documents to update project documentation
+2. Perform manual testing and LLM audit (highly recommended)
+3. Run phasebuild to create the next phase
+4. After phasebuild, return to plansession for the first session of the new phase
 ```
 
-**Monorepo** (add package breakdown after Key additions):
+**Monorepo** (add package breakdown after Key additions and keep the same Next Steps block):
 ```
 Package breakdown:
 - apps/web: N sessions, N concerns, N findings

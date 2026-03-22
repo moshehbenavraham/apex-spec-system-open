@@ -80,6 +80,9 @@ Ran repeatedly until all the sessions of the Phase are completed.
 plansession -> implement -> validate -> updateprd
 ```
 
+After a successful `plansession` run, `implement` is always the next workflow command.
+After a successful `updateprd` run, the workflow either returns to `plansession` for the next session in the current phase or exits the session loop and begins Phase Transition at `audit` if the phase is complete.
+
 **Artifacts created:**
 - spec.md (detailed specification)
 - tasks.md (12-25 task checklist)
@@ -93,8 +96,10 @@ plansession -> implement -> validate -> updateprd
 Ran once after all sessions of a Phase are completed, between each Phase.
 
 ```
-audit -> pipeline -> infra -> carryforward -> documents -> phasebuild
+audit -> pipeline -> infra -> carryforward -> documents -> manual testing -> phasebuild
 ```
+
+`carryforward` does not return directly to `plansession`. After `documents`, run `phasebuild` only if `PRD.md` still defines another unfinished phase. If `PRD.md` has no remaining phase, the workflow ends and the project is complete. If `phasebuild` does run, Stage 2 resumes with `plansession`.
 
 **Artifacts created:**
 - CONSIDERATIONS.md

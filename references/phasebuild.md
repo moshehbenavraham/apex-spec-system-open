@@ -2,6 +2,8 @@
 
 Create the directory structure, phase PRD, and session stubs for a new phase. Ensures alignment with completed work and lessons learned.
 
+Use this command only when there is clear evidence that another phase should be created. After a successful `phasebuild`, the next workflow command is always `plansession`.
+
 ## Rules
 
 1. **ASCII-only characters** and Unix LF line endings in all output
@@ -13,10 +15,29 @@ Create the directory structure, phase PRD, and session stubs for a new phase. En
 
 ### 1. Assess Current State
 
-Read `.spec_system/state.json` and `.spec_system/PRD/` to understand:
+Read `.spec_system/state.json` and `.spec_system/PRD/PRD.md` to understand:
 - What has been accomplished
 - Next sequential phase number
 - High-level objectives remaining
+
+Determine whether an upcoming phase is clearly indicated:
+
+- From `.spec_system/PRD/PRD.md`: Look for a phases table, roadmap, or other explicit phase definitions that show at least one unfinished phase beyond the current one
+- From `.spec_system/state.json`: Look for phase tracking that makes it clear another phase should exist next (for example, completed/current phases with remaining planned work or an incomplete phase sequence that `PRD.md` supports)
+
+Resolve the next phase from these two sources before creating any artifacts.
+
+**Fail early if both sources are unclear:**
+
+- If `.spec_system/PRD/PRD.md` does not clearly indicate any remaining upcoming phase
+- And `.spec_system/state.json` also does not clearly indicate any remaining upcoming phase
+- Then STOP immediately, create nothing, and report that the project is complete
+
+**Proceed if at least one source is clear:**
+
+- If `PRD.md` clearly defines the next phase, use it as the primary source of truth and reconcile `state.json` as needed
+- If `state.json` clearly indicates the next phase but `PRD.md` is vague or stale, update `PRD.md` during this run so both sources align with the phase being created
+- If the two sources conflict, reconcile the mismatch before creating phase artifacts. Do not create a phase from contradictory inputs.
 
 If `.spec_system/CONSIDERATIONS.md` exists, review it for:
 - **Active Concerns** that should influence session ordering or scope
@@ -269,5 +290,17 @@ Sessions Defined: N
 Next Steps:
 - Review session definitions
 - Adjust scope as needed
-- Run plansession to begin
+- Run plansession to begin the first session of this phase
 ```
+
+If Step 1 determined that neither `PRD.md` nor `state.json` clearly indicates another upcoming phase, report instead:
+
+```
+No upcoming phase found in PRD.md or state.json.
+
+Project status: complete
+
+phasebuild did not create any new artifacts.
+```
+
+Do not recommend `plansession` in that case, because there is no new phase to plan.

@@ -2,6 +2,10 @@
 
 After successful validation, mark the session complete, update all tracking documents, increment the project version, and commit to the repository.
 
+After a successful `updateprd` run, the next workflow command has exactly two paths:
+- If the current phase still has unfinished sessions, return to `plansession`
+- If the current phase is now fully complete, exit the session-processing loop and begin Phase Transition at `audit`
+
 ## Rules
 
 1. **Validation must have PASSED** - if `validation.md` shows FAIL, stop and instruct user to fix issues first
@@ -162,6 +166,11 @@ If this was the last session in the phase:
 - Update phase status to "complete" in state.json
 - Archive phase: move `.spec_system/PRD/phase_NN/` to `.spec_system/archive/phases/phase_NN/`
 - Update master `.spec_system/PRD/PRD.md`
+- Set the next workflow command to `audit`
+
+If sessions remain in the current phase:
+- Keep phase status as `in_progress`
+- Set the next workflow command to `plansession`
 
 ### 6. Increment Project Version
 
@@ -217,6 +226,10 @@ Tell the user:
 - Phase progress
 - Next recommended action
 
+Be explicit about the two possible outcomes:
+- If the phase still has unfinished sessions, recommend `plansession` next
+- If all sessions in the phase are now complete, recommend `audit` next because the workflow is leaving the session-processing loop and entering Phase Transition
+
 ## Output
 
-Report: session marked complete, updated files, version change, phase progress, and next action (plansession if phase continues, audit if phase complete).
+Report: session marked complete, updated files, version change, phase progress, and next action. If the phase continues, recommend `plansession`. If the phase is complete, recommend `audit` and state that the workflow is exiting the session-processing loop and beginning Phase Transition.

@@ -114,6 +114,8 @@ Claude analyzes project state, recommends the next session, creates the specific
 
 Creates the spec and tasks in the session directory:
 
+After this succeeds, the next workflow command is always `implement`.
+
 ```
 .spec_system/specs/phase09-session01-rutgers-modiv-analysis/
 |-- spec.md
@@ -266,6 +268,10 @@ Claude marks session complete and commits:
 - Clears `current_session`
 - Reports next steps
 
+After this succeeds, the workflow has two paths:
+- If the phase still has unfinished sessions, the next command is `plansession`
+- If the phase is now complete, the session loop ends and the next command is `audit`
+
 ```
 Session phase09-session01-rutgers-modiv-analysis marked COMPLETE.
 
@@ -389,7 +395,7 @@ Audits and updates documentation:
 User: phasebuild
 ```
 
-Creates structure for the next phase, then return to Stage 2.
+Only run this if `PRD.md` still outlines another unfinished phase. It creates structure for the next phase, then returns to Stage 2. If `PRD.md` has no remaining phase, the project is complete and `phasebuild` is not needed.
 
 ---
 

@@ -2,6 +2,8 @@
 
 Add and validate local dev tooling one bundle at a time.
 
+This is the first command in the Phase Transition stage. If `audit` finishes with unresolved issues, fix them and rerun `audit`. If `audit` passes, the next workflow command is `pipeline`. Do not jump directly from `audit` to `infra`, `documents`, `phasebuild`, or `plansession`.
+
 ## Rules
 
 1. **One bundle per run** - add one, validate all, fix all
@@ -91,11 +93,13 @@ Packages detected (monorepo: true):
 
 ### Step 2: COMPARE
 
-Compare Local Dev Tools table against 6-bundle master list:
+Compare Local Dev Tools table against the 7-bundle master list:
 - For each bundle, check if Tool column has a value or shows "not configured" / "-"
 - Build list of missing bundles in priority order
 
 If all bundles configured: "All recommended local dev tools configured. Jumping to Step 5."
+
+Important: `audit` is still one bundle per run. You do NOT need to configure all 7 bundles before moving to `pipeline`. The gate for leaving `audit` is that all currently configured tools pass validation in this run.
 
 ### Step 3: SELECT
 
@@ -290,9 +294,14 @@ REPORT
 
 ### Step 9: RECOMMEND
 
-- **If issues remain**: List required actions, prompt user to rerun audit after fixing
-- **If all configured tools pass**: Recommend pipeline as next step
-- **If all 6 bundles configured and passing**: Confirm completion, recommend pipeline
+- **If issues remain**: List required actions, prompt user to rerun `audit` after fixing. Do not recommend `pipeline` yet.
+- **If all configured tools pass**: Recommend `pipeline` as the immediate next workflow command.
+- **If all 7 bundles are configured and passing**: Confirm `audit` is fully complete for the current project state, and still recommend `pipeline` as the immediate next workflow command.
+
+Be explicit in the user-facing report:
+- `audit -> pipeline` is the required Phase Transition handoff
+- `infra` comes only after `pipeline`
+- Returning to `plansession` does not happen until the next phase has been created via `phasebuild`
 
 ## Dry Run Output
 

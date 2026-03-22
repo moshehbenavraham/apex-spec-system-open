@@ -2,6 +2,8 @@
 
 Audit, create, and update project documentation. Documentation is code - stale docs are worse than no docs.
 
+This is the final workflow command before deciding whether another phase should begin. After `documents`, manual testing and LLM audit remain highly recommended. Use `.spec_system/PRD/PRD.md` to decide whether `phasebuild` follows those checks: if `PRD.md` still outlines another unfinished phase, recommend `phasebuild`; if no remaining phase is outlined in `PRD.md`, report that the project is complete and do not recommend `phasebuild`.
+
 ## Rules
 
 1. **Never invent technical details** - only document what actually exists in the codebase
@@ -471,10 +473,22 @@ For all documentation files:
 
 Create `.spec_system/docs-audit.md` with: audit date, project name, audit mode, a summary table (root files, /docs/ files, ADRs, package READMEs -- each with required/found/status counts), sections for files created, files updated, files verified as current, and any remaining documentation gaps requiring human input.
 
-### 10. Report to User
+### 10. Determine Next Action from PRD.md
 
-Show files created/updated, documentation coverage, and gaps requiring human input.
+Use `.spec_system/PRD/PRD.md` as the source of truth for whether `phasebuild` is needed after `documents`:
+
+- If `PRD.md` still outlines another unfinished phase after the current one, recommend:
+  1. Manual testing and LLM audit (highly recommended)
+  2. `phasebuild` to create the next phase
+- If `PRD.md` does not outline any remaining unfinished phase, recommend manual testing and LLM audit as final verification, then report that the project is complete
+- Do not recommend `phasebuild` when there is no remaining phase defined in `PRD.md`
+
+### 11. Report to User
+
+Show files created/updated, documentation coverage, gaps requiring human input, and the next action:
+- `phasebuild` only when `PRD.md` still defines another unfinished phase
+- otherwise, state that the project is finished
 
 ## Output
 
-Report: audit mode used, files created/updated, documentation coverage, gaps requiring human input, and link to `.spec_system/docs-audit.md`. If all documents are satisfactory, recommend phasebuild for the next phase.
+Report: audit mode used, files created/updated, documentation coverage, gaps requiring human input, link to `.spec_system/docs-audit.md`, and next action. Manual testing and LLM audit remain highly recommended after `documents`. If `PRD.md` still outlines another unfinished phase, recommend `phasebuild` after those checks. If `PRD.md` has no remaining unfinished phase, report that the project is complete and do not recommend `phasebuild`.

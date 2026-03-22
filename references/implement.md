@@ -13,6 +13,7 @@ Execute each task in the session's task list, updating progress as you go.
 7. **Ensure logging and error handling** -- no silent failures.
 8. **Prefer cohesive, moderately sized modules** -- avoid multi-thousand-line god files; if a file grows beyond ~400-600 LOC or multiple responsibilities, schedule a refactor.
 9. **Behavioral correctness over speed** - Code must handle edge cases, cleanup, and failure paths before a task is marked done. A checked task with a behavioral bug costs 10x more to find in a later audit.
+10. **No schema drift on database work** -- If a task changes persisted data shape or database behavior, implement the matching schema artifact in the same session (migration, schema file, SQL patch, DDL, seed update, etc.) and verify it locally before marking the task complete.
 
 ### No Deferral Policy
 
@@ -103,6 +104,7 @@ This catches missing tools BEFORE implementation starts, preventing mid-session 
 **Optional - Database Prerequisites**: If `.spec_system/CONVENTIONS.md` has a "Database Layer" section, verify:
 1. Database service is running (`docker compose ps` or connection test)
 2. Migrations are current (no pending migrations)
+3. If the session includes DB-layer changes, identify the required schema artifact up front (migration, schema file, SQL patch, seed update, etc.) so it is part of implementation scope, not deferred follow-up work
 If checks fail, resolve them (start services, run migrations) before proceeding.
 
 ### 3. Read Session Context
@@ -194,6 +196,7 @@ Find the first unchecked `- [ ]` task in tasks.md
 - Follow the spec's technical approach and CONVENTIONS.md standards
 - If `docs/adr/` exists, review relevant Architecture Decision Records and follow their decisions
 - Implement the required changes
+- **Database completion rule**: If this task changes persisted data shape, constraints, indexes, queries that depend on schema, or other DB-layer behavior, add the matching schema artifact now (migration, patch, schema definition, ORM metadata, seed/test updates, etc.), apply or verify it locally, and do not mark the task complete until code and schema are aligned
 - **Monorepo path validation**: If a package was resolved in Step 1a, verify that files being created or modified fall within the declared package directory (e.g., `apps/web/...`). Warn if a task references files outside the package scope -- this may indicate scope creep. Exception: cross-cutting sessions (package: null) may touch any file.
 - **Behavioral quality verification** (if BQC loaded in Step 3a): Before marking this task complete, scan your code against the applicable checklist items. Fix violations now -- do not defer. Note any BQC fixes in the task log entry (Step 5D).
 
@@ -242,6 +245,7 @@ If you encounter an obstacle, RESOLVE IT YOURSELF before documenting:
 - **Config file missing?** Generate it from the spec
 - **Database not running?** Start it (`docker compose up -d [service]`)
 - **Migrations pending?** Run migration tool to apply them
+- **Schema artifact missing?** Generate or update the required migration, schema file, or SQL patch yourself, then apply or validate it locally
 - **Connection refused?** Check `DATABASE_URL` in `.env`, verify port
 - **"The environment isn't set up"** is NOT a blocker -- setting it up IS the task
 
