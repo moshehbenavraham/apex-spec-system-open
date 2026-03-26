@@ -10,7 +10,15 @@ an Agent Skill following the [Agent Skills standard](https://agentskills.io).
 Break large projects into manageable, well-scoped implementation sessions that
 fit within AI context windows and human attention spans.
 
-**Philosophy**: `1 session = 1 spec = 2-4 hours (12-25 tasks)`
+**Philosophy**:
+
+Apex Spec System is built on a simple constraint: the best unit of AI-assisted delivery is a bounded session. Each session should map to one spec, one clear objective, roughly 12-25 concrete tasks, and about 2-4 hours of focused work. That scope is deliberate: it is large enough to ship meaningful progress, but small enough to stay coherent inside an AI context window and reviewable by a human without drift.
+
+- 1 session = 1 spec = 1 clear objective = ~2-4 hours = ~12-25 tasks
+- 1 phase = a meaningful collection of sessions, typically 3-8
+- 1 project = one or more phases, usually enough to reach an MVP first, then iterate beyond it
+
+This structure turns large projects into a sequence of manageable wins. It keeps planning grounded, implementation focused, validation realistic, and architecture coherent from one session to the next.
 
 ## Requirements
 
