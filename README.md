@@ -1,6 +1,6 @@
 # Apex Spec System
 
-# A Claude Code Plugin Version Available Here: https://github.com/moshehbenavraham/apex-spec-system
+## A Claude Code Plugin Version Available Here: https://github.com/moshehbenavraham/apex-spec-system
 
 **Version: 2.0.16-codex**
 
