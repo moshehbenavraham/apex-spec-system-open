@@ -14,7 +14,7 @@ fit within AI context windows and human attention spans.
 
 Apex Spec System is built on a simple constraint: the best unit of AI-assisted delivery is a bounded session. Each session should map to one spec, one clear objective, roughly 12-25 concrete tasks, and about 2-4 hours of focused work. That scope is deliberate: it is large enough to ship meaningful progress, but small enough to stay coherent inside an AI context window and reviewable by a human without drift.
 
-- 1 session = 1 spec = 1 clear objective = ~2-4 hours = ~12-25 tasks
+- 1 session = 1 spec = 1 clear objective = ~2–4 hours = ~12–25 tasks = one right-sized unit of coding work that top agents like Codex, Claude Code, and Gemini CLI can complete comfortably within a single context window
 - 1 phase = a meaningful collection of sessions, typically 3-8
 - 1 project = one or more phases, usually enough to reach an MVP first, then iterate beyond it
 
