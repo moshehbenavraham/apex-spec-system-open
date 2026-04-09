@@ -9,6 +9,7 @@
 /archive/
 /test_data/
 /EXAMPLE/
+/agent-skills/
 
 # Python
 __pycache__/
