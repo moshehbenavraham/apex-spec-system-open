@@ -2,7 +2,11 @@
 
 Execute each task in the session's task list, updating progress as you go.
 
-## RULES
+This is the second command in the Session Workflow stage. Run it after
+`plansession` has created `spec.md` and `tasks.md`. When `implement` finishes,
+the next workflow command is `validate`.
+
+## Rules
 
 1. **Make NO assumptions.** Before editing, read the relevant code and comments; pattern-match precisely, validate systematically.
 2. **Follow `CONVENTIONS.md`.** All code must follow project-specific coding standards.
@@ -122,24 +126,14 @@ Using the `current_session` value from the script output, read:
 
 BQC applies when the session produces application code (not pure configuration, documentation, or infrastructure-as-code). If the session is entirely non-code work, skip to Step 4.
 
----
+Read `references/behavioral-quality-checklist.md` and apply the relevant items
+before marking each task complete.
 
-#### Behavioral Quality Checklist
+How to apply:
 
-**Mandatory edge-case checklist** -- verify applicable items before marking EACH task complete:
-
-- [ ] **Resource cleanup**: Every resource acquired in a scoped lifecycle is released when that scope ends. No leaked timers, dangling subscriptions, unclosed connections, or orphaned async tasks.
-- [ ] **Duplicate action prevention**: Every state-mutating operation is protected against duplicate triggers while in-flight. No double-submits, no unguarded retries, no concurrent write races.
-- [ ] **State freshness on re-entry**: When a context is re-entered (reopened, revisited, reconnected, retried), state is explicitly reset or revalidated. No stale data from a prior lifecycle.
-- [ ] **Trust boundary enforcement**: All inputs crossing a trust boundary are validated with explicit schema or type checks, and all access is authorized at the enforcement point closest to the protected resource. Never trust upstream callers.
-- [ ] **Failure path completeness**: Every operation that can fail has an explicit, caller-visible failure path. No silent swallows, no blank screens, no infinite spinners, no generic 500s.
-- [ ] **Concurrency safety**: Shared mutable state accessed from multiple execution contexts is protected against races. No unguarded read-modify-write sequences.
-- [ ] **External dependency resilience**: Every call to an external system has a timeout, a retry/backoff strategy, and a defined failure path. No unbounded waits.
-- [ ] **Contract alignment**: Interfaces between components match their declared contracts. Response shapes match client types. Event payloads match schemas. Enum handling is exhaustive.
-- [ ] **Error information boundaries**: Errors exposed to external callers reveal only stable, intentional information. No stack traces, internal paths, or secrets in responses or logs.
-- [ ] **Accessibility and platform compliance**: Interactive elements participate in the platform's accessibility model with appropriate labels, focus management, and input method support.
-
-**How to apply**: After each task, check ONLY the items relevant to the code you touched. A task adding a timed background operation must satisfy resource cleanup + failure path. A task adding a write endpoint must satisfy duplicate prevention + trust boundaries + error information boundaries. A task adding an interactive dialog must satisfy state freshness + accessibility. Not every item applies to every task -- but every item applies somewhere.
+- After each task, check only the items relevant to the code you touched
+- Fix violations now rather than logging them for later cleanup
+- Record any meaningful BQC-driven fixes in `implementation-notes.md`
 
 ### 4. Initialize Implementation Notes
 
@@ -300,3 +294,8 @@ BQC: [X] fixes applied across [Y] tasks [or "N/A - no application code in sessio
 
 Run the validate workflow step to verify session completeness.
 ```
+
+## Next Action
+
+After `implement` completes, run `validate`. Do not jump directly from
+`implement` to `updateprd`.

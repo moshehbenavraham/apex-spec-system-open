@@ -10,7 +10,7 @@ description: >
   "quick frontend", "quick backend", "pull upstream",
   or when working in a project containing a .spec_system/ directory.
   Philosophy: 1 session = 1 spec = 2-4 hours (12-25 tasks).
-version: 2.0.17-codex
+version: 2.0.18-codex
 ---
 
 # Apex Spec Workflow

@@ -27,6 +27,26 @@ Reject or defer a candidate if it is primarily stylistic, depends on
 Claude-only wiring, increases context cost without clear benefit, or introduces
 operational complexity that this repo does not currently need.
 
+## Implementation Status
+
+As of 2026-04-09, the three adopt-now recommendations in this document have
+been implemented in the repo. Backlog and reject decisions remain unchanged.
+
+Implemented changes:
+
+- Routing fallback guidance added to `README.md` and `AGENTS.md`
+- Explicit `Reference Anatomy` contract added to `docs/CONVENTIONS.md`
+- Core workflow references normalized around that contract in
+  `references/implement.md`, `references/validate.md`, `references/audit.md`,
+  and `references/documents.md`
+- Reusable checklist layer added under `references/`:
+  `behavioral-quality-checklist.md`,
+  `security-compliance-checklist.md`, and
+  `documentation-readiness-checklist.md`
+- Supporting repo docs updated to remove stale hard-coded `references/` file
+  counts in `README.md`, `AGENTS.md`, `docs/ARCHITECTURE.md`,
+  `docs/development.md`, and `docs/onboarding.md`
+
 ## Candidate Decision Matrix
 
 | Candidate | Decision | Impact | Effort | Risk | Rationale |
@@ -109,6 +129,16 @@ maintainer reads.
 - Keep it documentation-only. Do not mix this recommendation with deeper
   workflow refactors.
 
+**Implementation status**
+
+- Implemented on 2026-04-09
+- Landed in `README.md` as `Choosing a Starting Command`
+- Landed in `AGENTS.md` as `Routing Fallback`
+- Kept platform-neutral and documentation-only, with no new routing threshold
+  rule added
+- `agents/openai.yaml` intentionally left unchanged, matching the original
+  recommendation boundary
+
 ### 2. Explicit reference anatomy contract
 
 **Problem**
@@ -167,6 +197,17 @@ what belongs in each file and where recurring instruction types should live.
 - Limit the first pass to the most central workflow files. Apply the contract
   to the rest of `references/` incrementally rather than creating a large
   normalization-only sweep.
+
+**Implementation status**
+
+- Implemented on 2026-04-09
+- `docs/CONVENTIONS.md` now defines a `Reference Anatomy` contract covering
+  opening summary, workflow position, `Rules`, no-deferral placement, `Steps`,
+  `Output`, and `Next Action`
+- First-pass normalization landed in `references/implement.md`,
+  `references/validate.md`, `references/audit.md`, and `references/documents.md`
+- The change preserved the orchestrator-plus-reference architecture and did not
+  expand `SKILL.md`
 
 ### 3. Reusable quality checklist layer
 
@@ -233,14 +274,31 @@ keeping command-specific pass or fail criteria inside the command references.
 - Keep the first extraction intentionally small. If a quality domain appears in
   only one place, leave it inline.
 
+**Implementation status**
+
+- Implemented on 2026-04-09
+- Added `references/behavioral-quality-checklist.md`
+- Added `references/security-compliance-checklist.md`
+- Added `references/documentation-readiness-checklist.md`
+- Updated `references/implement.md` and `references/validate.md` to share the
+  behavioral-quality guidance
+- Updated `references/validate.md` and `references/documents.md` to share the
+  security and compliance guidance where applicable
+- Updated `references/audit.md` and `references/documents.md` to share the
+  documentation-readiness guidance
+- Command-local gates, handoffs, and pass/fail thresholds remained in the
+  command references rather than moving into the shared checklist files
+
 ## Recommended Implementation Order
 
-1. Add stronger fallback routing and discovery guidance in `AGENTS.md` and
+Completed in this order:
+
+1. Added stronger fallback routing and discovery guidance in `AGENTS.md` and
    `README.md`.
-2. Define the reference anatomy contract in `docs/CONVENTIONS.md` and align the
-   core workflow references.
-3. Extract the smallest useful shared checklist layer under `references/` and
-   update the affected workflow files to point to it.
+2. Defined the reference anatomy contract in `docs/CONVENTIONS.md` and aligned
+   the core workflow references.
+3. Extracted the smallest useful shared checklist layer under `references/` and
+   updated the affected workflow files to point to it.
 
 This order keeps the lowest-risk documentation fix first, establishes the
 structure contract before reuse extraction, and avoids mixing architectural
@@ -461,6 +519,7 @@ Final consistency result:
 Recommended maintainer handoff:
 
 - Treat this file as the decision source of truth
-- Use the implementation order already defined in this document
+- Treat the three adopt-now items as completed unless later repo changes
+  materially undo them
 - Treat backlog and reject sections as durable boundaries unless new evidence
   materially changes the portability, maintenance, or workflow tradeoff

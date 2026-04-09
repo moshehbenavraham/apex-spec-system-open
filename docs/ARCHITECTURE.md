@@ -18,7 +18,7 @@ apex-spec-system-open/
 |-- CHANGELOG.md              # Version history
 |-- agents/
 |   \-- openai.yaml           # Codex CLI UI metadata
-|-- references/               # Command reference files (26 total)
+|-- references/               # Command and supporting reference files
 |   |-- initspec.md           # Initialize spec system
 |   |-- createprd.md          # Generate PRD
 |   |-- plansession.md        # Plan session

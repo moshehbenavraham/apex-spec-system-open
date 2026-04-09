@@ -274,6 +274,10 @@ Update the Local Dev Tools table:
 
 If the Workspace Structure table does not yet have tool columns, add them. If the table already exists (from initspec or createprd), extend it with the new columns rather than replacing it.
 
+When documenting newly added tooling, apply
+`references/documentation-readiness-checklist.md` so commands, file paths,
+config names, and setup notes stay accurate.
+
 ### Step 8: REPORT
 
 **For monorepos**, show per-package:
@@ -302,6 +306,17 @@ Be explicit in the user-facing report:
 - `audit -> pipeline` is the required Phase Transition handoff
 - `infra` comes only after `pipeline`
 - Returning to `plansession` does not happen until the next phase has been created via `phasebuild`
+
+## Output
+
+Report the selected bundle, configuration files created or updated, fixes
+applied, remaining issues, known ignored issues, and whether the command is
+ready to hand off to `pipeline`.
+
+## Next Action
+
+- If configured tools still fail: fix the issues and rerun `audit`
+- If configured tools pass: continue to `pipeline`
 
 ## Dry Run Output
 

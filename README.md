@@ -2,7 +2,7 @@
 
 ## A Claude Code Plugin Version Available Here: https://github.com/moshehbenavraham/apex-spec-system
 
-**Version: 2.0.17-codex**
+**Version: 2.0.18-codex**
 
 A specification-driven workflow system for AI-assisted development, packaged as
 an Agent Skill following the [Agent Skills standard](https://agentskills.io).
@@ -14,7 +14,7 @@ fit within AI context windows and human attention spans.
 
 Apex Spec System is built on a simple constraint: the best unit of AI-assisted delivery is a bounded session. Each session should map to one spec, one clear objective, roughly 12-25 concrete tasks, and about 2-4 hours of focused work. That scope is deliberate: it is large enough to ship meaningful progress, but small enough to stay coherent inside an AI context window and reviewable by a human without drift.
 
-- 1 session = 1 spec = 1 clear objective = ~2–4 hours = ~12–25 tasks = one right-sized unit of coding work that top agents like Codex, Claude Code, and Gemini CLI can complete comfortably within a single context window
+- 1 session = 1 spec = 1 clear objective = ~2-4 hours = ~12-25 tasks = one right-sized unit of coding work that top agents like Codex, Claude Code, and Gemini CLI can complete comfortably within a single context window
 - 1 phase = a meaningful collection of sessions, typically 3-8
 - 1 project = one or more phases, usually enough to reach an MVP first, then iterate beyond it
 
@@ -52,6 +52,27 @@ $apex-spec updateprd
 
 The skill also activates implicitly when working in a project with a
 `.spec_system/` directory.
+
+## Choosing a Starting Command
+
+If you are not starting from `SKILL.md`, use this quick routing fallback:
+
+- No `.spec_system/` yet: start with `initspec`
+- Initialized project, but no PRD yet: use `createprd` and optionally `createuxprd`
+- PRD is ready and you need the next right-sized unit of work: use `phasebuild`
+- `.spec_system/` exists and you need the next scoped session: use `plansession`
+- A session already has `spec.md` and `tasks.md`: use `implement`
+- Implementation is finished and needs verification: use `validate`
+- Validation passed and the session should be marked complete: use `updateprd`
+- All sessions in the current phase are complete: start Phase Transition at `audit`
+- You want an autonomous implementation burst against an existing current
+  session: use `qimpl`
+- You only need an out-of-band utility action such as push, Docker work, or
+  upstream sync: use the utility commands
+
+For the full staged workflow and handoff rules, see
+[references/workflow-overview.md](references/workflow-overview.md) and
+`SKILL.md`.
 
 ## Installation
 
@@ -162,7 +183,7 @@ apex-spec-system-open/
 |-- CLAUDE.md             # Claude Code custom instructions
 |-- agents/
 |   \-- openai.yaml       # Codex CLI UI metadata
-|-- references/           # Command reference files (26 total)
+|-- references/           # Command and supporting reference files
 |-- scripts/              # Bash utilities for project analysis
 |-- apex-infinite-cli/    # Autonomous session manager (Python CLI)
 \-- docs/                 # Development documentation

@@ -26,7 +26,7 @@ No build step -- the skill is plain files.
 | Directory | Contents |
 |-----------|----------|
 | `SKILL.md` | Root orchestrator (dispatch table, workflow overview) |
-| `references/` | Platform-neutral reference files (26 total: 22 commands + 4 docs) |
+| `references/` | Platform-neutral command and supporting reference files |
 | `scripts/` | Bash utilities for project analysis |
 | `agents/` | Codex CLI metadata (openai.yaml) |
 | `apex-infinite-cli/` | Autonomous session manager (Python CLI) |

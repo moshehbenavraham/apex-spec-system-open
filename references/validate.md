@@ -2,6 +2,10 @@
 
 Verify that all session requirements are met before marking the session complete.
 
+This is the third command in the Session Workflow stage. Run it after
+`implement`. If `validate` passes, the next workflow command is `updateprd`. If
+it fails, fix the issues and rerun `validate`.
+
 ## Rules
 
 1. **PASS requires ALL of**: 100% tasks complete, all deliverables exist, all files ASCII-encoded with LF endings, all tests passing, all success criteria met, database/schema alignment verified when the session touches the DB layer, no security or GDPR violations, no critical behavioral quality violations (when BQC applies)
@@ -137,30 +141,19 @@ Note: This is a spot-check, not exhaustive. Flag obvious violations only.
 
 #### H. Security & GDPR Compliance
 
+Use `references/security-compliance-checklist.md` as the reusable checklist for
+this section.
+
 Review **only files created or modified in this session** (use deliverables from spec.md and git diff against the pre-session commit). Skip files not touched by this session.
 
-**Security (OWASP Top 10 spot-check):**
-- **Injection**: SQL, command, LDAP injection vectors -- unsanitized user input in queries or shell calls
-- **Broken Auth**: Hardcoded credentials, API keys, tokens, or secrets in source code
-- **Sensitive Data Exposure**: Unencrypted PII in logs, error messages, or responses; secrets in plaintext config
-- **Insecure Dependencies**: Known-vulnerable packages added in this session (`npm audit`, `pip audit`, `cargo audit` as applicable)
-- **Misconfiguration**: Debug modes enabled, overly permissive CORS, missing security headers
-- **Database Security** (if Database Layer conventions exist): Hardcoded connection strings (must use env vars), raw SQL with string concatenation (must use parameterized queries), missing down/rollback migrations, unencrypted sensitive columns (passwords, tokens, PII), unlimited connection pools, shared credentials between test and production
+Apply the checklist's:
 
-**GDPR Compliance:**
-- **Data Collection**: Any new collection of personal data (names, emails, IPs, device IDs) must have a documented purpose and legal basis
-- **Consent**: If collecting user data, verify consent mechanism exists before data is stored
-- **Data Minimization**: Only the minimum necessary personal data is collected -- flag any over-collection
-- **Right to Erasure**: If storing personal data, verify a deletion path exists or is documented as a future requirement
-- **Data Logging**: Personal data must not appear in application logs -- check log statements for PII leakage
-- **Third-Party Sharing**: If sending data to external services, verify the transfer is documented
+- Security spot-check categories
+- GDPR review categories
+- Scope rules and automatic FAIL conditions
 
-**Scope rules:**
-- This is a targeted review of session deliverables, not a full codebase audit
-- Flag **clear violations** only -- do not speculate about edge cases
-- If the session added no user-facing data handling, mark GDPR as N/A with a brief justification
-- Hardcoded secrets and injection vulnerabilities are always FAIL regardless of scope
-- **Monorepo**: Scope the review to files within the declared package boundary (from Step 1a). Cross-cutting sessions review all modified files.
+This remains a targeted review of session deliverables, not a full codebase
+audit.
 
 #### I. Behavioral Quality Spot-Check
 
@@ -168,15 +161,11 @@ Determine whether a BQC applies: does this session produce application code?
 
 **If no application code**: Mark as N/A and skip to Step 4.
 
-**If application code**: Select up to 5 deliverable files most likely to contain behavioral issues (files with side effects, mutations, external calls, user interaction, or data fetching). Spot-check against these priorities:
-
-| Priority | What to check | FAIL if... |
-|----------|---------------|------------|
-| 1 | Trust boundary enforcement | External input processed without validation, or access granted without authorization check |
-| 2 | Resource cleanup | Scoped lifecycle acquires resources (timers, subscriptions, connections) without releasing on exit |
-| 3 | Mutation safety | State-mutating actions triggerable multiple times while in-flight, or write path lacks idempotency protection |
-| 4 | Failure path completeness | Operation can fail but has no explicit error/failure handling visible to caller |
-| 5 | Contract alignment | Interface between components has shape mismatch, missing enum case, or schema drift |
+**If application code**: Read
+`references/behavioral-quality-checklist.md`, then select up to 5 deliverable
+files most likely to contain behavioral issues (files with side effects,
+mutations, external calls, user interaction, or data fetching). Use the shared
+priority spot-check categories from that checklist.
 
 **Scoring**:
 - 0 violations: PASS
@@ -523,3 +512,8 @@ Update `.spec_system/state.json` based on validation result:
 ## Output
 
 Report PASS/FAIL with a summary of each check, including database/schema alignment when relevant. If PASS, prompt updateprd. If FAIL, list issues with suggested fixes and prompt re-run of validate.
+
+## Next Action
+
+- If PASS: run `updateprd`
+- If FAIL: fix the issues and run `validate` again

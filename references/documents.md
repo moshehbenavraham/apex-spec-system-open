@@ -13,6 +13,17 @@ This is the final workflow command before deciding whether another phase should 
 5. **README naming** - only root gets `README.md`; subdirectories use `README_<dirname>.md`
 6. **One command runs everything** - document it prominently in root README
 
+### No Deferral Policy
+
+- If required documentation is missing and you can create it from verified code
+  and project state, CREATE IT
+- If instructions are stale and you can confirm the correct replacement from the
+  codebase or spec-system artifacts, UPDATE THEM
+- If links, commands, or paths are broken and you can verify the correct values,
+  FIX THEM
+- The only valid reason to stop is when accurate documentation would require
+  human-only decisions that cannot be inferred from the code or project state
+
 ## Steps
 
 ### 1. Get Project State (REQUIRED FIRST STEP)
@@ -463,11 +474,16 @@ When in Phase-Focused Mode, use implementation-notes.md files as the primary sou
 
 ### 8. Quality Checks
 
-For all documentation files:
+Apply `references/documentation-readiness-checklist.md` to all documentation
+files. Keep command-specific requirements here:
 
-- **Accuracy**: All commands work, all paths exist, all links valid, version numbers current
-- **Conciseness**: No redundant sections, no verbose explanations where a command suffices
-- **Completeness**: All required files present, all sections filled in (no TODO placeholders left)
+- Root README must still document the one-command quickstart prominently
+- Package README coverage must match the package list from state.json in
+  monorepos
+- README and ARCHITECTURE must reflect implemented state, not planned future
+  work
+- When docs cover secrets, environment variables, deployment, or personal-data
+  handling, also apply `references/security-compliance-checklist.md`
 
 ### 9. Generate Documentation Report
 
@@ -492,3 +508,10 @@ Show files created/updated, documentation coverage, gaps requiring human input, 
 ## Output
 
 Report: audit mode used, files created/updated, documentation coverage, gaps requiring human input, link to `.spec_system/docs-audit.md`, and next action. Manual testing and LLM audit remain highly recommended after `documents`. If `PRD.md` still outlines another unfinished phase, recommend `phasebuild` after those checks. If `PRD.md` has no remaining unfinished phase, report that the project is complete and do not recommend `phasebuild`.
+
+## Next Action
+
+- If `PRD.md` still defines another unfinished phase: recommend manual testing,
+  LLM audit, then `phasebuild`
+- If no remaining phase is defined: recommend manual testing and LLM audit, then
+  report project completion

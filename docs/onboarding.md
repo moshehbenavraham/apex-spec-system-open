@@ -61,7 +61,7 @@ shellcheck scripts/*.sh
 | Directory | Purpose |
 |-----------|---------|
 | SKILL.md | Root orchestrator (entry point) |
-| references/ | 26 command reference files |
+| references/ | Command and supporting reference files |
 | scripts/ | Bash utilities |
 | apex-infinite-cli/ | Autonomous session manager (Python CLI) |
 | docs/ | Development documentation |

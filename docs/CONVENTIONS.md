@@ -40,6 +40,35 @@
 - Keep reference files under 500 lines
 - Use fenced code blocks with language tags for all code examples
 
+## Reference Anatomy
+
+Command reference files should follow a predictable internal shape so a reader
+can find rules, first steps, quality gates, and handoffs without re-learning
+each document.
+
+- Title first: `# command-name`
+- Opening summary next: 1-3 sentences stating what the command does
+- Workflow position next when relevant: if the command belongs to a staged
+  workflow, state what should have happened before it and what usually follows
+- Use `## Rules` for durable command rules; do not use alternate capitalization
+  such as `## RULES`
+- Use `### No Deferral Policy` directly under `## Rules` when the command is
+  expected to resolve its own blockers
+- Use `## Steps` for the execution flow
+- If the command depends on project state, scripts, or current-session facts,
+  make the first operational step explicit and mark it `REQUIRED FIRST STEP`
+- Put the local-first script resolution pattern inside the first step that needs
+  scripts, not in scattered reminders throughout the file
+- Keep command-local pass or fail thresholds, bundle ordering, state mutation
+  rules, and workflow handoff logic in the command reference itself
+- Move reusable cross-cutting guidance into supporting checklist references
+  under `references/` when the same guidance appears in multiple workflow docs
+- End with `## Output`, and add `## Next Action` when the command has a normal
+  handoff to another workflow step or a user decision
+
+For the highest-leverage workflow references, normalize section names and order
+before adding more prose. The goal is predictability, not longer files.
+
 ## Bash Scripts
 
 - Start every script with `#!/usr/bin/env bash`
