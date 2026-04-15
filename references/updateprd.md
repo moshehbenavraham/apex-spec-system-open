@@ -195,9 +195,11 @@ Increment the project's patch version in standard version files. Check for these
 - `README.md` - if it contains a version badge or version line
 - Any other files that reference the project version
 
-### 7. Commit and Push to Repo
+### 7. Commit and Push to Repo **CRITICAL**
 
-Commit and push ALL non-gitignored repo changes.  DO NOT add ANY attributions or co-authors!
+**CRITICAL**:  Regardless of repo state, you MUST commit and push ALL non-gitignored repo changes.  This is system critical.
+
+DO NOT add ANY attributions or co-authors!
 
 Commit message format:
 ```
