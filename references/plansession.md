@@ -1,36 +1,60 @@
 # plansession
 
-Analyze project state, recommend the next session, create its specification, and generate the task checklist -- all in one step.
+Analyze current project state, choose the next executable session, create its specification, and generate the task checklist in one run.
 
-When `plansession` succeeds and creates `spec.md` plus `tasks.md`, the next workflow command is always `implement`. Do not jump directly from a successful `plansession` run to `validate`, `updateprd`, `audit`, `pipeline`, `infra`, `documents`, `phasebuild`, or another `plansession`.
+This is the first command in the Session Workflow stage. Run it after `phasebuild`, or after a successful `updateprd` when the current phase still has unfinished sessions. If `plansession` succeeds and creates `spec.md` plus `tasks.md`, the next workflow command is always `implement`. If the current phase is already complete, do not create a new session plan; hand off to `audit`.
 
 ## Rules
 
-1. **Script first** - Always run `analyze-project.sh --json` before any analysis
+1. **Script first** - Always run `analyze-project.sh --json` before analysis
 2. **Trust the script** - Use JSON output as authoritative state; do not parse `state.json` directly
 3. **One session at a time** - Only recommend one session
-4. **Respect dependencies** - Don't skip prerequisites
-5. **MVP focus** - Recommend core features before polish
-6. **Scope discipline** - Sessions must be 12-25 tasks, 2-4 hours
-7. **Hard limits**: max 25 tasks, max 4 hours, single clear objective
-8. **Do not invent scope** - derive everything from PRD and session stub
-9. **Incorporate CONVENTIONS.md** - naming, file structure, and testing philosophy must be reflected in the spec
-10. **Incorporate CONSIDERATIONS.md** - address relevant active concerns and lessons learned
+4. **Respect dependencies** - Do not skip prerequisites
+5. **MVP focus** - Recommend core product progress before polish
+6. **Scope discipline** - Sessions must be 12-25 tasks and 2-4 hours
+7. **Hard limits** - Max 25 tasks, max 4 hours, single clear objective
+8. **Do not invent scope** - Derive objectives, deliverables, paths, and tests from PRD, stubs, codebase, and state facts
+9. **Incorporate `CONVENTIONS.md`** - Naming, file structure, and testing philosophy must shape the plan
+10. **Incorporate `CONSIDERATIONS.md`** - Address active concerns and lessons learned when relevant
 11. **ASCII-only characters** and Unix LF line endings in all output
-12. **Task sizing**: ~20-25 minutes each, single file focus when possible, clear atomic action
-13. **Every task must have**: task ID (`TNNN`), session ref (`[SPPSS]`), action verb, target file path
-14. **Mark `[P]`** when tasks create independent files with no interdependency
-15. **Sequence by**: dependencies first, then setup -> foundation -> implementation -> testing
-16. **Behavioral quality by design** - When a Behavioral Quality Checklist (BQC) applies (session produces application code), embed edge-case handling into task descriptions. "Create delete dialog" becomes "Create delete dialog (with typed confirmation, disable-while-pending, state reset on close)". Explicit requirements get implemented; implicit ones get skipped.
+12. **Task sizing** - Aim for about 20-25 minutes per task, with one clear atomic action
+13. **Every task must have** - Task ID (`TNNN`), session ref (`[SPPSS]`), action verb, and target file path
+14. **Mark `[P]`** only when tasks are truly independent
+15. **Sequence by reality** - Dependencies first, then setup, foundation, implementation, and testing
+16. **Behavioral quality by design** - When a Behavioral Quality Checklist applies, embed edge-case handling into task descriptions instead of leaving it for `implement` or `validate`
+17. **Resolve ambiguity with evidence-backed working assumptions** - Normal ambiguity is not a reason to ask the user
+18. **Surface and resolve conflicts** - When inputs disagree, choose the best-supported interpretation and record it when it materially shapes the plan
+
+### No Deferral Policy
+
+- Resolve ambiguity from repo evidence, prior artifacts, and script output before considering user escalation
+- Use evidence-backed working assumptions for incomplete but non-blocking inputs
+- Distinguish assumptions from true hard blockers; successful artifacts must not contain hard-blocker placeholders
+- Stop only when required planning inputs cannot be read or when required plan artifacts cannot be updated because the repo is not yet at the `plansession` stage
+- If `.spec_system/`, the active PRD, or the current phase stubs are missing, route to the earlier workflow step instead of inventing plan content
+- If the current phase is complete, stop planning and hand off to `audit` instead of creating a new session spec
+
+### Rationalizations To Reject
+
+- "The stub is vague, so a thin placeholder session is fine" -> No. Convert vague intent into concrete repo-derived deliverables or choose a different ready session
+- "This session is a little big, but implement can sort it out" -> No. Right-size it now to the 12-25 task contract
+- "Package scope is unclear, so I should ask the user before planning" -> No. Resolve it from repo evidence or proceed with a recorded working assumption
+- "The dependency is probably satisfied even if not proven" -> No. Missing prerequisite evidence means the prerequisite is not met
+
+### Red Flags
+
+- Multiple objectives or more than 25 tasks in a supposed single session
+- Tasks without repo-derived file paths or tasks that are still generic placeholders
+- Phase-complete state incorrectly handing off to `phasebuild` instead of `audit`
+- Successful artifacts that still contain `TBD`, `ask user`, `blocked`, or equivalent unresolved placeholders
 
 ## Steps
 
 ### 1. Get Deterministic Project State (REQUIRED FIRST STEP)
 
-Run the analysis script to get reliable state facts. Local scripts (`.spec_system/scripts/`) take precedence over plugin scripts if they exist:
+Run the analysis script to get reliable state facts. Local scripts (`.spec_system/scripts/`) take precedence over bundled scripts if they exist:
 
 ```bash
-# Check for local scripts first, fall back to skill directory
 if [ -d ".spec_system/scripts" ]; then
   bash .spec_system/scripts/analyze-project.sh --json
 else
@@ -40,81 +64,105 @@ fi
 
 This returns structured JSON with:
 - `current_phase` - Current phase number
-- `current_session` - Active session (or null)
-- `completed_sessions` - List of completed session IDs
-- `candidate_sessions` - Sessions in current phase with completion status; each candidate includes a `package` field (parsed from stub `Package:` annotation, or null)
+- `current_session` - Active session or `null`
+- `current_session_dir_exists` - Whether the active session directory already exists
+- `current_session_files` - Existing markdown files in the active session directory
+- `completed_sessions` - Completed session IDs
+- `candidate_sessions` - Current-phase session stubs and status; each candidate includes a `package` field parsed from the stub or `null`
 - `phases` - All phases with status and session counts
-- `monorepo` - true/false/null from state.json
-- `packages` - Array of registered packages (empty if not monorepo)
-- `active_package` - Resolved package context from `--package` flag or CWD (null if not applicable)
-- `monorepo_detection` - Auto-detection result when monorepo is null (null otherwise)
+- `monorepo` - `true`, `false`, or `null`
+- `packages` - Registered package objects with `name`, `path`, and `stack_hint` when monorepo is enabled
+- `active_package` - Package object resolved from `--package` or CWD inference, or `null`
+- `monorepo_detection` - Auto-detection result when `monorepo` is `null`
 
-**IMPORTANT**: Use this JSON output as ground truth for all state facts. Do not re-read state.json directly - the script provides authoritative state data.
+Use this JSON output as ground truth for project state. Do not re-read `state.json` directly.
 
 ### 1a. Determine Package Context (Monorepo Only)
 
-**Skip this step if** `monorepo` is not `true` in the JSON output.
+Skip this step if `monorepo` is not `true` in the JSON output.
 
-When working in a monorepo, resolve the active package for this session. Priority order:
+When working in a monorepo, resolve the package context with this priority:
 
-1. **User statement**: If the user explicitly names a package (e.g., "plan a session for apps/web"), use that
-2. **Stub annotation**: If the selected candidate has a `package` field from its stub, use that
-3. **active_package from script**: If `analyze-project.sh` resolved a package via `--package` flag or CWD inference, use that
-4. **Prompt user**: If none of the above resolves a package, ask the user which package this session targets (or whether it is cross-cutting)
+1. User statement naming a package
+2. Selected candidate stub `package` field
+3. `active_package.path` from the analysis script
+4. Repo evidence from PRD language, referenced paths, package layout, and related prior sessions
+5. Best-supported working assumption, recorded in `spec.md`, if planning can still proceed safely
 
-Store the resolved package path for use in Steps 4 and 5.
+Do not ask the user only because a stub omitted package metadata. If no single package is defensible, treat the session as cross-cutting and record `Package: null` in `spec.md`.
 
-### 2. Read PRD Content for Semantic Analysis
+### 2. Read Planning Inputs
 
-With the state facts established, read these files for context:
+With state facts established, read these files for planning context:
 - `.spec_system/PRD/PRD.md` - Master project requirements
-- `.spec_system/PRD/PRD_UX.md` - UX requirements (if exists -- use for UI-focused sessions)
-- Candidate session files from the JSON output (use the `path` field)
-- `.spec_system/CONSIDERATIONS.md` - Institutional memory (if exists)
-- `.spec_system/SECURITY-COMPLIANCE.md` - Security posture and GDPR compliance (if exists)
-- `.spec_system/CONVENTIONS.md` - Project coding conventions (if exists)
+- `.spec_system/PRD/PRD_UX.md` - UX requirements when present and relevant
+- Candidate session files from the analysis JSON (`path` field)
+- `.spec_system/CONSIDERATIONS.md` - Institutional memory, if present
+- `.spec_system/SECURITY-COMPLIANCE.md` - Security posture, if present
+- `.spec_system/CONVENTIONS.md` - Project conventions, if present
 
-Focus on understanding:
-- Session objectives and scope
-- Prerequisites and dependencies
-- Logical ordering
-- **Active Concerns** that may influence session priority or approach
-- **Lessons Learned** relevant to candidate sessions
-- **Open security findings** that may affect session scope or approach
-- Naming, file placement, and testing approach from CONVENTIONS.md
-- If CONVENTIONS.md has a "Database Layer" section and the session involves data layer work (new tables, schema changes, migrations), ensure task planning includes migration, seed update, and DB integration test tasks
+Focus on:
+- Session objectives and boundaries
+- Dependencies and ordering
+- Active concerns and lessons learned that should shape planning
+- Open security findings that affect scope or implementation approach
+- Naming, file placement, testing expectations, and DB-layer requirements from `CONVENTIONS.md`
 
-### 3. Analyze and Recommend
+If `CONVENTIONS.md` includes a database-layer section and the planned session touches persisted data shape or migrations, the plan must include the matching schema artifact work and DB verification tasks.
 
-Using the deterministic state + semantic understanding:
+### 3. Resolve Assumptions And Conflicts
 
-**Determine:**
-- Which candidates have unmet prerequisites (based on `completed_sessions`)
-- Natural next session based on dependencies
-- Complexity and scope assessment
+Before choosing a session or writing artifacts, explicitly resolve ambiguity.
 
-**Evaluate each candidate by:**
-- Prerequisites met (check against `completed_sessions` array)
-- Dependencies completed
-- Logical flow in project progression
+Surface only the evidence-backed working assumptions that materially shape the plan. For each working assumption, state:
+- The assumption itself
+- The repo evidence supporting it
+- Why planning can proceed without user arbitration
 
-If multiple sessions ready: Choose based on dependencies, complexity, project flow.
-If session blocked: Recommend alternative with explanation.
-If phase complete: Suggest running phasebuild for the next phase.
+For each material conflict between inputs:
+- Name the conflicting sources
+- State the viable interpretations
+- Choose the best-supported interpretation
+- Record why that interpretation wins
 
-If Step 3 results in a completed session plan with a new `spec.md` and `tasks.md`, the handoff is fixed: `plansession -> implement`.
+Rules for this step:
+- Do not invent filler assumptions just to satisfy format
+- A working assumption is not a hard blocker
+- Hard blockers stop the command only when required planning inputs are inaccessible
+- Ambiguity alone is not a blocker
+- If a chosen assumption or conflict resolution materially shapes the plan, record it in `spec.md`
+- Do not generate successful artifacts that still contain unresolved blocker text
 
-### 4. Create Session Directory and Specification
+### 4. Analyze Candidates And Select The Next Session
 
-Create the session directory and generate `spec.md`:
+Using deterministic state plus semantic context:
 
-```
+1. If `current_session` is already set and `current_session_files` include both `spec.md` and `tasks.md`, do not select a different session; the active session is already planned and the correct handoff is `implement`
+2. If `current_session` is already set but the planning artifacts are incomplete, repair or finish that same session plan instead of switching sessions
+3. Identify which candidates have unmet prerequisites from `completed_sessions`
+4. Identify which candidates are executable now
+5. Evaluate ready candidates by dependency order, MVP value, technical coherence, package fit, and active considerations
+6. Choose exactly one session
+
+Selection rules:
+- If multiple sessions are ready, choose the one with the clearest dependency pull and best MVP progression
+- If a candidate is blocked, explain the missing prerequisite and prefer the earliest executable prerequisite session instead
+- If the current phase has no unfinished sessions, do not create `spec.md` or `tasks.md`; the correct handoff is `audit`
+- Do not route a phase-complete result to `phasebuild`; `phasebuild` belongs after the Phase Transition workflow
+
+If an active session already has complete planning artifacts, skip Steps 5-8 and proceed to `## Output` and `## Next Action`. If this step results in a created or repaired session plan with `spec.md` and `tasks.md`, the workflow handoff is fixed: `plansession -> implement`.
+
+### 5. Create Session Directory And Specification
+
+Create the session directory:
+
+```text
 .spec_system/specs/phaseNN-sessionNN-name/
 |-- spec.md
-\-- (tasks.md created in next step)
+\-- tasks.md
 ```
 
-Generate `spec.md` with all sections filled in:
+Generate `spec.md` with all sections filled in and no unresolved placeholders:
 
 ```markdown
 # Session Specification
@@ -123,16 +171,16 @@ Generate `spec.md` with all sections filled in:
 **Phase**: NN - Phase Name
 **Status**: Not Started
 **Created**: [YYYY-MM-DD]
-[MONOREPO ONLY - include these lines when monorepo: true]
-**Package**: [package-path]
-**Package Stack**: [stack]
-[END MONOREPO ONLY - omit both lines for single-repo projects]
+[MONOREPO ONLY - include when monorepo: true]
+**Package**: [package-path or null for cross-cutting]
+**Package Stack**: [stack_hint or mixed]
+[END MONOREPO ONLY]
 
 ---
 
 ## 1. Session Overview
 
-[2-3 paragraphs explaining what this session accomplishes, why it matters, and how it fits into the larger project]
+[2-3 short paragraphs covering what this session delivers, why it is next, and how it advances the phase]
 
 ---
 
@@ -150,8 +198,8 @@ Generate `spec.md` with all sections filled in:
 ### Required Sessions
 - [x] `phaseNN-sessionNN-name` - [what it provides]
 
-### Required Tools/Knowledge
-- [tool/knowledge item]
+### Required Tools Or Knowledge
+- [tool or knowledge item]
 
 ### Environment Requirements
 - [environment requirement]
@@ -161,35 +209,32 @@ Generate `spec.md` with all sections filled in:
 ## 4. Scope
 
 ### In Scope (MVP)
-- [PRD requirement in actor/capability form] - [brief implementation note]
-- [PRD requirement in actor/capability form] - [brief implementation note]
+- [PRD requirement in actor/capability form] - [implementation note]
+- [PRD requirement in actor/capability form] - [implementation note]
 
-### Out of Scope (Deferred)
-- [PRD requirement] - *Reason: [why deferred]*
+### Out Of Scope (Deferred)
+- [PRD requirement] - Reason: [why deferred]
 
 ---
 
 ## 5. Technical Approach
 
 ### Architecture
-[Describe the technical architecture and design]
+[Technical approach rooted in existing codebase and conventions]
 
 ### Design Patterns
-- [Pattern]: [Why using it]
-
-### Technology Stack
-- [Technology and version]
+- [Pattern]: [Why it fits]
 
 ---
 
 ## 6. Deliverables
 
-### Files to Create
+### Files To Create
 | File | Purpose | Est. Lines |
 |------|---------|------------|
 | `path/to/file` | Description | ~100 |
 
-### Files to Modify
+### Files To Modify
 | File | Changes | Est. Lines |
 |------|---------|------------|
 | `path/to/file` | Description | ~20 |
@@ -206,7 +251,7 @@ Generate `spec.md` with all sections filled in:
 - [ ] Manual testing completed
 
 ### Non-Functional Requirements
-- [ ] [Relevant NFR from PRD with measurable target]
+- [ ] [Relevant NFR with measurable target]
 
 ### Quality Gates
 - [ ] All files ASCII-encoded
@@ -217,6 +262,14 @@ Generate `spec.md` with all sections filled in:
 
 ## 8. Implementation Notes
 
+### Working Assumptions
+<!-- Omit subsection if no material working assumptions remain after planning -->
+- [Assumption]: [Repo evidence and why it is safe to proceed]
+
+### Conflict Resolutions
+<!-- Omit subsection if no material conflicts were resolved -->
+- [Conflict]: [Chosen interpretation and evidence]
+
 ### Key Considerations
 - [Important consideration]
 
@@ -224,17 +277,17 @@ Generate `spec.md` with all sections filled in:
 - [Challenge]: [Mitigation]
 
 ### Relevant Considerations
-<!-- From CONSIDERATIONS.md - omit section if none apply -->
-- [P##] **[Active Concern]**: How it affects this session and mitigation
-- [P##] **[Lesson Learned]**: How we're applying it in this implementation
+<!-- From CONSIDERATIONS.md; omit subsection if none apply -->
+- [P##] **[Active Concern]**: [How it changes planning or execution]
+- [P##] **[Lesson Learned]**: [How it is applied here]
 
 ### Behavioral Quality Focus
-<!-- Include when session produces application code. Omit if no BQC applies. -->
+<!-- Include when session produces application code; omit otherwise -->
 Checklist active: Yes
 Top behavioral risks for this session:
-- [Risk 1 relevant to this session's deliverables]
-- [Risk 2 relevant to this session's deliverables]
-- [Risk 3 relevant to this session's deliverables]
+- [Risk 1 relevant to this session]
+- [Risk 2 relevant to this session]
+- [Risk 3 relevant to this session]
 
 ---
 
@@ -247,7 +300,7 @@ Top behavioral risks for this session:
 - [What to test]
 
 ### Manual Testing
-- [Test scenario]
+- [Scenario to verify]
 
 ### Edge Cases
 - [Edge case to handle]
@@ -256,25 +309,28 @@ Top behavioral risks for this session:
 
 ## 10. Dependencies
 
-### External Libraries
-- [Library]: [version]
-
 ### Other Sessions
-- **Depends on**: [sessions]
-- **Depended by**: [sessions]
+- Depends on: [sessions]
+- Depended by: [sessions]
 
 ---
 
 ## Next Steps
 
-Run the implement workflow step to begin AI-led implementation.
+Run the `implement` workflow step to begin implementation.
 ```
 
-### 4a. Enrich Task Descriptions with BQC
+Spec-writing rules:
+- All deliverables must be repo-derived and specific
+- Do not use placeholder paths, generic module names, or non-committal language
+- If a monorepo session is intentionally cross-cutting, write `Package: null` instead of omitting the decision
+- Do not include hard-blocker placeholders in a successful spec
 
-**Skip if** the session produces no application code.
+### 5a. Enrich Task Descriptions With Behavioral Quality
 
-When BQC applies, enrich task descriptions in Step 5 using this table:
+Skip this step if the session produces no application code.
+
+When behavioral quality applies, enrich task descriptions in Step 6 with concrete failure-path and state-handling expectations:
 
 | If task involves... | Append to description... |
 |---------------------|--------------------------|
@@ -292,11 +348,11 @@ When BQC applies, enrich task descriptions in Step 5 using this table:
 | Optimistic state update | "with scoped rollback on error" |
 | Component consuming external contract (API response, event payload) | "with types matching declared contract; exhaustive enum handling" |
 
-These add 5-15 words per task but prevent the 10x-cost bugs found in later audits.
+These additions are short, but they prevent high-cost bugs from being deferred into later sessions.
 
-### 5. Generate Task Checklist
+### 6. Generate Task Checklist
 
-From the spec, identify deliverables, success criteria, technical approach, testing requirements, and dependencies between tasks. Then create `tasks.md` in the session directory:
+Create `tasks.md` from the selected spec's deliverables, success criteria, technical approach, and dependencies:
 
 ```markdown
 # Task Checklist
@@ -312,118 +368,75 @@ From the spec, identify deliverables, success criteria, technical approach, test
 
 - `[x]` = Completed
 - `[ ]` = Pending
-- `[P]` = Parallelizable (can run with other [P] tasks)
-- `[SNNMM]` = Session reference (NN=phase number, MM=session number)
+- `[P]` = Parallelizable
+- `[SNNMM]` = Session reference
 - `TNNN` = Task ID
-
----
-
-## Progress Summary
-
-| Category | Total | Done | Remaining |
-|----------|-------|------|-----------|
-| Setup | N | 0 | N |
-| Foundation | N | 0 | N |
-| Implementation | N | 0 | N |
-| Testing | N | 0 | N |
-| **Total** | **N** | **0** | **N** |
 
 ---
 
 ## Setup (N tasks)
 
-Initial configuration and environment preparation.
-
-- [ ] T001 [SPPSS] Verify prerequisites met (tools, dependencies)
-- [ ] T002 [SPPSS] Create directory structure for deliverables
+- [ ] T001 [SPPSS] Verify prerequisites and environment (`path/to/config-or-command`)
+- [ ] T002 [SPPSS] Create required directories or baseline files (`path/to/file`)
 
 ---
 
 ## Foundation (N tasks)
 
-Core structures and base implementations.
-
-- [ ] T003 [SPPSS] [P] Create [component] (`path/to/file`)
-- [ ] T004 [SPPSS] [P] Define [interface/type] (`path/to/file`)
-- [ ] T005 [SPPSS] Implement [base functionality] (`path/to/file`)
+- [ ] T003 [SPPSS] [P] Create core type or interface (`path/to/file`)
+- [ ] T004 [SPPSS] [P] Create base module or component (`path/to/file`)
+- [ ] T005 [SPPSS] Implement foundational behavior (`path/to/file`)
 
 ---
 
 ## Implementation (N tasks)
 
-Main feature implementation.
-
-- [ ] T006 [SPPSS] Implement [feature part 1] (`path/to/file`)
-- [ ] T007 [SPPSS] Implement [feature part 2] (`path/to/file`)
-- [ ] T008 [SPPSS] [P] Add [component A] (`path/to/file`)
-- [ ] T009 [SPPSS] [P] Add [component B] (`path/to/file`)
-- [ ] T010 [SPPSS] Wire up [integration] (`path/to/file`)
-- [ ] T011 [SPPSS] Add error handling (`path/to/file`)
+- [ ] T006 [SPPSS] Implement feature slice 1 (`path/to/file`)
+- [ ] T007 [SPPSS] Implement feature slice 2 (`path/to/file`)
+- [ ] T008 [SPPSS] [P] Add supporting component or module (`path/to/file`)
+- [ ] T009 [SPPSS] Wire integration path (`path/to/file`)
+- [ ] T010 [SPPSS] Add failure-path handling (`path/to/file`)
 
 ---
 
 ## Testing (N tasks)
 
-Verification and quality assurance.
-
-- [ ] T012 [SPPSS] [P] Write unit tests for [component] (`tests/path`)
-- [ ] T013 [SPPSS] [P] Write unit tests for [component] (`tests/path`)
-- [ ] T014 [SPPSS] Run test suite and verify passing
-- [ ] T015 [SPPSS] Validate ASCII encoding on all files
-- [ ] T016 [SPPSS] Manual testing and verification
+- [ ] T011 [SPPSS] [P] Write unit tests for core behavior (`tests/path`)
+- [ ] T012 [SPPSS] [P] Write integration or regression tests (`tests/path`)
+- [ ] T013 [SPPSS] Run required automated checks (`path/to/script-or-command`)
+- [ ] T014 [SPPSS] Validate ASCII and LF requirements (`path/to/files-or-command`)
+- [ ] T015 [SPPSS] Complete manual verification scenarios (`manual-scenarios`)
 
 ---
 
 ## Completion Checklist
 
-Before marking session complete:
-
 - [ ] All tasks marked `[x]`
-- [ ] All tests passing
-- [ ] All files ASCII-encoded
+- [ ] All tests and checks passing
+- [ ] All files ASCII-encoded with LF line endings
 - [ ] implementation-notes.md updated
-- [ ] Ready for the validate workflow step
+- [ ] Ready for the `validate` workflow step
 
 ---
 
 ## Next Steps
 
-Run the implement workflow step to begin AI-led implementation.
+Run the `implement` workflow step.
 ```
+
+Task-writing rules:
+- Keep the session within 12-25 tasks total
+- Every task must reference concrete repo paths, commands, or deliverables
+- Generic filler such as "continue implementation" or "do testing" is not acceptable
+- Parallelize only when tasks do not depend on each other
 
 ### Path Scoping Rules (Monorepo Only)
 
-When `monorepo: true`, apply these path conventions in tasks.md:
+When `monorepo: true`, all task paths must be repo-root-relative:
+- Single-package sessions: every task path starts with the package prefix
+- Cross-cutting sessions: group tasks by package using subheadings inside each category when helpful
 
-- **All file paths must be package-relative from the repo root** (e.g., `apps/web/src/auth.ts`, not `src/auth.ts`)
-- **Single-package sessions**: All paths should start with the package path prefix
-- **Cross-package sessions**: Group tasks by package using subheadings within each category:
-
-```markdown
-## Implementation (N tasks)
-
-### apps/web
-
-- [ ] T006 [SPPSS] Implement auth page (`apps/web/src/pages/auth.tsx`)
-- [ ] T007 [SPPSS] Add auth hook (`apps/web/src/hooks/useAuth.ts`)
-
-### apps/api
-
-- [ ] T008 [SPPSS] Implement auth endpoint (`apps/api/src/routes/auth.ts`)
-```
-
-For single-repo projects, paths remain unchanged (relative to project root as usual).
-
-## Category Budgets
-
-| Category | Tasks | Purpose |
-|----------|-------|---------|
-| Setup | 2-4 | Environment, directories, config |
-| Foundation | 4-8 | Core types, interfaces, base classes |
-| Implementation | 8-15 | Main feature logic |
-| Testing | 3-5 | Tests, validation, verification |
-
-### 6. Update State
+### 7. Update State
 
 Update `.spec_system/state.json`:
 
@@ -440,34 +453,43 @@ Update `.spec_system/state.json`:
 }
 ```
 
-- Set `current_session` to the session ID
-- Add a single entry to `next_session_history` with status `planned`
-- **Monorepo only**: Include an optional `package` field in the history entry when a package was resolved in Step 1a:
-  ```json
-  {
-    "date": "YYYY-MM-DD",
-    "session": "phaseNN-sessionNN-name",
-    "package": "apps/web",
-    "status": "planned"
-  }
-  ```
-  Omit the `package` field for single-repo projects or cross-cutting sessions.
+Update rules:
+- Set `current_session` to the selected session ID
+- Add one `next_session_history` entry with status `planned`
+- When monorepo package context resolves to a concrete package path, include `package`
+- Omit `package` for single-repo projects or `Package: null` cross-cutting sessions
+- If rerunning `plansession` for an already planned active session, do not add a duplicate history entry
 
-### 7. Archive Stale Specs
+### 8. Archive Stale Specs
 
-Keep `.spec_system/specs/` lean by archiving old session specs. **Retention rule**: only keep specs from the current phase and one phase back. Move everything older to `.spec_system/archive/sessions/`.
+Keep `.spec_system/specs/` lean. Retain only specs from the current phase and one phase back. Move anything older to `.spec_system/archive/sessions/`.
 
-Example: If currently on Phase 3, keep Phase 2 and Phase 3 specs. Archive Phase 0 and Phase 1 specs.
-
----
+Example: if the current phase is 3, keep Phase 2 and Phase 3 specs and archive Phase 0 and Phase 1 specs.
 
 ## Output
 
-After creating spec.md and tasks.md, summarize to the user:
-- Recommended session name and why it's next
+If `spec.md` and `tasks.md` were created or repaired, summarize:
+- Recommended session name and why it is next
 - Key deliverables
+- Working assumptions that materially shaped the plan
+- Any conflict resolutions that materially changed interpretation
 - Total task count and category breakdown
 - Estimated duration
 - Key parallelization opportunities
 
-Prompt them to run the `implement` workflow step next. Be explicit that after a successful `plansession` run, `implement` is always the next workflow command.
+If no new session was created because the active session is already planned, summarize:
+- The active session ID
+- That `spec.md` and `tasks.md` already exist
+- That the correct next workflow command is `implement`
+
+If no new session was created because the phase is complete, summarize:
+- That the current phase is complete
+- Why no new session plan was created
+- That the correct next workflow command is `audit`
+
+## Next Action
+
+- After a successful `plansession` run that creates or repairs `spec.md` and `tasks.md`, run `implement`
+- If an active session is already planned, run `implement`
+- If the phase is complete, run `audit`
+- If a true hard blocker prevented planning, report the blocker clearly and stop
