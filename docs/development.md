@@ -29,6 +29,7 @@ No build step -- the skill is plain files.
 | `references/` | Platform-neutral command and supporting reference files |
 | `scripts/` | Bash utilities for project analysis |
 | `agents/` | Codex CLI metadata (openai.yaml) |
+| `plugins/apex-spec/` | Codex plugin wrapper plus generated skill payload |
 | `apex-infinite-cli/` | Autonomous session manager (Python CLI) |
 | `docs/` | Project documentation |
 | `tests/` | Root-level tests (bats) |
@@ -41,9 +42,31 @@ No build step -- the skill is plain files.
 |---------|---------|
 | `bash scripts/analyze-project.sh --json` | Show project state as JSON |
 | `bash scripts/check-prereqs.sh --json --env` | Verify environment |
+| `bash scripts/sync-plugin-payload.sh` | Rebuild generated Codex plugin skill payload |
+| `bash scripts/sync-plugin-payload.sh --check` | Verify generated plugin payload is current |
 | `shellcheck scripts/*.sh` | Lint all scripts |
 | `shfmt -d scripts/*.sh` | Check script formatting |
 | `pre-commit run --all-files` | Run all pre-commit hooks |
+
+## Skill Payload Sync
+
+The repo-root skill files are canonical:
+
+- `SKILL.md`
+- `references/`
+- `scripts/`
+- `agents/openai.yaml`
+
+The nested skill payload under `plugins/apex-spec/skills/apex-spec/` is
+generated packaging output for the Codex plugin wrapper. Do not edit that nested
+payload directly.
+
+When changing skill files:
+
+1. Edit the root canonical files.
+2. Run `bash scripts/sync-plugin-payload.sh`.
+3. Run the relevant checks.
+4. Commit both canonical changes and generated plugin payload changes.
 
 ## Editing a Command Reference
 
@@ -57,6 +80,7 @@ When updating a workflow step:
 4. Verify ASCII encoding: `LC_ALL=C grep -n '[^[:print:][:space:]]' references/<name>.md`
 5. Verify line count is under 500: `wc -l references/<name>.md`
 6. Verify the dispatch table in SKILL.md routes to the file
+7. Run `bash scripts/sync-plugin-payload.sh`
 
 See `docs/CONVENTIONS.md` for the full style guide.
 
@@ -74,6 +98,7 @@ Before submitting changes:
 - [ ] No Claude Code tool directives remain ("Use the Read tool", etc.)
 - [ ] shellcheck passes on all scripts
 - [ ] shfmt reports no formatting issues
+- [ ] `bash scripts/sync-plugin-payload.sh --check` passes
 - [ ] pre-commit hooks pass
 
 ## Testing

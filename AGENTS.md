@@ -6,7 +6,7 @@ Philosophy: 1 session = 1 spec = 2-4 hours (12-25 tasks)
 
 ## Version
 
-Current version: 2.0.27-codex
+Current version: 2.0.28-codex
 
 When updating version, update it in all the following files:
 
@@ -14,7 +14,11 @@ When updating version, update it in all the following files:
 - SKILL.md (frontmatter version field)
 - AGENTS.md
 - plugins/apex-spec/.codex-plugin/plugin.json
-- plugins/apex-spec/skills/apex-spec/SKILL.md (frontmatter version field)
+- plugins/apex-spec/skills/apex-spec/SKILL.md (generated from root SKILL.md)
+
+Edit the root files first, then run `bash scripts/sync-plugin-payload.sh` to
+refresh the generated plugin skill payload. Do not edit the generated plugin
+skill copy directly.
 
 ## Project Context
 
@@ -37,6 +41,11 @@ command-specific reference documents in references/.
   human feedback. Use evidence-backed assumptions, record them, and continue.
 - Every command response must include a concise summary and an explicit
   `Next command:` handoff, or `Next command: none` when the workflow is complete.
+- Root `SKILL.md`, `references/`, `scripts/`, and `agents/openai.yaml` are the
+  canonical authored skill files. The nested plugin skill payload under
+  `plugins/apex-spec/skills/apex-spec/` is generated packaging output. Do not
+  edit the nested payload directly; run `bash scripts/sync-plugin-payload.sh`
+  after changing canonical skill files.
 - See docs/CONVENTIONS.md for complete coding standards
 
 ## Directory Layout
@@ -45,7 +54,7 @@ command-specific reference documents in references/.
 |-----------|---------|
 | SKILL.md | Root orchestrator and entry point |
 | .agents/plugins/ | Codex plugin marketplace metadata |
-| plugins/apex-spec/ | Codex plugin wrapper and packaged skill copy |
+| plugins/apex-spec/ | Codex plugin wrapper and generated packaged skill copy |
 | references/ | Command references plus supporting checklists and workflow docs |
 | scripts/ | Bash utilities (analyze-project.sh, check-prereqs.sh, common.sh) |
 | agents/ | Codex CLI metadata (openai.yaml) |

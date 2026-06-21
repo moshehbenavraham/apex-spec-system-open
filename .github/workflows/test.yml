@@ -130,12 +130,7 @@ jobs:
           test "$(jq -r '.version' "$plugin_manifest")" = "$root_version"
 
       - name: Verify packaged skill mirrors root skill
-        run: |
-          plugin_skill="plugins/apex-spec/skills/apex-spec"
-          cmp SKILL.md "${plugin_skill}/SKILL.md"
-          cmp agents/openai.yaml "${plugin_skill}/agents/openai.yaml"
-          diff -qr references "${plugin_skill}/references"
-          diff -qr scripts "${plugin_skill}/scripts"
+        run: bash scripts/sync-plugin-payload.sh --check
 
   script-tests:
     name: Script functional tests (bats)
