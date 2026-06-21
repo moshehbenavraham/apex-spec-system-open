@@ -194,5 +194,7 @@ After running this workflow step, you will have:
 - A micro design system (type scale, color architecture, spacing, depth model)
 - An implementation strategy with layout composition, motion choreography, and advanced techniques
 - Code that targets 60fps, WCAG AA accessibility, and responsive adaptive design
+- `Next command: none`
+- Reason: sculpt-ui is a standalone utility and does not advance the staged workflow
 
 The standard: Every interface should make someone pause and think, "this feels like it was designed by a human who cares deeply." Every pixel, every transition, every font choice should feel intentional.

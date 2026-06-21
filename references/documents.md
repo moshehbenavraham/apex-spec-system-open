@@ -2,16 +2,17 @@
 
 Audit, create, and update project documentation. Documentation is code - stale docs are worse than no docs.
 
-This is the final workflow command before deciding whether another phase should begin. After `documents`, manual testing and LLM audit remain highly recommended. Use `.spec_system/PRD/PRD.md` to decide whether `phasebuild` follows those checks: if `PRD.md` still outlines another unfinished phase, recommend `phasebuild`; if no remaining phase is outlined in `PRD.md`, report that the project is complete and do not recommend `phasebuild`.
+This is the final workflow command before deciding whether another phase should begin. Use `.spec_system/PRD/PRD.md` to decide whether `phasebuild` follows: if `PRD.md` still outlines another unfinished phase, recommend `phasebuild`; if no remaining phase is outlined in `PRD.md`, report that the project is complete and do not recommend `phasebuild`.
 
 ## Rules
 
-1. **Never invent technical details** - only document what actually exists in the codebase
-2. **ASCII-only characters** and Unix LF line endings
-3. **Current over complete** - a smaller, accurate doc beats a comprehensive stale one
-4. **One source of truth** - don't duplicate information; link instead
-5. **README naming** - only root gets `README.md`; subdirectories use `README_<dirname>.md`
-6. **One command runs everything** - document it prominently in root README
+1. **Autonomous execution** - do not ask questions, request approval, or wait for human feedback
+2. **Never invent technical details** - only document what actually exists in the codebase
+3. **ASCII-only characters** and Unix LF line endings
+4. **Current over complete** - a smaller, accurate doc beats a comprehensive stale one
+5. **One source of truth** - don't duplicate information; link instead
+6. **README naming** - only root gets `README.md`; subdirectories use `README_<dirname>.md`
+7. **One command runs everything** - document it prominently in root README
 
 ### No Deferral Policy
 
@@ -22,7 +23,7 @@ This is the final workflow command before deciding whether another phase should 
 - If links, commands, or paths are broken and you can verify the correct values,
   FIX THEM
 - The only valid reason to stop is when accurate documentation would require
-  human-only decisions that cannot be inferred from the code or project state
+  an external decision that cannot be inferred from the code or project state
 
 ## Steps
 
@@ -70,7 +71,7 @@ Check if a phase was recently completed:
 - Use when: first run, after multiple phases, or user requests full audit
 - **Monorepo**: Verify all packages have README files and that root documentation covers workspace structure
 
-Report the audit mode to the user before proceeding.
+Record the audit mode in the output summary.
 
 ### 3. Audit Existing Documentation
 
@@ -117,7 +118,7 @@ Create a mental checklist of:
 - Redundant content (need to consolidate)
 - Wordy sections (need to trim)
 
-Report findings to the user before proceeding.
+Record findings in the output summary and `.spec_system/docs-audit.md`.
 
 ### 5. Create Missing Documentation
 
@@ -487,31 +488,45 @@ files. Keep command-specific requirements here:
 
 ### 9. Generate Documentation Report
 
-Create `.spec_system/docs-audit.md` with: audit date, project name, audit mode, a summary table (root files, /docs/ files, ADRs, package READMEs -- each with required/found/status counts), sections for files created, files updated, files verified as current, and any remaining documentation gaps requiring human input.
+Create `.spec_system/docs-audit.md` with: audit date, project name, audit mode, a summary table (root files, /docs/ files, ADRs, package READMEs -- each with required/found/status counts), sections for files created, files updated, files verified as current, and any remaining documentation gaps that require external product, platform, legal, or operational decisions.
 
 ### 10. Determine Next Action from PRD.md
 
 Use `.spec_system/PRD/PRD.md` as the source of truth for whether `phasebuild` is needed after `documents`:
 
 - If `PRD.md` still outlines another unfinished phase after the current one, recommend:
-  1. Manual testing and LLM audit (highly recommended)
-  2. `phasebuild` to create the next phase
-- If `PRD.md` does not outline any remaining unfinished phase, recommend manual testing and LLM audit as final verification, then report that the project is complete
+  1. `phasebuild` to create the next phase
+- If `PRD.md` does not outline any remaining unfinished phase, report that the project is complete
 - Do not recommend `phasebuild` when there is no remaining phase defined in `PRD.md`
 
-### 11. Report to User
+### 11. Report
 
-Show files created/updated, documentation coverage, gaps requiring human input, and the next action:
+Show files created/updated, documentation coverage, gaps requiring external decisions, and the next action:
 - `phasebuild` only when `PRD.md` still defines another unfinished phase
 - otherwise, state that the project is finished
 
 ## Output
 
-Report: audit mode used, files created/updated, documentation coverage, gaps requiring human input, link to `.spec_system/docs-audit.md`, and next action. Manual testing and LLM audit remain highly recommended after `documents`. If `PRD.md` still outlines another unfinished phase, recommend `phasebuild` after those checks. If `PRD.md` has no remaining unfinished phase, report that the project is complete and do not recommend `phasebuild`.
+Report: audit mode used, files created/updated, documentation coverage, gaps requiring external decisions, link to `.spec_system/docs-audit.md`, and next action. If `PRD.md` still outlines another unfinished phase, recommend `phasebuild`. If `PRD.md` has no remaining unfinished phase, report that the project is complete and do not recommend `phasebuild`.
+
+Use this shape:
+
+```text
+documents complete!
+
+Summary:
+- Audit mode: [phase-focused | full]
+- Files created: [count and brief list]
+- Files updated: [count and brief list]
+- Documentation coverage: [summary]
+- External decision gaps: [none | brief list]
+- Report: .spec_system/docs-audit.md
+
+Next command: `[phasebuild | none]`
+Reason: [PRD.md still defines another unfinished phase | PRD.md has no remaining unfinished phase and the project workflow is complete]
+```
 
 ## Next Action
 
-- If `PRD.md` still defines another unfinished phase: recommend manual testing,
-  LLM audit, then `phasebuild`
-- If no remaining phase is defined: recommend manual testing and LLM audit, then
-  report project completion
+- If `PRD.md` still defines another unfinished phase: run `phasebuild`
+- If no remaining phase is defined: report project completion with `Next command: none`

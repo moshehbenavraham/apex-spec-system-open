@@ -1,10 +1,12 @@
 # createprd
 
-Convert a user-provided document (notes, PRD, spec, RFC, meeting notes) into the Apex Spec System master PRD at `.spec_system/PRD/PRD.md`.
+Convert requirements material (notes, PRD, spec, RFC, meeting notes, repository
+documentation, or other project evidence) into the Apex Spec System master PRD
+at `.spec_system/PRD/PRD.md`.
 
 Downstream workflow steps (`phasebuild`, `plansession`, `documents`) depend on this PRD as the source of truth.
 
-This is a Stage 1 initialization command. Run it after `initspec`, or let this command run `initspec` if the spec system is missing. `createprd` requires at least one source requirements input. After `createprd`, the usual next step is `createuxprd` when UX or design inputs still need conversion; otherwise continue to `phasebuild`.
+This is a Stage 1 initialization command. Run it after `initspec`, or let this command run `initspec` if the spec system is missing. After `createprd`, the usual next step is `createuxprd` when UX or design inputs still need conversion; otherwise continue to `phasebuild`.
 
 ## Flags
 
@@ -14,30 +16,31 @@ This is a Stage 1 initialization command. Run it after `initspec`, or let this c
 
 ## Rules
 
-1. **Never overwrite a real PRD** without explicit user confirmation (template placeholders can be overwritten silently)
-2. **Do not invent requirements** - derive them from the source document, repo evidence, and prior artifacts only
-3. **Resolve normal ambiguity with evidence-backed working assumptions** - do not turn routine gaps into a clarification loop
-4. **Surface and resolve material conflicts** between inputs before writing
-5. **Distinguish working assumptions from true hard blockers**
-6. **ASCII-only characters** and Unix LF line endings in all output
-7. **Do not create phase directories or session stubs** - that is the `phasebuild` workflow step's job
-8. **CONVENTIONS.md must stay under 300 lines** - trim ruthlessly if exceeded
-9. Only add conventions with clear evidence from the tech stack - no speculative additions
-10. Open questions are allowed only for non-blocking decisions that genuinely need later human confirmation
+1. **Autonomous execution** - do not ask questions, request approval, or wait for human feedback
+2. **Never destroy a real PRD** - back it up before replacing it, or update it in place when that is safer
+3. **Do not invent requirements** - derive them from the source document, repo evidence, and prior artifacts only
+4. **Resolve normal ambiguity with evidence-backed working assumptions** - do not turn routine gaps into a clarification loop
+5. **Surface and resolve material conflicts** between inputs before writing
+6. **Distinguish working assumptions from true hard blockers**
+7. **ASCII-only characters** and Unix LF line endings in all output
+8. **Do not create phase directories or session stubs** - that is the `phasebuild` workflow step's job
+9. **CONVENTIONS.md must stay under 300 lines** - trim ruthlessly if exceeded
+10. Only add conventions with clear evidence from the tech stack - no speculative additions
+11. Open decisions are allowed only when they are non-blocking and need later product or design resolution
 
 ### No Deferral Policy
 
-- Read the source document, deterministic project state, and existing PRD artifacts before considering user escalation
+- Read source material, deterministic project state, and existing PRD artifacts before declaring a blocker
 - Ambiguity alone is not a blocker; resolve it with evidence-backed working assumptions when the PRD can still be written safely
 - If inputs disagree, choose the best-supported interpretation and record the resolution when it materially shapes the PRD
-- Ask the user only when the source requirements are missing entirely, overwrite confirmation is required, or a critical requirement gap would make the PRD misleading
-- Successful output must not contain unresolved template placeholders, hard-blocker text, or "ask user" notes outside the `Open Questions` section
+- If source requirements are missing entirely and repository evidence cannot support a defensible PRD, stop with a factual blocker and `Next command: createprd`
+- Successful output must not contain unresolved template placeholders, hard-blocker text, or interactive follow-up notes
 
 ## Steps
 
 ### 1. Confirm Spec System Is Initialized
 
-Check for `.spec_system/state.json` and `.spec_system/PRD/`. If missing, run `initspec` yourself to set up the spec system. Only ask the user if `initspec` requires user input you do not have.
+Check for `.spec_system/state.json` and `.spec_system/PRD/`. If missing, run `initspec` yourself to set up the spec system.
 
 ### 2. Get Deterministic Project State (REQUIRED FIRST STEP)
 
@@ -60,7 +63,7 @@ Do not parse `state.json` directly.
 
 ### 3. Collect the Source Requirements Document
 
-This command requires at least one source requirements input in one of these forms:
+Use source requirements input when available in one of these forms:
 - Paste the text directly into the chat
 - Provide a file path in the repo to read
 - Provide multiple snippets or documents when the content is split across sources
@@ -69,7 +72,13 @@ If the user provides a file path, read it. If pasted text, treat it as the sourc
 
 If multiple source documents are provided, treat them as an ordered source set and carry any material contradictions into Step 5.
 
-If no source requirements input is available, stop and ask for it. Do not attempt a no-source autonomous PRD generation pass for this command.
+If no explicit source requirements input is available, inspect repository
+evidence in this order: existing `.spec_system/PRD/PRD.md`, README files,
+docs/, package metadata, issue/planning documents, and obvious domain files.
+Create the PRD from that evidence when it is sufficient. If evidence is too
+thin to support a defensible PRD, stop with a blocker summary and set
+`Next command: createprd` so the workflow reruns after requirements material is
+available.
 
 ### 4. Decide Whether to Create or Update
 
@@ -82,17 +91,21 @@ Check whether `.spec_system/PRD/PRD.md` already exists.
 
 The `initspec` workflow step creates a placeholder PRD with bracket markers like `[Goal 1]`, `[PROJECT_DESCRIPTION]`, `[Objective 1]`, and similar placeholders. If **2 or more** such markers are present, it is a template - overwrite without confirmation.
 
-If the PRD has real content (fewer than 2 template markers), ask for explicit user confirmation before overwriting.
+If the PRD has real content (fewer than 2 template markers), preserve it by
+default. Update it in place only when the requested createprd run clearly
+provides newer source material; otherwise treat the existing PRD as source
+evidence and normalize it without destructive rewrites.
 
-**If overwriting real content (confirmation given)**:
+**If replacing real content**:
 1. Create a timestamped backup in `.spec_system/archive/PRD/` before writing
 2. Then replace `.spec_system/PRD/PRD.md`
 
 Backup naming (ASCII only):
 - `.spec_system/archive/PRD/PRD-backup-YYYYMMDD-HHMMSS.md`
 
-If overwrite is not confirmed:
-- Offer to create a new file next to it for review and stop
+If replacement is unsafe because source precedence is unclear, leave the real
+PRD intact, write findings to the command summary, and set
+`Next command: createprd` after clearer requirements material is available.
 
 ### 5. Resolve Assumptions And Conflicts
 
@@ -118,7 +131,7 @@ Rules for this step:
 - A working assumption is not a hard blocker
 - Hard blockers stop the command only when source requirements are inaccessible or too incomplete to support a defensible PRD
 - If an assumption or conflict resolution materially shapes the PRD, record it in the generated artifact
-- Keep blocking questions out of successful artifact sections; use `Open Questions` only for non-blocking follow-up decisions
+- Keep blockers out of successful artifact sections; use `Open Decisions` only for non-blocking follow-up decisions
 
 ### 6. Extract and Normalize Requirements
 
@@ -133,11 +146,11 @@ From the source document plus resolved assumptions and conflict decisions, extra
 - **Assumptions**: only evidence-backed working assumptions that materially shape the PRD
 - **Risks**: major risks and mitigations
 - **Success criteria**: checkboxes that can be validated
-- **Open questions**: unresolved items that genuinely need later human confirmation but do not block phase planning
+- **Open questions**: unresolved items that need later product or design resolution but do not block phase planning
 
 Important:
 - Do not invent details
-- If critical information is missing and cannot be inferred from the provided materials or repo evidence, ask only the minimum targeted questions needed to avoid a misleading PRD
+- If critical information is missing and cannot be inferred from the provided materials or repo evidence, stop with a blocker summary instead of creating a misleading PRD
 - Keep content high-level and stable. Session-level details belong in the `plansession` workflow step
 - Keep phases as planning scaffolding, not implementation plans
 - Apply chosen assumptions and conflict resolutions consistently across all sections
@@ -241,11 +254,11 @@ Sessions are defined via `phasebuild` as `session_NN_name.md` stubs under `.spec
 <!-- Omit subsection if no material conflicts were resolved -->
 - [Conflict]: [Chosen interpretation and supporting evidence]
 
-## Open Questions
+## Open Decisions
 
-<!-- Include only non-blocking questions that still need human confirmation -->
-1. [Question]
-2. [Question]
+<!-- Include only non-blocking decisions that still need later resolution -->
+1. [Decision]
+2. [Decision]
 ```
 
 Notes:
@@ -284,8 +297,8 @@ When `monorepo` is `null` (unknown), scan for multi-package signals:
      ```
 
    - If signals are mixed but one interpretation is still defensible, proceed with a recorded working assumption in `## Assumptions`
-   - If no defensible package map exists yet, leave package details out of the PRD, keep `monorepo: null`, and add a non-blocking item to `## Open Questions`
-   - Do not ask for confirmation only because package metadata is incomplete
+   - If no defensible package map exists yet, leave package details out of the PRD, keep `monorepo: null`, and add a non-blocking item to `## Open Decisions`
+   - Do not request approval only because package metadata is incomplete
    - Do not add a Package Map section unless `monorepo` is set to `true`
 
 4. **If no signals are found**: set `monorepo: false` in `state.json`
@@ -338,7 +351,7 @@ Read `.spec_system/CONVENTIONS.md` (the generic template from `initspec`). Repla
 - **React**: Add "Components" section for component patterns
 - **API**: Add "Endpoints" section for API design conventions
 - **Database**: Add "Database Layer" section with subsections for connection, migrations, models, queries, seeding, testing. If the PRD references vector search, embeddings, or RAG, include a "Vector / Embeddings" subsection. Detection: PRD mentions database, schema, any DB technology, migrations, ORM, data modeling, vector/embeddings, or RAG.
-- **Monorepo** (if confirmed in Step 7a): Add "Workspace Structure" section with package table and cross-package rules (import aliases, shared types location, test boundaries, cross-package session scope)
+- **Monorepo** (if detected in Step 7a): Add "Workspace Structure" section with package table and cross-package rules (import aliases, shared types location, test boundaries, cross-package session scope)
 
 #### 8.3 Enforce 300-Line Limit (STRICT)
 
@@ -395,13 +408,14 @@ If checks fail, fix the PRD content and re-check.
 
 #### 9.2 Content Quality Validation
 
-Scan the generated PRD for common quality issues. For each check, fix inline if possible or flag it to the user:
+Scan the generated PRD for common quality issues. For each check, fix inline if
+possible or report it as a blocker or non-blocking open decision:
 
 | Check | What to look for | Action |
 |-------|------------------|--------|
 | Template placeholders | Bracket markers like `[Goal 1]`, `[Requirement]`, `[Actor]` remaining in output | Replace with real content or remove |
 | Vague NFRs | NFRs without specific numbers (for example, "should be fast", "highly available") | Rewrite with measurable targets |
-| Empty sections | Sections with no content below the heading | Fill in or ask the minimum required follow-up |
+| Empty sections | Sections with no content below the heading | Fill in, omit, or record a blocker if the section is required |
 | Weak requirements | Requirements that describe HOW (implementation) rather than WHAT (capability) | Rewrite in actor/capability form |
 | Invented assumptions | Assumptions without source or repo evidence | Remove or convert to a non-blocking open question |
 | Unresolved conflicts | Different sections imply incompatible interpretations | Normalize to one interpretation and record it under `Conflict Resolutions` |
@@ -411,7 +425,7 @@ Report any issues found and fixed in the output summary.
 
 ## Output
 
-Report to the user:
+Report:
 
 ```text
 createprd complete!
@@ -427,7 +441,7 @@ Summary:
 - Non-Goals: N items
 - Working Assumptions: N recorded
 - Conflict Resolutions: N recorded
-- Open Questions: N items
+- Open Decisions: N items
 
 [If conventions were customized:]
 Conventions:
@@ -444,13 +458,16 @@ Monorepo: [true - N packages detected | false - single-repo confirmed | null - e
 Quality:
 - N issues auto-fixed (template placeholders, vague NFRs, invented assumptions, etc.)
 
-[If quality issues remain for the user:]
+[If quality issues remain:]
 Quality:
-- N issues need user input: [brief list]
+- N issues remain: [brief list with blocker or non-blocking status]
+
+Next command: `[createuxprd | phasebuild | createprd]`
+Reason: [design material still needs UX PRD | PRD is ready for phase stubs | requirements/source evidence is insufficient and createprd must rerun]
 ```
 
 ## Next Action
 
-If UX or design source material still needs to be converted into a PRD artifact, run `createuxprd`.
-
-Otherwise run `phasebuild` to define the first phase's session stubs.
+- If UX or design source material still needs to be converted into a PRD artifact, run `createuxprd`
+- If the PRD is ready and no UX conversion remains, run `phasebuild`
+- If requirements/source evidence was insufficient for a defensible PRD, rerun `createprd` after the missing requirements material exists

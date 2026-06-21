@@ -96,7 +96,7 @@ After a successful `updateprd` run, the workflow either returns to `plansession`
 Ran once after all sessions of a Phase are completed, between each Phase.
 
 ```
-audit -> pipeline -> infra -> carryforward -> documents -> manual testing -> phasebuild
+audit -> pipeline -> infra -> carryforward -> documents -> phasebuild
 ```
 
 `carryforward` does not return directly to `plansession`. After `documents`, run `phasebuild` only if `PRD.md` still defines another unfinished phase. If `PRD.md` has no remaining phase, the workflow ends and the project is complete. If `phasebuild` does run, Stage 2 resumes with `plansession`.
@@ -145,19 +145,19 @@ Marks tasks complete          Suggests improvements
 - Reduced errors
 - Shared context
 
-### Pattern 3: Review Checkpoints
+### Pattern 3: Team Review Outside The Autonomous Workflow
 
 ```
 Developer                     Team
 ---------                     ----
 Complete session       ->
 validate              ->     Review validation.md
-                       <-     Feedback
-Incorporate feedback   ->
 updateprd             ->     Merge approved
 ```
 
-**Adds human review gate** before marking sessions complete.
+**Important**: This is a team process outside the autonomous Apex workflow. The
+workflow commands themselves do not wait for review feedback; they keep routing
+through `validate -> updateprd`.
 
 ### What Apex Spec Does NOT Handle
 
@@ -217,8 +217,8 @@ You do not need to remember to specify the package every time. The system resolv
 
 1. **From session stubs**: `phasebuild` annotates stubs with `Package: apps/web`
 2. **From spec.md**: Once planned, the spec header carries the package context
-3. **From user input**: Say "plan for apps/web" during `plansession`
-4. **As fallback**: Claude prompts you to select from the packages list
+3. **From command context**: Say "plan for apps/web" during `plansession`
+4. **As fallback**: plansession infers from repo evidence or records a cross-cutting assumption
 
 ### Monorepo + Team Patterns
 

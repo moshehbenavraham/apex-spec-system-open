@@ -55,14 +55,14 @@ What to do:
 
 Common causes:
 
-- the project needs a real human choice
-- the manager lacks a concrete next step
-- Codex reported a blocker that the manager treats as requiring CEO input
+- the manager ignored the latest command's `Next command:` line
+- Codex reported an external blocker and the manager over-escalated it
+- recent history lacks the final command summary
 
 What to do:
 
-1. Reply with one concise decision, not a long paragraph.
-2. If you already know the correct next command, restart with `--start`.
+1. If you already know the correct next command, restart with `--start`.
+2. Inspect the latest Codex response for `Next command:` and `Reason:`.
 3. If the manager is over-escalating, inspect recent history and the Codex
    response that triggered the pause.
 

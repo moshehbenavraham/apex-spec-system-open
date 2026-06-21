@@ -34,7 +34,9 @@ Originally powered by an n8n workflow with Airtable, Slack, and SSH nodes, this 
 5. **Log** -- Records the interaction
 6. **Repeat** -- Until `alldonebaby` or max iterations reached
 
-The manager LLM can also output `help` to pause for CEO (human) input, or give custom instructions to Codex CLI for edge cases.
+Each Apex Spec command ends with a `Next command:` handoff. The manager LLM uses
+that line as the primary routing signal, or sends concise custom instructions to
+Codex CLI when a fix must happen before the next command.
 
 ## Supported Commands
 
@@ -45,9 +47,9 @@ All Apex Spec commands are recognized and routed through the skill invocation pr
 | Initialization | `initspec`, `createprd`, `createuxprd` |
 | Session workflow | `plansession`, `implement`, `validate`, `updateprd` |
 | Phase transition | `audit`, `pipeline`, `infra`, `carryforward`, `documents`, `phasebuild` |
-| Terminal | `help` (pauses for CEO input), `alldonebaby` (stops loop) |
+| Terminal | `alldonebaby` (stops loop) |
 
-Any output not matching a known command is sent as custom instructions directly to Codex CLI, allowing the manager LLM to give ad-hoc instructions (e.g., "Fix the two failing tests then rerun validate").
+Any output not matching a known command is sent as custom instructions directly to Codex CLI, allowing the manager LLM to give ad-hoc instructions (e.g., "Fix the two failing tests then rerun validate"). `help` remains an emergency operator pause in the CLI, but it is not part of the normal Apex workflow.
 
 ## Install
 
@@ -130,12 +132,12 @@ python apex_infinite.py --path ~/projects/my-app/ --start plansession --max-iter
 --version                 Show version
 ```
 
-## CEO Intervention
+## Operator Intervention
 
-Two ways to inject human guidance:
+Operator intervention is outside the normal autonomous workflow:
 
-- **`help` pause** -- When the manager LLM outputs `help`, the CLI pauses and prompts for input
-- **Ctrl+C interrupt** -- Press once to pause after the current step for CEO input. Press twice to force quit.
+- **Ctrl+C interrupt** -- Press once to pause after the current step for operator input. Press twice to force quit.
+- **Emergency `help` pause** -- Supported by the CLI for unrecoverable external blockers, but the manager prompt tells the LLM to follow `Next command:` instead for ordinary workflow routing.
 
 ## Safety Features
 

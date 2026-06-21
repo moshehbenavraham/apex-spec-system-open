@@ -150,9 +150,11 @@ If the work file references a changelog, update it too.
 
 ## Output
 
-Report to the user:
+Report:
 - What was accomplished in this session
 - How much of the work file's goals were completed
 - Any issues, warnings, or quality concerns discovered
 - Whether the session ended due to completion or session resource discipline
 - The work file has been updated for session continuity
+- `Next command: none` when the work file goals are complete
+- `Next command: qfrontdev` when frontend work remains and another autonomous utility session should continue from the updated work file

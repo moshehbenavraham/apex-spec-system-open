@@ -2,7 +2,7 @@
 
 Pull the latest from origin, increment the project version, commit all non-gitignored
 changes, and push to origin. Designed as a single command to bundle routine
-commit-and-push workflows without manual version tracking.
+commit-and-push workflows without separate version tracking.
 
 ## Rules
 
@@ -92,3 +92,5 @@ Report:
 - The commit hash and message
 - Whether the push succeeded
 - Any warnings, errors, or issues encountered at any step
+- `Next command: none` when the push succeeds
+- `Next command: copush` when merge conflicts, pull failure, or push rejection prevented completion after the external repo state is resolved

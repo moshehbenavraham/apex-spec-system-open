@@ -34,10 +34,10 @@ always allowed, does not require `.spec_system/`, and must not create new files.
 ## Steps
 
 1. Parse the request.
-   - Required: one source file path, usually written as `@path/to/file.md`.
+- Required: one source file path, usually written as `@path/to/file.md`.
    - Optional: additional instructions after the file path.
    - If the file path is missing or more than one source file is supplied, stop
-     and ask for a single target file.
+     with a blocker summary and `Next command: seshsplit`.
 2. Validate the source file.
    - Confirm the file exists and is readable.
    - Confirm it appears to be text or Markdown. Reject binary or rich document
@@ -106,3 +106,5 @@ Return a concise summary with:
 - the updated file path
 - the number of sessions in the generated plan
 - any major assumptions or open questions captured in the plan
+- `Next command: none` when the split plan was written
+- `Next command: seshsplit` when the command could not run because the target file was missing or ambiguous

@@ -54,7 +54,11 @@ Conditional follow-through:
 
 - Preserve Apex staged workflow and command handoffs from `SKILL.md` and
   `references/workflow-overview.md`
-- Preserve autonomy inside command steps; ambiguity is not a reason to ask
+- Preserve autonomy inside command steps; ambiguity is not a reason to ask,
+  pause, or route through approval
+- Every command output must include a concise `Summary:` and literal
+  `Next command:` handoff, using `none` only when the workflow or standalone
+  utility is complete
 - Treat assumption handling as resolve-and-proceed behavior, not a
   clarification loop
 - Keep stop conditions command-shaped. Do not paste generic blocker categories
@@ -89,7 +93,7 @@ Backlog:
 
 Reject:
 
-- Mandatory human review gates as the default resolution path
+- Mandatory interactive review gates as the default resolution path
 - Long repeated anatomy sections inside every command reference
 - Quota-driven ceremony and generic autonomy boilerplate that do not solve a
   demonstrated Apex command failure mode
@@ -110,7 +114,8 @@ Apply this checklist before patching any command reference.
    references, scripts, and tests when sections, fields, or state semantics
    change.
 6. Do not silently weaken an existing success criterion. If the contract says
-   `Manual testing completed`, do not downgrade it to planning-only language.
+   `Verification scenarios completed`, do not downgrade it to planning-only
+   language.
 7. Keep stop conditions and successful artifacts logically consistent. A true
    hard blocker should stop the command before artifact generation.
 8. Prefer Apex-native wording such as `Working assumption` or
@@ -179,7 +184,7 @@ Command notes:
 - `createuxprd`: in Mode C, every material autonomous design decision should
   appear as a working assumption before writing proceeds
 - `plansession`: add the check between reading inputs and generating the
-  session plan; resolve package scope from repo evidence before asking; keep
+  session plan; resolve package scope from repo evidence without stopping; keep
   phase-complete handoffs aligned with the real workflow so completion routes
   to `audit`, not `phasebuild`
 - `phasebuild`: reconcile PRD phase definitions and `state.json` with a
@@ -312,8 +317,8 @@ normal staged workflow artifacts already exist.
 ### Mandatory Human Review Gates
 
 Reject any change that turns ambiguity, contradiction, or incomplete planning
-inputs into a default human-approval checkpoint. Apex supports autonomous
-progression within steps and between workflow stages.
+inputs into a default approval checkpoint. Apex supports autonomous progression
+within steps and between workflow stages.
 
 ### Repeated Long Anatomy Sections
 
@@ -358,6 +363,7 @@ A prompt-improvement patch is not complete unless all of the following are
 true:
 
 - Workflow handoffs match the orchestrator and workflow overview
+- Each command output has a `Summary:` and a clear `Next command:` line
 - New wording preserves or strengthens existing success criteria
 - Any artifact shape change is reconciled across downstream consumers
 - Claimed specificity improvements produce concrete repo-derived output

@@ -2,16 +2,17 @@
 
 Add and validate production infrastructure one bundle at a time.
 
-This is the third command in the Phase Transition stage. If `infra` finishes with unresolved validation failures, fix them and rerun `infra`. If the current `infra` run passes, recommend `carryforward` as the next workflow command. Do not jump directly from `infra` to `documents`, `phasebuild`, or `plansession` unless the user explicitly chooses to skip the optional `carryforward` step.
+This is the third command in the Phase Transition stage. If `infra` finishes with unresolved validation failures, fix them and rerun `infra`. If the current `infra` run passes, recommend `carryforward` as the next workflow command. Do not jump directly from `infra` to `documents`, `phasebuild`, or `plansession`; `carryforward` can be a no-op when there is nothing material to record.
 
 ## Rules
 
-1. **One bundle per run** - add one, validate all
-2. **Stack agnostic** - read platform from CONVENTIONS.md, adapt
-3. **Document manual steps** - only for things that genuinely require UI access or sudo you don't have
-4. **Don't store secrets** - document required env vars, don't create them
-5. **Validate everything** - verify infra actually works, not just exists
-6. **Respect known-issues.md** - skip items marked as manual-only
+1. **Autonomous execution** - do not ask questions, request approval, or wait for human feedback
+2. **One bundle per run** - add one, validate all
+3. **Stack agnostic** - read platform from CONVENTIONS.md, adapt
+4. **Document external setup** - only for things that genuinely require UI access, credentials, billing, or sudo you don't have
+5. **Don't store secrets** - document required env vars, don't create them
+6. **Validate everything** - verify infra actually works, not just exists
+7. **Respect known-issues.md** - skip items marked as external-only
 
 ### No Deferral Policy
 
@@ -20,7 +21,7 @@ This is the third command in the Phase Transition stage. If `infra` finishes wit
 - If a dependency needs installing, INSTALL IT
 - If a config file needs generating, GENERATE IT
 - "The environment isn't set up" is NOT a blocker -- setting it up IS the task
-- The ONLY valid blocker is something that requires USER input, credentials you don't have, or sudo access
+- The ONLY valid blocker is an external requirement you cannot satisfy from the repository or environment, such as missing credentials, billing, sudo access, or platform access
 - If you skip a task that was executable, that is a **critical failure**
 
 ## Master List (4 Bundles)
@@ -47,7 +48,7 @@ Industry standard order (availability to automation):
 ### Step 1: DETECT
 
 1. Check for `.spec_system/CONVENTIONS.md`
-   - If missing: Run initspec yourself to create it. Only ask the user if initspec requires user input you don't have.
+   - If missing: Run initspec yourself to create it.
    - Read Infrastructure table for configured components
    - Identify: CDN, hosting platform, database, cache, backup, deploy
 
@@ -215,10 +216,10 @@ For each validation failure:
 1. **Health endpoint missing**: Create it (Step 4)
 2. **Health returns error**: Fix DB/cache connectivity
 3. **Rate limiting not working**: Check middleware order, config
-4. **Backup missing/stale**: Run backup manually, fix schedule
+4. **Backup missing/stale**: Run the backup command directly, fix schedule
 5. **Deploy webhook fails**: Verify URL, check platform logs
 
-**After 3 failed attempts**: Try a different approach entirely. Only log for manual review if the fix requires sudo, platform UI access, or credentials you don't have.
+**After 3 failed attempts**: Try a different approach entirely. Only log an external blocker if the fix requires sudo, platform UI access, billing, or credentials you don't have.
 
 Filter out items in known-issues.md Skipped Infra section.
 
@@ -266,7 +267,7 @@ REPORT
 - Response time: 45ms
 
 Platform notes:
-- Coolify probe configured via UI (manual step documented)
+- Coolify probe requires external dashboard configuration
 ```
 
 **Monorepo:**
@@ -284,7 +285,7 @@ REPORT
 [packages/shared] Skipped (library, not deployed)
 ```
 
-**If secrets/manual steps required:**
+**If secrets or external setup are required:**
 ```
 Required setup:
 1. In Coolify dashboard, set health check path to /health
@@ -296,13 +297,34 @@ Required setup:
 
 - **Validation failures remain**: List required actions and rerun `infra`. Do not recommend `carryforward` yet.
 - **Bundles remain**: Note which bundle comes next in a future phase's `infra` run. Remaining bundles do not block the current `infra -> carryforward` handoff.
-- **Current run passes**: Recommend `carryforward` as the immediate next workflow command. Note that it is optional but recommended; if the user explicitly skips it, proceed to `documents`.
+- **Current run passes**: Recommend `carryforward` as the immediate next workflow command.
 - **All 4 bundles configured and validated**: Confirm `infra` is fully mature for the current project state, and still recommend `carryforward` as the immediate next workflow command.
 
-Be explicit in the user-facing report:
-- `infra -> carryforward` is the recommended Phase Transition handoff
-- `documents` comes after `carryforward`, or directly after `infra` only if the user intentionally skips the optional `carryforward` step
+Be explicit in the report:
+- `infra -> carryforward` is the required Phase Transition handoff
+- `documents` comes after `carryforward`
 - Returning to `plansession` does not happen until the next phase has been created via `phasebuild`
+
+## Output
+
+Report the selected bundle, configuration files created or updated, validation
+results, required external setup, remaining issues, and next action.
+
+Use this shape:
+
+```text
+infra complete!
+
+Summary:
+- Selected bundle: [name or "none - validation only"]
+- Configs changed: [brief list]
+- Validation: [passing | failing | external setup required]
+- Required external setup: [none | brief list]
+- Remaining issues: [none | brief list]
+
+Next command: `[carryforward | infra]`
+Reason: [current infra run is validated | validation failures or external setup remain]
+```
 
 ## Dry Run Output
 

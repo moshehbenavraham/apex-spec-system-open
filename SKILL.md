@@ -11,7 +11,7 @@ description: >
   "quick backend", "pull upstream",
   or when working in a project containing a .spec_system/ directory.
   Philosophy: 1 session = 1 spec = 2-4 hours (12-25 tasks).
-version: 2.0.23-codex
+version: 2.0.25-codex
 ---
 
 # Apex Spec Workflow
@@ -53,6 +53,30 @@ The skill exposes 23 commands total: 13 staged workflow commands and 10 utility
 commands. The staged workflow drives the spec lifecycle; utility commands are
 listed separately and run outside the session workflow.
 
+## Autonomous Command Contract
+
+Every command runs autonomously. Commands must not ask questions, request
+approval, wait for feedback, or insert an interactive review stop into the
+workflow. When information is incomplete, choose the safest evidence-backed
+default, record the assumption, and continue. When an external requirement such
+as credentials, sudo access, billing, or a third-party dashboard action makes
+progress impossible, stop after preserving all completed work and report the
+blocker as a fact; do not ask for a decision.
+
+Every command response must end with an explicit handoff that another agent can
+follow without interpretation:
+
+```text
+Summary:
+- [facts about what changed or why no change was made]
+
+Next command: `command-name` OR `none`
+Reason: [why that command is the correct next workflow step]
+```
+
+Use `none` only when the project is complete or the command is a utility that
+does not participate in the staged workflow.
+
 ## The 13-Command Workflow
 
 The workflow has **3 distinct stages**:
@@ -64,13 +88,9 @@ initspec           ->  Set up spec system in project
       |
       v
 createprd          ->  Generate PRD from requirements doc (optional)
-  OR                   OR
-[User Action]      ->  Manually populate PRD with requirements
       |
       v
 createuxprd        ->  Generate UX PRD from design docs (optional)
-  OR                   OR
-[User Action]      ->  Manually populate UX PRD with requirements
       |
       v
 phasebuild         ->  Create first phase structure (session stubs)
@@ -110,13 +130,10 @@ pipeline           ->  CI/CD workflows (quality, build, security)
 infra              ->  Production infrastructure (health, security, deploy)
       |
       v
-carryforward       ->  Capture lessons learned (optional but recommended)
+carryforward       ->  Capture lessons learned
       |
       v
 documents          ->  Audit and update documentation
-      |
-      v
-[User Action]      ->  Manual testing and LLM audit (HIGHLY recommended)
       |
       v
 phasebuild         ->  Create next phase structure
@@ -125,7 +142,10 @@ phasebuild         ->  Create next phase structure
                    ->  Return to Stage 2 for new phase
 ```
 
-`carryforward` does not jump directly to `plansession`. The usual handoff is `carryforward -> documents -> [User Action] manual testing and LLM audit -> phasebuild`; however, run `phasebuild` only if `PRD.md` still defines another unfinished phase. If `PRD.md` has no remaining phase, the workflow ends after `documents` and the project is complete.
+`carryforward` does not jump directly to `plansession`. The usual handoff is
+`carryforward -> documents -> phasebuild`; however, run `phasebuild` only if
+`PRD.md` still defines another unfinished phase. If `PRD.md` has no remaining
+phase, the workflow ends after `documents` and the project is complete.
 
 ### Utility Commands (Safe at Any Time)
 

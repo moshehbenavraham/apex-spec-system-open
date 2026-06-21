@@ -385,10 +385,6 @@ Audits and updates documentation:
 - API documentation
 - Per-package READMEs
 
-### Manual Testing
-
-**Highly recommended** - Test the phase's features manually before proceeding.
-
 ### phasebuild (Next Phase)
 
 ```
@@ -481,5 +477,5 @@ Stage 2: SESSION WORKFLOW (repeat per session)
 plansession -> implement -> validate -> updateprd
 
 Stage 3: PHASE TRANSITION (after all phase sessions complete)
-audit -> pipeline -> infra -> carryforward -> documents -> manual testing -> phasebuild
+audit -> pipeline -> infra -> carryforward -> documents -> phasebuild
 ```

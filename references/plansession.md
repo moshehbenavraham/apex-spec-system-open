@@ -6,28 +6,29 @@ This is the first command in the Session Workflow stage. Run it after `phasebuil
 
 ## Rules
 
-1. **Script first** - Always run `analyze-project.sh --json` before analysis
-2. **Trust the script** - Use JSON output as authoritative state; do not parse `state.json` directly
-3. **One session at a time** - Only recommend one session
-4. **Respect dependencies** - Do not skip prerequisites
-5. **MVP focus** - Recommend core product progress before polish
-6. **Scope discipline** - Sessions must be 12-25 tasks and 2-4 hours
-7. **Hard limits** - Max 25 tasks, max 4 hours, single clear objective
-8. **Do not invent scope** - Derive objectives, deliverables, paths, and tests from PRD, stubs, codebase, and state facts
-9. **Incorporate `CONVENTIONS.md`** - Naming, file structure, and testing philosophy must shape the plan
-10. **Incorporate `CONSIDERATIONS.md`** - Address active concerns and lessons learned when relevant
-11. **ASCII-only characters** and Unix LF line endings in all output
-12. **Task sizing** - Aim for about 20-25 minutes per task, with one clear atomic action
-13. **Every task must have** - Task ID (`TNNN`), session ref (`[SPPSS]`), action verb, and target file path
-14. **Mark `[P]`** only when tasks are truly independent
-15. **Sequence by reality** - Dependencies first, then setup, foundation, implementation, and testing
-16. **Behavioral quality by design** - When a Behavioral Quality Checklist applies, embed edge-case handling into task descriptions instead of leaving it for `implement` or `validate`
-17. **Resolve ambiguity with evidence-backed working assumptions** - Normal ambiguity is not a reason to ask the user
-18. **Surface and resolve conflicts** - When inputs disagree, choose the best-supported interpretation and record it when it materially shapes the plan
+1. **Autonomous execution** - do not ask questions, request approval, or wait for human feedback
+2. **Script first** - Always run `analyze-project.sh --json` before analysis
+3. **Trust the script** - Use JSON output as authoritative state; do not parse `state.json` directly
+4. **One session at a time** - Only recommend one session
+5. **Respect dependencies** - Do not skip prerequisites
+6. **MVP focus** - Recommend core product progress before polish
+7. **Scope discipline** - Sessions must be 12-25 tasks and 2-4 hours
+8. **Hard limits** - Max 25 tasks, max 4 hours, single clear objective
+9. **Do not invent scope** - Derive objectives, deliverables, paths, and tests from PRD, stubs, codebase, and state facts
+10. **Incorporate `CONVENTIONS.md`** - Naming, file structure, and testing philosophy must shape the plan
+11. **Incorporate `CONSIDERATIONS.md`** - Address active concerns and lessons learned when relevant
+12. **ASCII-only characters** and Unix LF line endings in all output
+13. **Task sizing** - Aim for about 20-25 minutes per task, with one clear atomic action
+14. **Every task must have** - Task ID (`TNNN`), session ref (`[SPPSS]`), action verb, and target file path
+15. **Mark `[P]`** only when tasks are truly independent
+16. **Sequence by reality** - Dependencies first, then setup, foundation, implementation, and testing
+17. **Behavioral quality by design** - When a Behavioral Quality Checklist applies, embed edge-case handling into task descriptions instead of leaving it for `implement` or `validate`
+18. **Resolve ambiguity with evidence-backed working assumptions** - Normal ambiguity is not a reason to stop
+19. **Surface and resolve conflicts** - When inputs disagree, choose the best-supported interpretation and record it when it materially shapes the plan
 
 ### No Deferral Policy
 
-- Resolve ambiguity from repo evidence, prior artifacts, and script output before considering user escalation
+- Resolve ambiguity from repo evidence, prior artifacts, and script output before declaring a blocker
 - Use evidence-backed working assumptions for incomplete but non-blocking inputs
 - Distinguish assumptions from true hard blockers; successful artifacts must not contain hard-blocker placeholders
 - Stop only when required planning inputs cannot be read or when required plan artifacts cannot be updated because the repo is not yet at the `plansession` stage
@@ -38,7 +39,7 @@ This is the first command in the Session Workflow stage. Run it after `phasebuil
 
 - "The stub is vague, so a thin placeholder session is fine" -> No. Convert vague intent into concrete repo-derived deliverables or choose a different ready session
 - "This session is a little big, but implement can sort it out" -> No. Right-size it now to the 12-25 task contract
-- "Package scope is unclear, so I should ask the user before planning" -> No. Resolve it from repo evidence or proceed with a recorded working assumption
+- "Package scope is unclear, so planning should stop" -> No. Resolve it from repo evidence or proceed with a recorded working assumption
 - "The dependency is probably satisfied even if not proven" -> No. Missing prerequisite evidence means the prerequisite is not met
 
 ### Red Flags
@@ -46,7 +47,7 @@ This is the first command in the Session Workflow stage. Run it after `phasebuil
 - Multiple objectives or more than 25 tasks in a supposed single session
 - Tasks without repo-derived file paths or tasks that are still generic placeholders
 - Phase-complete state incorrectly handing off to `phasebuild` instead of `audit`
-- Successful artifacts that still contain `TBD`, `ask user`, `blocked`, or equivalent unresolved placeholders
+- Successful artifacts that still contain `TBD`, interactive follow-up notes, `blocked`, or equivalent unresolved placeholders
 
 ## Steps
 
@@ -89,7 +90,7 @@ When working in a monorepo, resolve the package context with this priority:
 4. Repo evidence from PRD language, referenced paths, package layout, and related prior sessions
 5. Best-supported working assumption, recorded in `spec.md`, if planning can still proceed safely
 
-Do not ask the user only because a stub omitted package metadata. If no single package is defensible, treat the session as cross-cutting and record `Package: null` in `spec.md`.
+Do not stop only because a stub omitted package metadata. If no single package is defensible, treat the session as cross-cutting and record `Package: null` in `spec.md`.
 
 ### 2. Read Planning Inputs
 
@@ -248,7 +249,7 @@ Generate `spec.md` with all sections filled in and no unresolved placeholders:
 
 ### Testing Requirements
 - [ ] Unit tests written and passing
-- [ ] Manual testing completed
+- [ ] Verification scenarios completed
 
 ### Non-Functional Requirements
 - [ ] [Relevant NFR with measurable target]
@@ -299,7 +300,7 @@ Top behavioral risks for this session:
 ### Integration Tests
 - [What to test]
 
-### Manual Testing
+### Runtime Verification
 - [Scenario to verify]
 
 ### Edge Cases
@@ -405,7 +406,7 @@ Create `tasks.md` from the selected spec's deliverables, success criteria, techn
 - [ ] T012 [SPPSS] [P] Write integration or regression tests (`tests/path`)
 - [ ] T013 [SPPSS] Run required automated checks (`path/to/script-or-command`)
 - [ ] T014 [SPPSS] Validate ASCII and LF requirements (`path/to/files-or-command`)
-- [ ] T015 [SPPSS] Complete manual verification scenarios (`manual-scenarios`)
+- [ ] T015 [SPPSS] Complete runtime verification scenarios (`verification-scenarios`)
 
 ---
 
@@ -476,20 +477,26 @@ If `spec.md` and `tasks.md` were created or repaired, summarize:
 - Total task count and category breakdown
 - Estimated duration
 - Key parallelization opportunities
+- `Next command: implement`
+- Reason: session planning artifacts are ready for implementation
 
 If no new session was created because the active session is already planned, summarize:
 - The active session ID
 - That `spec.md` and `tasks.md` already exist
 - That the correct next workflow command is `implement`
+- `Next command: implement`
+- Reason: the active session already has spec.md and tasks.md
 
 If no new session was created because the phase is complete, summarize:
 - That the current phase is complete
 - Why no new session plan was created
 - That the correct next workflow command is `audit`
+- `Next command: audit`
+- Reason: the workflow is leaving the session loop and entering Phase Transition
 
 ## Next Action
 
 - After a successful `plansession` run that creates or repairs `spec.md` and `tasks.md`, run `implement`
 - If an active session is already planned, run `implement`
 - If the phase is complete, run `audit`
-- If a true hard blocker prevented planning, report the blocker clearly and stop
+- If a true hard blocker prevented planning, report the blocker clearly and set `Next command: plansession` so planning can rerun after the missing prerequisite exists

@@ -114,3 +114,5 @@ The generated markdown file path is reported to the user along with a brief summ
 - Number of files changed
 - Whether any breaking changes were detected
 - The full path to the documentation file
+- `Next command: up2imp` when the imported changes should be curated into an implementation list
+- `Next command: none` when documentation is complete and no implementation curation is needed

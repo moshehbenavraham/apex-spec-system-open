@@ -75,6 +75,10 @@ Add the command to the Utility Commands table in README.md.
 - Utility commands **may** modify project source files, configs, or non-session spec system files
 - Utility reference files have no frontmatter; SKILL.md handles routing
 - Command names should be short, verb-first when possible (e.g., `check-ascii`, `reset-hooks`)
+- Utility commands are autonomous: do not ask questions, request approval, or
+  wait for human feedback
+- Utility outputs must include `Next command:`. Use `none` when the utility is
+  complete and no staged workflow handoff is implied.
 
 ---
 

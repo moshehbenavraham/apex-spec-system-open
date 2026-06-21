@@ -6,10 +6,11 @@ Use this command only when there is clear evidence that another phase should be 
 
 ## Rules
 
-1. **ASCII-only characters** and Unix LF line endings in all output
-2. **Resolve misalignment before building** - as projects progress, later phases may drift from reality. Reconcile with actual progress before creating artifacts.
-3. **If interrupted mid-process**, delete partial artifacts before retrying
-4. Each session must have a single clear objective, 12-25 tasks, 2-4 hours scope
+1. **Autonomous execution** - do not ask questions, request approval, or wait for human feedback
+2. **ASCII-only characters** and Unix LF line endings in all output
+3. **Resolve misalignment before building** - as projects progress, later phases may drift from reality. Reconcile with actual progress before creating artifacts.
+4. **If interrupted mid-process**, delete partial artifacts before retrying
+5. Each session must have a single clear objective, 12-25 tasks, 2-4 hours scope
 
 ## Steps
 
@@ -49,11 +50,10 @@ If `.spec_system/SECURITY-COMPLIANCE.md` exists, review it for:
 - **GDPR Status** that may affect data-handling session scope
 
 **Monorepo Checkpoint** (skip if `monorepo` is already `true` or `false`):
-- If the PRD references multiple packages/services but `state.json` has no `packages` array, alert the user:
+- If the PRD references multiple packages/services but `state.json` has no `packages` array, include this warning in the output summary:
   ```
   Warning: PRD references multiple packages but monorepo is not configured.
   Consider running createprd to detect and configure monorepo settings,
-  or manually update state.json with monorepo: true and a packages array.
   ```
 - This is advisory only -- do not block phase creation
 
@@ -269,10 +269,15 @@ Add the new phase to the Phases table in `.spec_system/PRD/PRD.md`. Also update 
 
 ## Output
 
-Report to user:
+Report:
 
 ```
 Phase NN Created: Phase Name
+
+Summary:
+- Created phase NN with N session stubs
+- Phase source: [PRD.md | state.json reconciled with PRD.md]
+- Scope: [brief phase objective]
 
 Structure:
 - .spec_system/PRD/phase_NN/
@@ -287,10 +292,8 @@ State Updated:
 
 Sessions Defined: N
 
-Next Steps:
-- Review session definitions
-- Adjust scope as needed
-- Run plansession to begin the first session of this phase
+Next command: `plansession`
+Reason: phase stubs now exist; plansession must select the next executable session and create spec.md plus tasks.md.
 ```
 
 If Step 1 determined that neither `PRD.md` nor `state.json` clearly indicates another upcoming phase, report instead:
@@ -301,6 +304,13 @@ No upcoming phase found in PRD.md or state.json.
 Project status: complete
 
 phasebuild did not create any new artifacts.
+
+Summary:
+- No upcoming phase exists in PRD.md or state.json
+- The staged workflow has no remaining phase to create
+
+Next command: `none`
+Reason: the project has no remaining planned phase.
 ```
 
 Do not recommend `plansession` in that case, because there is no new phase to plan.

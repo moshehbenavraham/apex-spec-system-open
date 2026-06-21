@@ -8,15 +8,16 @@ it fails, fix the issues and rerun `validate`.
 
 ## Rules
 
-1. **PASS requires ALL of**: 100% tasks complete, all deliverables exist, all files ASCII-encoded with LF endings, all tests passing, all success criteria met, database/schema alignment verified when the session touches the DB layer, no security or GDPR violations, no critical behavioral quality violations (when BQC applies)
-2. **Any single failure = overall FAIL** - no partial passes
-3. **Script first** - run `analyze-project.sh --json` before any analysis
-4. Conventions compliance is a spot-check, not exhaustive - flag obvious violations only
+1. **Autonomous execution** - do not ask questions, request approval, or wait for human feedback
+2. **PASS requires ALL of**: 100% tasks complete, all deliverables exist, all files ASCII-encoded with LF endings, all tests passing, all success criteria met, database/schema alignment verified when the session touches the DB layer, no security or GDPR violations, no critical behavioral quality violations (when BQC applies)
+3. **Any single failure = overall FAIL** - no partial passes
+4. **Script first** - run `analyze-project.sh --json` before any analysis
+5. Conventions compliance is a spot-check, not exhaustive - flag obvious violations only
 
 ### No Deferral Policy
 
 - If a validation check fails and YOU can fix it (encoding issues, missing directories, failing tests with obvious fixes, missing schema artifacts, unapplied migrations), FIX IT and re-validate
-- The ONLY valid reason to report a FAIL back to the user is when the fix requires their input, credentials, or decisions only a human can make
+- The ONLY valid reason to leave a FAIL unresolved is an external requirement you cannot satisfy from the repository or environment, such as missing credentials, API keys, billing, or sudo access
 - "The environment isn't set up" is NOT a valid FAIL -- setting it up IS the task
 - If you report a FAIL for something you could have fixed, that is a **critical failure**
 
@@ -43,7 +44,7 @@ This returns structured JSON including:
 - `packages` - Array of registered packages (empty if not monorepo)
 - `active_package` - Resolved package context (null if not applicable)
 
-**IMPORTANT**: Use the `current_session` value from this output. If `current_session` is `null`, run plansession yourself to set one up. Only ask the user if plansession itself requires user input.
+**IMPORTANT**: Use the `current_session` value from this output. If `current_session` is `null`, run plansession yourself to set one up.
 
 ### 1a. Determine Package Context (Monorepo Only)
 
@@ -392,7 +393,7 @@ From spec.md:
 
 ### Testing Requirements
 - [x] Unit tests written and passing
-- [x] Manual testing completed
+- [x] Verification scenarios completed
 
 ### Quality Gates
 - [x] All files ASCII-encoded
@@ -471,8 +472,8 @@ From spec.md:
 
 ## Next Steps
 
-[If PASS]: Run updateprd to mark session complete.
-[If FAIL]: Address required actions and run validate again.
+[If PASS]: Next command: `updateprd`
+[If FAIL]: Next command: `implement` for code, task, deliverable, test, schema, security, or behavioral fixes; `validate` only when validation was blocked by an external requirement and no implementation change is pending.
 ```
 
 ### 6. Update State
@@ -511,9 +512,17 @@ Update `.spec_system/state.json` based on validation result:
 
 ## Output
 
-Report PASS/FAIL with a summary of each check, including database/schema alignment when relevant. If PASS, prompt updateprd. If FAIL, list issues with suggested fixes and prompt re-run of validate.
+Report PASS/FAIL with a summary of each check, including database/schema alignment when relevant.
+
+The output must include:
+- `Summary:` with check results and any fixes applied during validation
+- `Next command: updateprd` when PASS
+- `Next command: implement` when FAIL requires implementation, task, test, schema, security, or behavioral fixes
+- `Next command: validate` only when validation could not complete because of an external requirement and no implementation change is pending
+- `Reason:` explaining the handoff
 
 ## Next Action
 
 - If PASS: run `updateprd`
-- If FAIL: fix the issues and run `validate` again
+- If FAIL with implementation or artifact issues: run `implement`
+- If FAIL because validation itself was externally blocked and no implementation change is pending: rerun `validate` after the external requirement exists

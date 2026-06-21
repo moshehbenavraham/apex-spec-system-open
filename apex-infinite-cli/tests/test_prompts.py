@@ -82,7 +82,12 @@ class TestManagerSystemPrompt:
 
     def test_ceo_section_references_codex(self):
         assert "relay the instructions to Codex CLI" in MANAGER_SYSTEM_PROMPT
-        assert "Codex CLI TRULY cannot do" in MANAGER_SYSTEM_PROMPT
+        assert "Next command:" in MANAGER_SYSTEM_PROMPT
+        assert "ordinary command blockers" in MANAGER_SYSTEM_PROMPT
+
+    def test_manager_uses_next_command_handoff(self):
+        assert "primary routing signal" in MANAGER_SYSTEM_PROMPT
+        assert "Use the command's `Next command:` line" in MANAGER_SYSTEM_PROMPT
 
     def test_prompt_is_well_structured(self):
         """Verify key structural sections exist."""

@@ -75,7 +75,7 @@ normalized project path.
    overrides iteration 1.
 4. Route the decision:
    - Known workflow command -> build a Codex skill invocation prompt
-   - `help` -> pause for CEO input
+   - `help` -> emergency operator pause outside the normal workflow
    - `alldonebaby` -> stop and mark the run complete
    - Any other string -> send it to Codex as raw instructions
 5. Execute `codex exec`, unless `--dry-run` is enabled.
@@ -84,10 +84,13 @@ normalized project path.
 
 ## Operator Controls
 
-### CEO input
+### Operator input
 
-- `--ceo "..."` seeds the first iteration with explicit human guidance.
-- If the manager outputs `help`, the CLI pauses and prompts for a CEO response.
+- `--ceo "..."` seeds the first iteration with explicit operator guidance.
+- Normal manager routing should follow the latest command's `Next command:`
+  line, not pause for input.
+- If the manager outputs `help`, the CLI pauses and prompts for an operator
+  response. Treat this as an emergency escape hatch, not standard workflow.
 - If the manager does not need help, the CEO message is consumed once and then
   cleared.
 
@@ -124,7 +127,7 @@ For an existing project:
 | Signal | Meaning | Action |
 |--------|---------|--------|
 | `Manager Decision:` | Current loop decision | Confirm it matches the project state |
-| `*** MANAGER NEEDS CEO HELP ***` | Manager cannot proceed autonomously | Provide one concise unblocker |
+| `*** MANAGER NEEDS CEO HELP ***` | Emergency pause outside normal workflow | Provide one concise external unblocker or restart with `--start` |
 | `*** PROJECT COMPLETE! ***` | Manager emitted `alldonebaby` | Stop the run and review deliverables |
 | `[TIMEOUT]` | `codex exec` exceeded the timeout | Narrow scope or inspect the underlying command |
 | `[ERROR exit code N]` | Codex exited non-zero | Read stderr in the logged response |
@@ -132,7 +135,7 @@ For an existing project:
 
 ## Safe Shutdown
 
-- Preferred: respond `quit` when prompted after `help` or a CEO interrupt.
+- Preferred: respond `quit` when prompted after `help` or an operator interrupt.
 - Acceptable: terminate the process if you do not need another history record.
 - After exit, use `--history --path ...` to confirm the last recorded state.
 

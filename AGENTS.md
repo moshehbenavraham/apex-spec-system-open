@@ -6,7 +6,7 @@ Philosophy: 1 session = 1 spec = 2-4 hours (12-25 tasks)
 
 ## Version
 
-Current version: 2.0.23-codex
+Current version: 2.0.25-codex
 
 When updating version, update it in all the following files:
 
@@ -33,6 +33,10 @@ command-specific reference documents in references/.
 - Scripts use bash + jq only; no additional dependencies
 - Commands use local-first script resolution: check .spec_system/scripts/ before
   falling back to scripts/
+- Commands are autonomous: do not ask questions, request approval, or wait for
+  human feedback. Use evidence-backed assumptions, record them, and continue.
+- Every command response must include a concise summary and an explicit
+  `Next command:` handoff, or `Next command: none` when the workflow is complete.
 - See docs/CONVENTIONS.md for complete coding standards
 
 ## Directory Layout

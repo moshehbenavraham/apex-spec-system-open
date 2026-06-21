@@ -92,12 +92,19 @@ The preferred output is a JSON object with two keys:
 
 `output` drives routing. `reason` is logged and shown to the operator.
 
+The manager should treat the latest Codex command's literal `Next command:` line
+as the primary routing signal unless the same message proves that handoff is
+unsafe.
+
 ### Allowed Output Classes
 
 - Known workflow command, such as `validate`
-- `help`
 - `alldonebaby`
 - Arbitrary instruction text, such as `Fix the two failing tests then rerun validate`
+
+`help` remains a supported CLI escape hatch for emergency operator pauses, but
+it is not a normal Apex workflow output and should not be used for ordinary
+command blockers.
 
 ## Parsing Behavior
 

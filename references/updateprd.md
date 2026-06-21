@@ -8,10 +8,11 @@ After a successful `updateprd` run, the next workflow command has exactly two pa
 
 ## Rules
 
-1. **Validation must have PASSED** - if `validation.md` shows FAIL, stop and instruct user to fix issues first
-2. **ASCII-only characters** and Unix LF line endings in all output
-3. **No co-authors or attributions** in commit messages
-4. **Increment patch version** by default (X.Y.Z -> X.Y.Z+1), preserve pre-release suffixes
+1. **Autonomous execution** - do not ask questions, request approval, or wait for human feedback
+2. **Validation must have PASSED** - if `validation.md` shows FAIL, stop without mutating session-complete state
+3. **ASCII-only characters** and Unix LF line endings in all output
+4. **No co-authors or attributions** in commit messages
+5. **Increment patch version** by default (X.Y.Z -> X.Y.Z+1), preserve pre-release suffixes
 
 ## Steps
 
@@ -19,7 +20,11 @@ After a successful `updateprd` run, the next workflow command has exactly two pa
 
 Read `.spec_system/specs/[current-session]/validation.md`:
 - Confirm overall result is PASS
-- If FAIL, instruct user to fix issues first
+- If FAIL, do not update PRD or state. Report the validation failure and set
+  `Next command: implement` for code, task, deliverable, test, schema,
+  security, or behavioral fixes; use `Next command: validate` only when the
+  validation report says validation itself was externally blocked and no
+  implementation change is pending.
 
 Also read `.spec_system/specs/[current-session]/spec.md` to extract the `Package:` field (if present). This determines the package context for state updates below.
 
@@ -221,7 +226,7 @@ Complete phaseNN-sessionNN-name (apps/web): [brief description]
 
 ### 8. Report Completion
 
-Tell the user:
+Report:
 - Session marked complete
 - Updated files list
 - Version change (old -> new)
@@ -234,4 +239,33 @@ Be explicit about the two possible outcomes:
 
 ## Output
 
-Report: session marked complete, updated files, version change, phase progress, and next action. If the phase continues, recommend `plansession`. If the phase is complete, recommend `audit` and state that the workflow is exiting the session-processing loop and beginning Phase Transition.
+Report: session marked complete, updated files, version change, phase progress, and next action.
+
+Use this shape:
+
+```text
+updateprd complete!
+
+Summary:
+- Session marked complete: [session-id]
+- Updated files: [brief list]
+- Version: [old] -> [new] [or "not changed - no version file"]
+- Phase progress: [completed]/[total] sessions
+
+Next command: `[plansession | audit]`
+Reason: [phase still has unfinished sessions | phase is complete and the workflow is entering Phase Transition]
+```
+
+If validation was not PASS, use this shape instead:
+
+```text
+updateprd stopped.
+
+Summary:
+- validation.md result is FAIL
+- Session was not marked complete
+- State, PRD, version, commit, and push were not changed
+
+Next command: `[implement | validate]`
+Reason: [validation failure requires fixes | validation itself was externally blocked and should rerun]
+```

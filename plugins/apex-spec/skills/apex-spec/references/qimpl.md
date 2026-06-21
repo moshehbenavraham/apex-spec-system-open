@@ -80,8 +80,10 @@ Before ending the session, update the work file with:
 
 ## Output
 
-Report to the user:
+Report:
 - What was accomplished in this session
 - How much of the work file's goals were completed
 - Whether the session ended due to completion or session resource discipline
 - The work file has been updated for session continuity
+- `Next command: none` when the work file goals are complete
+- `Next command: qimpl` when work remains and another autonomous utility session should continue from the updated work file

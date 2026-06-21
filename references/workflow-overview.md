@@ -20,6 +20,16 @@ technical PRD.
 | Ideal task count | 12-25 (sweet spot: 20) |
 | Objectives | Single clear objective |
 
+## Autonomy and Handoff Rules
+
+- Commands must not ask questions, request approval, wait for feedback, or add
+  interactive review stops.
+- Commands resolve ambiguity from repository evidence and record working
+  assumptions when needed.
+- If an external requirement prevents progress, commands report it as a
+  blocker and still provide a deterministic next command.
+- Every command response ends with `Summary:`, `Next command:`, and `Reason:`.
+
 ## The 3 Stages
 
 ### Stage 1: Initialization (One-Time Setup)
@@ -52,12 +62,15 @@ Important: after a successful `updateprd` run, return to `plansession` if the ph
 | 1 | audit | Set up local dev tooling (formatter, linter, types, tests) |
 | 2 | pipeline | Configure CI/CD workflows (quality, build, security) |
 | 3 | infra | Set up production infrastructure (health, security, deploy) |
-| 4 | carryforward | Capture lessons learned (optional but recommended) |
+| 4 | carryforward | Capture lessons learned |
 | 5 | documents | Audit and update project documentation |
-| - | (manual) | Manual testing and LLM audit (highly recommended) |
-| 6 | phasebuild | Create next phase structure, return to Stage 2 |
+| 6 | phasebuild | Create next phase structure if another phase remains |
 
-Important: `carryforward` does not lead directly to `plansession`. Finish `documents`, then manual testing and LLM audit, then `phasebuild` only if `PRD.md` still defines another unfinished phase. Only after `phasebuild` do you return to Stage 2 with `plansession`. If `PRD.md` has no remaining phase, the workflow ends and the project is complete.
+Important: `carryforward` does not lead directly to `plansession`. Finish
+`documents`, then run `phasebuild` only if `PRD.md` still defines another
+unfinished phase. Only after `phasebuild` do you return to Stage 2 with
+`plansession`. If `PRD.md` has no remaining phase, the workflow ends and the
+project is complete.
 
 ## Workflow Diagram
 
@@ -77,9 +90,6 @@ phasebuild              updateprd ------+         carryforward
                                                       |
                                                       v
                                                   documents
-                                                      |
-                                                      v
-                                          [manual testing + LLM audit]
                                                       |
                                                       v
                                                   phasebuild --> Stage 2
@@ -105,21 +115,21 @@ the session workflow and can be used for support tasks at any time:
 
 ## Staged Workflow Command Quick Reference
 
-| Command | Input | Output |
-|---------|-------|--------|
-| initspec | Project info | .spec_system/ structure |
-| createprd | Requirements doc | PRD/PRD.md |
-| createuxprd | Design docs | PRD/PRD_UX.md |
-| plansession | state.json, PRD | spec.md + tasks.md |
-| implement | spec.md, tasks.md | implementation-notes.md |
-| validate | All session files | validation.md |
-| updateprd | validation.md | Updated state.json |
-| audit | CONVENTIONS.md | Updated dev tools |
-| pipeline | CONVENTIONS.md | Workflow files |
-| infra | CONVENTIONS.md | Config files |
-| documents | state.json, PRD | Updated docs |
-| carryforward | Phase artifacts | CONSIDERATIONS.md |
-| phasebuild | PRD | PRD/phase_NN/ |
+| Command | Input | Output | Normal next command |
+|---------|-------|--------|---------------------|
+| initspec | Project info | .spec_system/ structure | createprd |
+| createprd | Requirements doc | PRD/PRD.md | createuxprd or phasebuild |
+| createuxprd | Design docs | PRD/PRD_UX.md | phasebuild |
+| phasebuild | PRD | PRD/phase_NN/ | plansession or none |
+| plansession | state.json, PRD | spec.md + tasks.md | implement or audit |
+| implement | spec.md, tasks.md | implementation-notes.md | validate |
+| validate | All session files | validation.md | updateprd or implement |
+| updateprd | validation.md | Updated state.json | plansession or audit |
+| audit | CONVENTIONS.md | Updated dev tools | pipeline or audit |
+| pipeline | CONVENTIONS.md | Workflow files | infra or pipeline |
+| infra | CONVENTIONS.md | Config files | carryforward or infra |
+| carryforward | Phase artifacts | CONSIDERATIONS.md | documents |
+| documents | state.json, PRD | Updated docs | phasebuild or none |
 
 ## Task Format
 

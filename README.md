@@ -2,7 +2,7 @@
 
 ## A Claude Code Plugin Version Available Here: https://github.com/moshehbenavraham/apex-spec-system
 
-**Version: 2.0.23-codex**
+**Version: 2.0.25-codex**
 
 A specification-driven workflow system for AI-assisted development, packaged as
 an Agent Skill following the [Agent Skills standard](https://agentskills.io).
@@ -132,6 +132,15 @@ After installation, verify: `ls ~/.agents/skills/apex-spec/SKILL.md`
 Apex Spec exposes 23 commands total: 13 staged workflow commands and 10 utility
 commands. The staged workflow drives the spec lifecycle; utilities are separate
 helpers for out-of-band tasks.
+
+## Autonomous Handoffs
+
+Workflow commands are designed for unattended agent-to-agent execution. They do
+not ask questions, wait for approval, or insert human feedback gates. If input is
+incomplete, the command uses repo evidence and safe defaults, records the
+assumption, and continues. Each command ends with a short summary and an
+explicit `Next command:` line so another agent can route the next step without
+guessing.
 
 ## The 13-Command Workflow
 

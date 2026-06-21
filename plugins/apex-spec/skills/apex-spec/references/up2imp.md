@@ -98,3 +98,5 @@ implementation list. Report:
   stability, refactor)
 - Items excluded (with brief summary of why, grouped by exclusion reason)
 - The final ordered list is ready for sequential implementation
+- `Next command: qimpl`
+- Reason: qimpl can execute the curated implementation list from the rewritten changes file
