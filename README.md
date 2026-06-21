@@ -2,7 +2,7 @@
 
 ## A Claude Code Plugin Version Available Here: https://github.com/moshehbenavraham/apex-spec-system
 
-**Version: 2.0.22-codex**
+**Version: 2.0.23-codex**
 
 A specification-driven workflow system for AI-assisted development, packaged as
 an Agent Skill following the [Agent Skills standard](https://agentskills.io).
@@ -33,7 +33,7 @@ Verify with: `bash scripts/check-prereqs.sh --env`
 ## Quick Start
 
 ```bash
-# 1. Install the skill (see Installation below)
+# 1. Install the Codex plugin or skill (see Installation below)
 # 2. Initialize spec system in your project
 $apex-spec initspec
 
@@ -76,35 +76,46 @@ For the full staged workflow and handoff rules, see
 
 ## Installation
 
-### Method 1: Git Clone (Recommended)
+### Method 1: Codex Plugin Marketplace (Recommended for Codex)
+
+Add this repo as a Codex plugin marketplace source:
+
+```bash
+codex plugin marketplace add moshehbenavraham/apex-spec-system-open --ref master
+```
+
+Then open Codex, run `/plugins`, select the **Apex Spec System** marketplace,
+and install **Apex Spec System**.
+
+### Method 2: Git Clone
 
 Clone directly into your agent skills directory:
 
 ```bash
-git clone https://github.com/aiwithapex/apex-spec-system-open.git \
+git clone https://github.com/moshehbenavraham/apex-spec-system-open.git \
   ~/.agents/skills/apex-spec
 ```
 
-### Method 2: Skill Installer
+### Method 3: Skill Installer
 
 If your agent supports skill installation commands:
 
 ```bash
 # Codex CLI
-codex install-skill https://github.com/aiwithapex/apex-spec-system-open.git
+codex install-skill https://github.com/moshehbenavraham/apex-spec-system-open.git
 ```
 
-### Method 3: Manual Download
+### Method 4: Manual Download
 
 Download and extract to your skills directory:
 
 ```bash
 mkdir -p ~/.agents/skills/apex-spec
-curl -L https://github.com/aiwithapex/apex-spec-system-open/archive/refs/heads/master.tar.gz \
+curl -L https://github.com/moshehbenavraham/apex-spec-system-open/archive/refs/heads/master.tar.gz \
   | tar xz --strip-components=1 -C ~/.agents/skills/apex-spec
 ```
 
-### Method 4: Skills Catalog (Experimental)
+### Method 5: Skills Catalog (Experimental)
 
 Install from the [openai/skills](https://github.com/openai/skills) catalog
 using the skill installer inside Codex (PR #244 submitted to `.experimental/`

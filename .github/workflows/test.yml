@@ -99,6 +99,44 @@ jobs:
           fi
           echo "All JSON files are valid."
 
+  codex-plugin:
+    name: Codex plugin wrapper
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Validate marketplace and plugin manifests
+        run: |
+          marketplace=".agents/plugins/marketplace.json"
+          plugin_root="plugins/apex-spec"
+          plugin_manifest="${plugin_root}/.codex-plugin/plugin.json"
+
+          jq empty "$marketplace"
+          jq empty "$plugin_manifest"
+
+          test "$(jq -r '.name' "$marketplace")" = "apex-spec-system"
+          test "$(jq -r '.plugins[0].name' "$marketplace")" = "apex-spec"
+          test "$(jq -r '.plugins[0].source.source' "$marketplace")" = "local"
+          test "$(jq -r '.plugins[0].source.path' "$marketplace")" = "./plugins/apex-spec"
+          test "$(jq -r '.plugins[0].policy.installation' "$marketplace")" = "AVAILABLE"
+          test "$(jq -r '.plugins[0].policy.authentication' "$marketplace")" = "ON_INSTALL"
+          test "$(jq -r '.plugins[0].category' "$marketplace")" = "Productivity"
+
+          test "$(jq -r '.name' "$plugin_manifest")" = "apex-spec"
+          test "$(jq -r '.skills' "$plugin_manifest")" = "./skills/"
+          test -f "${plugin_root}/skills/apex-spec/SKILL.md"
+          root_version=$(grep -m1 '^version:' SKILL.md | awk '{print $2}')
+          test "$(jq -r '.version' "$plugin_manifest")" = "$root_version"
+
+      - name: Verify packaged skill mirrors root skill
+        run: |
+          plugin_skill="plugins/apex-spec/skills/apex-spec"
+          cmp SKILL.md "${plugin_skill}/SKILL.md"
+          cmp agents/openai.yaml "${plugin_skill}/agents/openai.yaml"
+          diff -qr references "${plugin_skill}/references"
+          diff -qr scripts "${plugin_skill}/scripts"
+
   script-tests:
     name: Script functional tests (bats)
     runs-on: ubuntu-latest

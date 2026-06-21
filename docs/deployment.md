@@ -2,34 +2,44 @@
 
 ## Overview
 
-The Apex Spec System is a plain-files skill (markdown, YAML, bash, JSON). There
-is no build step, compilation, or artifact generation. Deployment means
-distributing these files to the user's agent skills directory.
+The Apex Spec System is a plain-files skill and Codex plugin wrapper (markdown,
+YAML, bash, JSON). There is no build step, compilation, or artifact generation.
+Deployment means distributing these files either through the Codex plugin
+marketplace wrapper or directly to the user's agent skills directory.
 
 ## Installation Methods
 
-### Method 1: Git Clone (Recommended)
+### Method 1: Codex Plugin Marketplace (Recommended for Codex)
 
 ```bash
-git clone https://github.com/aiwithapex/apex-spec-system-open.git \
+codex plugin marketplace add moshehbenavraham/apex-spec-system-open --ref master
+```
+
+Then open Codex, run `/plugins`, select the **Apex Spec System** marketplace,
+and install **Apex Spec System**.
+
+### Method 2: Git Clone
+
+```bash
+git clone https://github.com/moshehbenavraham/apex-spec-system-open.git \
   ~/.agents/skills/apex-spec
 ```
 
-### Method 2: Skill Installer
+### Method 3: Skill Installer
 
 ```bash
-codex install-skill https://github.com/aiwithapex/apex-spec-system-open.git
+codex install-skill https://github.com/moshehbenavraham/apex-spec-system-open.git
 ```
 
-### Method 3: Manual Download
+### Method 4: Manual Download
 
 ```bash
 mkdir -p ~/.agents/skills/apex-spec
-curl -L https://github.com/aiwithapex/apex-spec-system-open/archive/refs/heads/master.tar.gz \
+curl -L https://github.com/moshehbenavraham/apex-spec-system-open/archive/refs/heads/master.tar.gz \
   | tar xz --strip-components=1 -C ~/.agents/skills/apex-spec
 ```
 
-### Method 4: Skills Catalog (Experimental)
+### Method 5: Skills Catalog (Experimental)
 
 Install from the [openai/skills](https://github.com/openai/skills) catalog
 using the skill installer inside Codex:
@@ -62,7 +72,7 @@ Push --> Quality (shellcheck, shfmt, encoding) --> Tests (bats) --> Security (au
 
 ## Release Process
 
-1. Update version in `SKILL.md` (frontmatter) and `README.md`
+1. Update version in `SKILL.md`, `README.md`, `AGENTS.md`, and the Codex plugin wrapper
 2. Commit with `chore: bump version to X.Y.Z`
 3. Tag the release: `git tag -a vX.Y.Z -m "Release vX.Y.Z"`
 4. Push tag: `git push origin vX.Y.Z`

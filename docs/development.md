@@ -14,7 +14,7 @@
 ## Local Setup
 
 ```bash
-git clone https://github.com/aiwithapex/apex-spec-system-open.git
+git clone https://github.com/moshehbenavraham/apex-spec-system-open.git
 cd apex-spec-system-open
 pre-commit install
 ```
@@ -128,6 +128,11 @@ The `release.yml` workflow runs 4 verification steps before publishing a release
 4. **Script executability** -- Verifies all `.sh` files in `scripts/` have the execute bit set.
 
 All 4 checks must pass before a GitHub Release is created.
+
+The `test.yml` workflow also validates the Codex plugin wrapper: the repo
+marketplace entry must point to `plugins/apex-spec`, the plugin manifest version
+must match the root skill version, and the packaged skill must mirror the root
+skill files.
 
 ### Encoding Testing
 

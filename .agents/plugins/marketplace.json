@@ -1,0 +1,20 @@
+{
+  "name": "apex-spec-system",
+  "interface": {
+    "displayName": "Apex Spec System"
+  },
+  "plugins": [
+    {
+      "name": "apex-spec",
+      "source": {
+        "source": "local",
+        "path": "./plugins/apex-spec"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

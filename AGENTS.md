@@ -6,13 +6,15 @@ Philosophy: 1 session = 1 spec = 2-4 hours (12-25 tasks)
 
 ## Version
 
-Current version: 2.0.22-codex
+Current version: 2.0.23-codex
 
 When updating version, update it in all the following files:
 
 - README.md
 - SKILL.md (frontmatter version field)
 - AGENTS.md
+- plugins/apex-spec/.codex-plugin/plugin.json
+- plugins/apex-spec/skills/apex-spec/SKILL.md (frontmatter version field)
 
 ## Project Context
 
@@ -38,6 +40,8 @@ command-specific reference documents in references/.
 | Directory | Purpose |
 |-----------|---------|
 | SKILL.md | Root orchestrator and entry point |
+| .agents/plugins/ | Codex plugin marketplace metadata |
+| plugins/apex-spec/ | Codex plugin wrapper and packaged skill copy |
 | references/ | Command references plus supporting checklists and workflow docs |
 | scripts/ | Bash utilities (analyze-project.sh, check-prereqs.sh, common.sh) |
 | agents/ | Codex CLI metadata (openai.yaml) |

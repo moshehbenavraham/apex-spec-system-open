@@ -17,7 +17,7 @@ Verify with: `bash scripts/check-prereqs.sh --env`
 ### 1. Install
 
 ```bash
-git clone https://github.com/aiwithapex/apex-spec-system-open.git \
+git clone https://github.com/moshehbenavraham/apex-spec-system-open.git \
   ~/.agents/skills/apex-spec
 ```
 
@@ -44,7 +44,7 @@ See [references/workflow-overview.md](../references/workflow-overview.md) for th
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/aiwithapex/apex-spec-system-open.git
+git clone https://github.com/moshehbenavraham/apex-spec-system-open.git
 cd apex-spec-system-open
 ```
 

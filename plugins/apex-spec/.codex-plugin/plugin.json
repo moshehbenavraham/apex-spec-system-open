@@ -1,0 +1,39 @@
+{
+  "name": "apex-spec",
+  "version": "2.0.23-codex",
+  "description": "Specification-driven workflow system for AI-assisted development in Codex.",
+  "author": {
+    "name": "Apex Spec System Contributors",
+    "url": "https://github.com/moshehbenavraham/apex-spec-system-open"
+  },
+  "homepage": "https://github.com/moshehbenavraham/apex-spec-system-open#readme",
+  "repository": "https://github.com/moshehbenavraham/apex-spec-system-open",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "agent-skills",
+    "specification-driven-development",
+    "workflow",
+    "planning"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Apex Spec System",
+    "shortDescription": "Plan, implement, validate, and ship scoped spec-driven sessions.",
+    "longDescription": "Apex Spec System packages a 23-command specification-driven workflow for Codex. It guides initialization, PRD creation, phase and session planning, implementation, validation, documentation, and utility workflows such as copush and Docker builds.",
+    "developerName": "Apex Spec System Contributors",
+    "category": "Productivity",
+    "capabilities": [
+      "Planning",
+      "Workflow",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/moshehbenavraham/apex-spec-system-open",
+    "brandColor": "#2563EB",
+    "defaultPrompt": [
+      "Use Apex Spec to plan the next session.",
+      "Initialize the spec system in this repo.",
+      "Validate the current Apex Spec session."
+    ]
+  }
+}
