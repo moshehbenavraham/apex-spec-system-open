@@ -12,6 +12,7 @@ Use utility commands for ad-hoc operations that support your workflow but are no
 | Command | Purpose |
 |---------|---------|
 | `sculpt-ui` | Guide AI-led creation of distinctive, production-grade frontend interfaces |
+| `seshsplit` | Insert or refresh a session split plan inside a text or Markdown plan file |
 | `copush` | Pull, version-bump, commit all changes, and push to origin |
 | `dockcleanbuild` | Clean Docker environment and rebuild all images and containers from scratch |
 | `dockbuild` | Quick Docker Compose build and start with full output |
@@ -72,8 +73,25 @@ Add the command to the Utility Commands table in README.md.
 - Utility commands **must not** modify `state.json`, session specs, or task checklists
 - Utility commands **may** read `.spec_system/` files for context
 - Utility commands **may** modify project source files, configs, or non-session spec system files
-- Frontmatter must include `category: utility`
+- Utility reference files have no frontmatter; SKILL.md handles routing
 - Command names should be short, verb-first when possible (e.g., `check-ascii`, `reset-hooks`)
+
+---
+
+## seshsplit
+
+**Purpose**: Insert or refresh a session-based implementation plan inside the same text or Markdown rough-plan file.
+
+**Usage**:
+```
+seshsplit <plan-file> [optional instructions]
+```
+
+**Behavior**: Reads one text or Markdown source file, creates a `Session Split Plan`
+near the top, or replaces the existing top `Session Split Plan` with an updated
+version. Uses the current document and optional instructions to split all outlined
+work into as many focused sessions as needed. Writes only the original file and
+does not require `.spec_system/`.
 
 ---
 

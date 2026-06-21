@@ -2,7 +2,7 @@
 
 ## A Claude Code Plugin Version Available Here: https://github.com/moshehbenavraham/apex-spec-system
 
-**Version: 2.0.20-codex**
+**Version: 2.0.21-codex**
 
 A specification-driven workflow system for AI-assisted development, packaged as
 an Agent Skill following the [Agent Skills standard](https://agentskills.io).
@@ -116,6 +116,12 @@ $skill-installer install the apex-spec skill from the .experimental folder
 
 After installation, verify: `ls ~/.agents/skills/apex-spec/SKILL.md`
 
+## Command Structure
+
+Apex Spec exposes 23 commands total: 13 staged workflow commands and 10 utility
+commands. The staged workflow drives the spec lifecycle; utilities are separate
+helpers for out-of-band tasks.
+
 ## The 13-Command Workflow
 
 The workflow has 3 distinct stages. See
@@ -153,10 +159,15 @@ phasebuild    ->  Create next phase structure
 
 ### Utility Commands (Safe at Any Time)
 
+These 10 commands are not part of the required staged workflow. Use them for
+support tasks such as Git, Docker, upstream sync, focused implementation bursts,
+or frontend/backend utility work.
+
 | Command | Purpose |
 |---------|---------|
 | copush | Pull, version-bump, commit, push |
 | sculpt-ui | Guide AI-led frontend design |
+| seshsplit | Insert or refresh a session split plan inside a text or Markdown plan file |
 | dockbuild | Docker Compose build and start |
 | dockcleanbuild | Clean Docker rebuild |
 | up2imp | Audit upstream changes |
@@ -218,7 +229,7 @@ workspaces, Go modules, Lerna.
 
 ## Features
 
-- **22-Command Workflow**: Structured process from initialization to completion
+- **23 Commands Total**: 13 staged workflow commands plus 10 utility commands
 - **Session Scoping**: 12-25 tasks per session, 2-4 hours max
 - **Progress Tracking**: State file and checklists track progress
 - **Validation Gates**: Verify completeness and security before marking done
@@ -237,7 +248,7 @@ workspaces, Go modules, Lerna.
 - [Deployment](docs/deployment.md) - Installation, CI/CD, release process
 - [Usage Guidance](references/guidance.md) - When to use, workflow modes, team patterns
 - [Production Walkthrough](references/walkthrough.md) - Real-world examples
-- [Workflow Quick-Reference](references/workflow-overview.md) - 13-command overview
+- [Workflow Quick-Reference](references/workflow-overview.md) - 13-command staged workflow overview
 - [Contributing](CONTRIBUTING.md) - Branch conventions, commit style, PR process
 - [ADRs](docs/adr/) - Architecture decision records
 

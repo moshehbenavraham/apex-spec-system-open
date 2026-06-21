@@ -1,6 +1,8 @@
 # Workflow Overview
 
-Quick-reference for the Apex Spec System's 13-command workflow.
+Quick-reference for the Apex Spec System's 13-command staged workflow. Apex
+Spec also exposes 10 utility commands, listed separately below, for out-of-band
+support tasks.
 
 ## Core Philosophy
 
@@ -85,12 +87,14 @@ phasebuild              updateprd ------+         carryforward
 
 ## Utility Commands (Safe at Any Time)
 
-These 9 commands run outside the session workflow:
+These 10 commands are not part of the required staged workflow. They run outside
+the session workflow and can be used for support tasks at any time:
 
 | Command | Purpose |
 |---------|---------|
 | copush | Pull, version-bump, commit all changes, push to origin |
 | sculpt-ui | Guide AI-led creation of distinctive frontend interfaces |
+| seshsplit | Insert or refresh a session split plan inside a text or Markdown plan file |
 | dockbuild | Quick Docker Compose build and start |
 | dockcleanbuild | Clean Docker environment and rebuild from scratch |
 | up2imp | Audit upstream changes and curate implementation list |
@@ -99,7 +103,7 @@ These 9 commands run outside the session workflow:
 | qbackenddev | Autonomous backend/infrastructure development session |
 | pullndoc | Git pull upstream repo and document imported changes |
 
-## Command Quick Reference
+## Staged Workflow Command Quick Reference
 
 | Command | Input | Output |
 |---------|-------|--------|

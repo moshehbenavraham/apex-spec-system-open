@@ -6,7 +6,7 @@ Philosophy: 1 session = 1 spec = 2-4 hours (12-25 tasks)
 
 ## Version
 
-Current version: 2.0.20-codex
+Current version: 2.0.21-codex
 
 When updating version, update it in all the following files:
 
@@ -17,10 +17,11 @@ When updating version, update it in all the following files:
 ## Project Context
 
 This project is an Agent Skill packaged for the Agent Skills standard. It
-provides a 22-command workflow for breaking large projects into manageable
-implementation sessions. The skill uses a "Skill Family with Shared References"
-pattern: a root orchestrator (SKILL.md) dispatches to command-specific reference
-documents in references/.
+provides a 23-command surface: a 13-command staged workflow for breaking large
+projects into manageable implementation sessions, plus 10 utility commands for
+out-of-band support tasks. The skill uses a "Skill Family with Shared
+References" pattern: a root orchestrator (SKILL.md) dispatches to
+command-specific reference documents in references/.
 
 ## Key Conventions
 

@@ -2,11 +2,12 @@
 
 ## System Overview
 
-The Apex Spec System is a 22-command specification-driven workflow for
-AI-assisted development, packaged as an Agent Skill following the Agent Skills
-standard (agentskills.io). It uses a "Skill Family with Shared References"
-pattern: a root orchestrator (SKILL.md) dispatches to command-specific
-reference documents based on user intent.
+The Apex Spec System is a 23-command skill surface for AI-assisted development:
+13 staged workflow commands for specification-driven delivery, plus 10 utility
+commands for out-of-band support tasks. It is packaged as an Agent Skill
+following the Agent Skills standard (agentskills.io). It uses a "Skill Family
+with Shared References" pattern: a root orchestrator (SKILL.md) dispatches to
+command-specific reference documents based on user intent.
 
 ## Skill Structure
 
@@ -25,7 +26,7 @@ apex-spec-system-open/
 |   |-- implement.md          # Execute implementation
 |   |-- validate.md           # Verify session completeness
 |   |-- updateprd.md          # Mark session complete
-|   |-- (16 more commands)    # All 22 commands converted
+|   |-- (17 more commands)    # 23 total: 13 workflow, 10 utility
 |   |-- guidance.md           # Usage guidance
 |   |-- utilities.md          # Utility commands reference
 |   \-- walkthrough.md        # Real-world walkthrough
@@ -48,11 +49,11 @@ User Request
     |
     v
 SKILL.md (Orchestrator)
-    |-- Matches keywords against dispatch table (22 entries)
+    |-- Matches keywords against dispatch table (23 entries: 13 workflow, 10 utility)
     |
     v
 references/<command>.md
-    |-- Contains full instructions for that workflow step
+    |-- Contains full instructions for that workflow step or utility command
     |-- Uses platform-neutral language
     |-- References .spec_system/scripts/ for analysis
     |
@@ -66,7 +67,7 @@ Project .spec_system/
 Three options were evaluated (see ADR 0001):
 
 1. **Single Compound Skill** -- Everything in one SKILL.md. Too large.
-2. **Individual Skills per Command** -- 22 separate skills. Pollutes namespace.
+2. **Individual Skills per Command** -- 23 separate skills. Pollutes namespace.
 3. **Skill Family with Shared References (Chosen)** -- Clean namespace,
    modular files, progressive disclosure works naturally.
 

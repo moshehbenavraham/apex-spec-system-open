@@ -6,11 +6,12 @@ description: >
   "UX PRD", "plan session", "implement session", "validate session",
   "phase build", "session scope", "task checklist", "initspec", "plansession",
   "audit", "pipeline", "infra", "carryforward", "documents", "copush",
-  "sculpt-ui", "docker build", "upstream changes", "quick implement",
-  "quick frontend", "quick backend", "pull upstream",
+  "sculpt-ui", "seshsplit", "session split", "split plan into sessions",
+  "docker build", "upstream changes", "quick implement", "quick frontend",
+  "quick backend", "pull upstream",
   or when working in a project containing a .spec_system/ directory.
   Philosophy: 1 session = 1 spec = 2-4 hours (12-25 tasks).
-version: 2.0.20-codex
+version: 2.0.21-codex
 ---
 
 # Apex Spec Workflow
@@ -45,6 +46,12 @@ technical PRD.
 | Task count | 12-25 (sweet spot: 20) |
 | Duration | 2-3 hours |
 | Focus | Stable/late MVP |
+
+## Command Structure
+
+The skill exposes 23 commands total: 13 staged workflow commands and 10 utility
+commands. The staged workflow drives the spec lifecycle; utility commands are
+listed separately and run outside the session workflow.
 
 ## The 13-Command Workflow
 
@@ -122,12 +129,14 @@ phasebuild         ->  Create next phase structure
 
 ### Utility Commands (Safe at Any Time)
 
-These 9 commands run outside the session workflow:
+These 10 commands are not part of the required staged workflow. They run outside
+the session workflow and can be used for support tasks at any time:
 
 | Command | Purpose |
 |---------|---------|
 | copush | Pull, version-bump, commit all changes, push to origin |
 | sculpt-ui | Guide AI-led creation of distinctive frontend interfaces |
+| seshsplit | Insert or refresh a session split plan inside a text or Markdown plan file |
 | dockbuild | Quick Docker Compose build and start |
 | dockcleanbuild | Clean Docker environment and rebuild from scratch |
 | up2imp | Audit upstream changes and curate implementation list |
@@ -140,7 +149,7 @@ These 9 commands run outside the session workflow:
 
 ## Command Dispatch
 
-When the user requests a specific workflow step, read the corresponding
+When the user requests a specific command or workflow step, read the corresponding
 reference document from this skill's references/ directory and follow
 its instructions exactly. Match the user's intent to the closest entry
 in the table below.
@@ -179,6 +188,7 @@ in the table below.
 |---------------|----------------|-------------|
 | "copush", "push", "bump version" | references/copush.md | Pull, bump, commit, push |
 | "sculpt", "UI design", "frontend design" | references/sculpt-ui.md | Distinctive frontend interface design |
+| "seshsplit", "session split", "split plan into sessions" | references/seshsplit.md | Insert or refresh a session split plan |
 | "docker build" | references/dockbuild.md | Docker Compose build and start |
 | "docker clean", "docker rebuild" | references/dockcleanbuild.md | Clean Docker rebuild |
 | "upstream", "upstream changes" | references/up2imp.md | Audit upstream changes |
@@ -187,7 +197,7 @@ in the table below.
 | "quick backend" | references/qbackenddev.md | Autonomous backend development |
 | "pull upstream", "pull and document" | references/pullndoc.md | Pull and document upstream changes |
 
-**Total**: 22 commands mapped to 22 reference files.
+**Total**: 23 command references: 13 staged workflow commands and 10 utilities.
 
 ---
 
@@ -285,7 +295,7 @@ All files must use ASCII-only characters (code points 0-127):
 
 ---
 
-## Quick Reference
+## Staged Workflow Quick Reference
 
 | Command | Purpose | Input | Output |
 |---------|---------|-------|--------|
