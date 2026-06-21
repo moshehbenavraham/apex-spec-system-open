@@ -283,8 +283,11 @@ Recommended command-specific themes:
 - `audit`: configuring a tool is not enough; all configured tools must be run
   and re-validated in the current state
 
-Use `validate.md` Step 3.D as the model for tone and strictness. Extend that
-pattern to other high-risk commands instead of inventing a new style.
+Use `validate.md` Step 3.D (the no-pre-existing-excuse block) as the model for
+strict tone, and the now-adopted `plansession.md` sections
+(`### Rationalizations To Reject` plus `### Red Flags`) as the model for the
+format. Extend that pattern to other high-risk commands instead of inventing a
+new style.
 
 Done when:
 
