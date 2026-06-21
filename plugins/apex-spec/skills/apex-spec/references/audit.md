@@ -13,6 +13,8 @@ This is the first command in the Phase Transition stage. If `audit` finishes wit
 5. **Update CONVENTIONS.md** - record what was added in Local Dev Tools table
 6. **Continue on failure** - one tool failing doesn't stop the audit
 7. **Monorepo aware** - run per package, report per package
+8. **Evidence required** - record selected bundle, package scope, exact
+   commands run, fixes applied, check results, and remaining blockers
 
 ### No Deferral Policy
 
@@ -23,6 +25,27 @@ This is the first command in the Phase Transition stage. If `audit` finishes wit
 - "The environment isn't set up" is NOT a blocker -- setting it up IS the task
 - The ONLY valid blocker is an external requirement you cannot satisfy from the repository or environment, such as missing credentials, billing, sudo access, or platform access
 - If you skip a task that was executable, that is a **critical failure**
+
+### Rationalizations To Reject
+
+- "The tool is configured, so audit is done" -> No. Every configured tool must
+  run in the current repo state before `audit` can hand off to `pipeline`.
+- "One package passed, so the monorepo passed" -> No. Run and report each
+  relevant package or record why a package-specific check is not applicable.
+- "The formatter fixed it, so no evidence is needed" -> No. Record the command,
+  files or issue counts changed, and the follow-up check result.
+- "This failure belongs to a later command" -> No. If local tooling exposes a
+  repo-fixable issue, fix it here and re-run the affected check.
+
+### Red Flags
+
+- Output recommends `pipeline` without listing the commands that passed.
+- A package, configured tool, or known-issues filter is mentioned in detection
+  but missing from the final report.
+- Remaining failures are summarized without package path, command, and blocker
+  evidence.
+- `CONVENTIONS.md` says a tool is configured but the audit output did not run
+  or validate it.
 
 ## Master List (7 Bundles)
 
@@ -236,7 +259,14 @@ Run ALL configured tools (not just the new one):
 
 **Single-repo**: Run each tool from the project root as usual.
 
-Capture all output. Parse for errors, warnings, fixes applied.
+Capture all output. Parse for errors, warnings, fixes applied. For each
+configured tool, record:
+- Bundle and tool name
+- Package path or `root`
+- Exact command run
+- Result: PASS, FAIL, WARN, or N/A
+- Fixes applied or known-issues filter used
+- Remaining blocker, if any, and why it cannot be resolved autonomously
 
 ### Step 6: FIX
 
@@ -297,6 +327,16 @@ REPORT
 - Known: 5 issues in src/legacy/** (ignored per known-issues.md)
 ```
 
+Include an evidence ledger in the report:
+
+```markdown
+## Evidence Ledger
+
+| Bundle | Package | Command | Result | Fixes Applied | Remaining / Blocker |
+|--------|---------|---------|--------|---------------|---------------------|
+| Formatting | root | `ruff format .` | PASS | 12 files formatted | None |
+```
+
 ### Step 9: RECOMMEND
 
 - **If issues remain**: List required actions and set `Next command: audit`. Do not recommend `pipeline` yet.
@@ -323,6 +363,7 @@ Summary:
 - Selected bundle: [name or "none - validation only"]
 - Configs changed: [brief list]
 - Fixes applied: [counts]
+- Evidence: [commands/checks run by bundle and package]
 - Remaining issues: [none | brief list]
 - Known ignored issues: [count]
 

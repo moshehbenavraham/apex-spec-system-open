@@ -12,7 +12,8 @@ it fails, fix the issues and rerun `validate`.
 2. **PASS requires ALL of**: 100% tasks complete, all deliverables exist, all files ASCII-encoded with LF endings, all tests passing, all success criteria met, database/schema alignment verified when the session touches the DB layer, no security or GDPR violations, no critical behavioral quality violations (when BQC applies)
 3. **Any single failure = overall FAIL** - no partial passes
 4. **Script first** - run `analyze-project.sh --json` before any analysis
-5. Conventions compliance is a spot-check, not exhaustive - flag obvious violations only
+5. **Evidence required** - every PASS/FAIL/N/A claim in `validation.md` must name the exact command, check, or inspected artifact that produced it
+6. Conventions compliance is a spot-check, not exhaustive - flag obvious violations only
 
 ### No Deferral Policy
 
@@ -20,6 +21,20 @@ it fails, fix the issues and rerun `validate`.
 - The ONLY valid reason to leave a FAIL unresolved is an external requirement you cannot satisfy from the repository or environment, such as missing credentials, API keys, billing, or sudo access
 - "The environment isn't set up" is NOT a valid FAIL -- setting it up IS the task
 - If you report a FAIL for something you could have fixed, that is a **critical failure**
+
+### Rationalizations To Reject
+
+- "Tests passed, so validation is done" -> No. Tests are one check; tasks, deliverables, encoding, success criteria, schema, security, GDPR, BQC, and conventions still need evidence.
+- "This failure was probably pre-existing" -> No. Prove it with a current comparison against the pre-session commit or fix it.
+- "Security review is unnecessary for simple changes" -> No. Apply the scoped checklist to touched session files and record PASS or N/A evidence.
+- "The result is obvious, so I can summarize without the command" -> No. Report the exact command or targeted inspection that produced each claim.
+
+### Red Flags
+
+- `validation.md` says PASS but omits command/check evidence for one or more checks.
+- Tests or security review are marked PASS based only on `implementation-notes.md`.
+- "Pre-existing", "environment issue", or "not relevant" appears without current evidence and scope justification.
+- `validation.md` says FAIL while leaving a repo-fixable issue unresolved.
 
 ## Steps
 
@@ -36,13 +51,9 @@ else
 fi
 ```
 
-This returns structured JSON including:
-- `current_session` - The session to validate
-- `current_session_dir_exists` - Whether specs directory exists
-- `current_session_files` - Files already in the session directory
-- `monorepo` - true/false/null from state.json
-- `packages` - Array of registered packages (empty if not monorepo)
-- `active_package` - Resolved package context (null if not applicable)
+This returns structured JSON including the current session, whether its specs
+directory exists, existing session files, monorepo state, packages, and active
+package context.
 
 **IMPORTANT**: Use the `current_session` value from this output. If `current_session` is `null`, run plansession yourself to set one up.
 
@@ -69,6 +80,12 @@ Using the `current_session` value from the script output, read all session docum
 **CONVENTIONS.md** is used in the Quality Gates check (section 3.F) to verify code follows project conventions for naming, structure, error handling, testing, etc.
 
 ### 3. Run Validation Checks
+
+For every check below, capture evidence before writing `validation.md`:
+- Check name
+- Exact command run, or exact targeted inspection when no command applies
+- Result, output summary, and any fix applied during validation
+- Remaining blocker, if any, and why it cannot be resolved autonomously
 
 #### A. Task Completion
 Verify all tasks in tasks.md are marked `[x]`:
@@ -100,6 +117,7 @@ grep -l $'\r' [filename]
 
 #### D. Test Verification
 Run the project's test suite:
+- Record exact command(s) and exit status
 - Record total tests
 - Record passed/failed
 - Calculate coverage if available
@@ -111,7 +129,7 @@ Run the project's test suite:
 2. NEVER dismiss a failure as "pre-existing" or "environment issue" -- if tests passed before this session and fail now, THIS SESSION BROKE THEM
 3. FIX the failure before continuing validation. If you changed a Docker image, a dependency, a config file, or any shared code, failures in existing tests are YOUR responsibility
 4. Only after all tests pass (0 failures) may you mark Test Verification as PASS
-5. If a failure is genuinely unrelated (e.g., flaky network test), you must PROVE it by showing the test also fails on the pre-session commit -- do not assume
+5. If a failure is genuinely unrelated (e.g., flaky network test), you must PROVE it by showing the exact command also fails on the pre-session commit -- do not assume
 
 #### E. Database/Schema Alignment (if relevant)
 If the session changes persisted data shape, constraints, indexes, migrations, seeds, or other DB-layer behavior that project conventions track in versioned artifacts:
@@ -153,8 +171,8 @@ Apply the checklist's:
 - GDPR review categories
 - Scope rules and automatic FAIL conditions
 
-This remains a targeted review of session deliverables, not a full codebase
-audit.
+This review is mandatory for touched session files. It remains targeted to
+session deliverables, not a full codebase audit.
 
 #### I. Behavioral Quality Spot-Check
 
@@ -187,8 +205,6 @@ Create `security-compliance.md` in the session directory (`.spec_system/specs/[c
 **Reviewed**: [YYYY-MM-DD]
 **Result**: PASS / FAIL / N/A
 
----
-
 ## Scope
 
 **Files reviewed** (session deliverables only):
@@ -197,7 +213,10 @@ Create `security-compliance.md` in the session directory (`.spec_system/specs/[c
 
 **Review method**: Static analysis of session deliverables + dependency audit (if applicable)
 
----
+**Review evidence**:
+- Command/check: `[exact command or targeted inspection]`
+  - Result: PASS/FAIL/N/A - [specific result]
+  - Evidence: [output summary, files inspected, or why N/A applies]
 
 ## Security Assessment
 
@@ -211,18 +230,10 @@ Create `security-compliance.md` in the session directory (`.spec_system/specs/[c
 | Insecure Dependencies | PASS/FAIL | -- / High / Medium | [details] |
 | Security Misconfiguration | PASS/FAIL | -- / Medium | [details] |
 
-### Findings
+### Security Findings
 
-#### [Finding Title] (if any)
-- **Severity**: Critical / High / Medium / Low
-- **File**: `path/file:line`
-- **Description**: [what the issue is]
-- **Remediation**: [how to fix it]
-- **Status**: Open / Remediated
-
-[Repeat for each finding, or "No security findings."]
-
----
+[List each finding with severity, file:line, description, remediation, and
+status; or "No security findings."]
 
 ## GDPR Compliance Assessment
 
@@ -230,16 +241,10 @@ Create `security-compliance.md` in the session directory (`.spec_system/specs/[c
 
 *N/A if session introduced no personal data handling.*
 
-| Category | Status | Details |
-|----------|--------|---------|
-| Data Collection & Purpose | PASS/FAIL/N/A | [details] |
-| Consent Mechanism | PASS/FAIL/N/A | [details] |
-| Data Minimization | PASS/FAIL/N/A | [details] |
-| Right to Erasure | PASS/FAIL/N/A | [details] |
-| PII in Logs | PASS/FAIL/N/A | [details] |
-| Third-Party Data Transfers | PASS/FAIL/N/A | [details] |
+**Categories reviewed**: Data Collection & Purpose, Consent Mechanism, Data
+Minimization, Right to Erasure, PII in Logs, Third-Party Data Transfers.
 
-### Personal Data Inventory (if applicable)
+### Personal Data Inventory
 
 | Data Element | Source | Storage | Purpose | Retention | Deletion Path |
 |-------------|--------|---------|---------|-----------|---------------|
@@ -247,24 +252,14 @@ Create `security-compliance.md` in the session directory (`.spec_system/specs/[c
 
 [Or "No personal data collected or processed in this session."]
 
-### Findings
+### GDPR Findings
 
-#### [Finding Title] (if any)
-- **Category**: [GDPR category]
-- **File**: `path/file:line`
-- **Description**: [what the issue is]
-- **Remediation**: [how to fix it]
-- **Status**: Open / Remediated
-
-[Repeat for each finding, or "No GDPR findings."]
-
----
+[List each finding with category, file:line, description, remediation, and
+status; or "No GDPR findings."]
 
 ## Recommendations
 
 [Actionable items for future sessions, or "None -- session is compliant."]
-
----
 
 ## Sign-Off
 
@@ -307,19 +302,32 @@ Create `validation.md` in the session directory:
 
 ---
 
+## Evidence Ledger
+
+Every row must name the exact command or targeted inspection used.
+
+| Check | Command or Inspection | Result | Evidence / Blocker |
+|-------|-----------------------|--------|--------------------|
+| Project state | `bash .../analyze-project.sh --json` | PASS/FAIL | [summary] |
+| Task completion | [task checklist inspection] | PASS/FAIL | [X/Y tasks] |
+| Deliverables | [file existence/non-empty command or inspection] | PASS/FAIL | [X/Y files] |
+| ASCII/LF | `file ...`; `LC_ALL=C grep ...`; `grep ...` | PASS/FAIL | [issues or none] |
+| Tests | [exact test command] | PASS/FAIL | [counts, coverage, failures] |
+| Database/schema | [exact schema command or inspection] | PASS/FAIL/N/A | [evidence or N/A reason] |
+| Success criteria | [spec criteria inspection + commands] | PASS/FAIL | [summary] |
+| Conventions | [conventions inspection] | PASS/SKIP | [issues or skip reason] |
+| Security/GDPR | [checklist inspection and commands] | PASS/FAIL/N/A | [findings or N/A reason] |
+| Behavioral quality | [BQC inspection] | PASS/WARN/FAIL/N/A | [files checked, violations] |
+
+---
+
 ## 1. Task Completion
 
 ### Status: PASS/FAIL
 
-| Category | Required | Completed | Status |
-|----------|----------|-----------|--------|
-| Setup | N | N | PASS |
-| Foundation | N | N | PASS |
-| Implementation | N | N | PASS |
-| Testing | N | N | PASS |
+**Tasks**: X/Y complete
 
-### Incomplete Tasks
-[List any incomplete tasks or "None"]
+**Incomplete tasks**: [list or "None"]
 
 ---
 
@@ -327,14 +335,12 @@ Create `validation.md` in the session directory:
 
 ### Status: PASS/FAIL
 
-#### Files Created
 | File | Found | Status |
 |------|-------|--------|
 | `path/file1` | Yes | PASS |
 | `path/file2` | Yes | PASS |
 
-### Missing Deliverables
-[List any missing or "None"]
+**Missing deliverables**: [list or "None"]
 
 ---
 
@@ -346,8 +352,7 @@ Create `validation.md` in the session directory:
 |------|----------|--------------|--------|
 | `path/file1` | ASCII | LF | PASS |
 
-### Encoding Issues
-[List issues or "None"]
+**Encoding issues**: [list or "None"]
 
 ---
 
@@ -362,8 +367,7 @@ Create `validation.md` in the session directory:
 | Failed | 0 |
 | Coverage | X% |
 
-### Failed Tests
-[List failures or "None"]
+**Failed tests**: [list or "None"]
 
 ---
 
@@ -373,13 +377,10 @@ Create `validation.md` in the session directory:
 
 *N/A if the session introduced no DB-layer changes.*
 
-- [x] Matching schema artifact exists for each relevant DB-layer change
-- [x] Code and schema artifacts are aligned
-- [x] Migration/status/diff check passed locally
-- [x] Seed or rollback updates included when conventions require them
+**Evidence**: [schema artifact, code/schema alignment, migration/status/diff
+command, seed/rollback checks, or "N/A -- no DB-layer changes"]
 
-### Issues Found
-[List issues or "None" or "N/A -- no DB-layer changes"]
+**Issues found**: [list or "None"]
 
 ---
 
@@ -387,18 +388,11 @@ Create `validation.md` in the session directory:
 
 From spec.md:
 
-### Functional Requirements
-- [x] [Requirement 1]
-- [x] [Requirement 2]
+**Functional requirements**: [checked list from spec.md]
 
-### Testing Requirements
-- [x] Unit tests written and passing
-- [x] Verification scenarios completed
+**Testing requirements**: [checked list from spec.md]
 
-### Quality Gates
-- [x] All files ASCII-encoded
-- [x] Unix LF line endings
-- [x] Code follows project conventions
+**Quality gates**: [checked list from spec.md]
 
 ---
 
@@ -408,16 +402,10 @@ From spec.md:
 
 *Skipped if no `.spec_system/CONVENTIONS.md` exists.*
 
-| Category | Status | Notes |
-|----------|--------|-------|
-| Naming | PASS/FAIL | [issues] |
-| File Structure | PASS/FAIL | [issues] |
-| Error Handling | PASS/FAIL | [issues] |
-| Comments | PASS/FAIL | [issues] |
-| Testing | PASS/FAIL | [issues] |
+**Categories spot-checked**: naming, file structure, error handling, comments,
+testing, and database conventions when relevant.
 
-### Convention Violations
-[List violations or "None" or "Skipped - no CONVENTIONS.md"]
+**Convention violations**: [list or "None" or "Skipped - no CONVENTIONS.md"]
 
 ---
 
@@ -433,8 +421,7 @@ From spec.md:
 | Security | PASS/FAIL | [count] issues |
 | GDPR | PASS/FAIL/N/A | [count] issues |
 
-### Critical Violations (if any)
-[List critical/high severity items or "None"]
+**Critical violations**: [list critical/high severity items or "None"]
 
 ---
 
@@ -447,19 +434,12 @@ From spec.md:
 **Checklist applied**: [Yes / N/A]
 **Files spot-checked**: [list of up to 5 files]
 
-| Category | Status | File | Details |
-|----------|--------|------|---------|
-| Trust boundaries | PASS/FAIL | `path` | [details or "--"] |
-| Resource cleanup | PASS/FAIL | `path` | [details or "--"] |
-| Mutation safety | PASS/FAIL | `path` | [details or "--"] |
-| Failure paths | PASS/FAIL | `path` | [details or "--"] |
-| Contract alignment | PASS/FAIL | `path` | [details or "--"] |
+**Categories spot-checked**: trust boundaries, resource cleanup, mutation
+safety, failure paths, and contract alignment.
 
-### Violations Found
-[List with file:line, category, severity, or "None"]
+**Violations found**: [list with file:line, category, severity, or "None"]
 
-### Fixes Applied During Validation
-[List fixes, or "None"]
+**Fixes applied during validation**: [list fixes, or "None"]
 
 ## Validation Result
 
@@ -467,8 +447,10 @@ From spec.md:
 
 [Summary of validation outcome]
 
-### Required Actions (if FAIL)
-[List what needs to be fixed]
+### Unresolved Failures And Blockers
+
+[List unresolved failures, exact external blocker and why it cannot be resolved
+autonomously, or "None"]
 
 ## Next Steps
 
@@ -480,35 +462,13 @@ From spec.md:
 
 Update `.spec_system/state.json` based on validation result:
 
-**If PASS:**
-```json
-{
-  "current_session": "phaseNN-sessionNN-name",
-  "next_session_history": [
-    {
-      "date": "YYYY-MM-DD",
-      "session": "phaseNN-sessionNN-name",
-      "status": "validated"
-    }
-  ]
-}
-```
-
-**If FAIL:**
-```json
-{
-  "next_session_history": [
-    {
-      "date": "YYYY-MM-DD",
-      "session": "phaseNN-sessionNN-name",
-      "status": "validation_failed"
-    }
-  ]
-}
-```
-
-- Update `next_session_history` entry status to `validated` or `validation_failed`
-- **Monorepo only**: Include the `package` field in the history entry when a package was resolved in Step 1a (matching the pattern from plansession Step 6). Omit the `package` field for single-repo projects or cross-cutting sessions.
+- If PASS: keep `current_session` set to the validated session and append a
+  `next_session_history` entry with `status: "validated"`.
+- If FAIL: append a `next_session_history` entry with
+  `status: "validation_failed"`.
+- **Monorepo only**: Include `package` in the history entry when Step 1a
+  resolved a package. Omit it for single-repo projects or cross-cutting
+  sessions.
 
 ## Output
 

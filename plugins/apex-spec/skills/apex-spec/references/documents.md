@@ -13,6 +13,9 @@ This is the final workflow command before deciding whether another phase should 
 5. **One source of truth** - don't duplicate information; link instead
 6. **README naming** - only root gets `README.md`; subdirectories use `README_<dirname>.md`
 7. **One command runs everything** - document it prominently in root README
+8. **Evidence required** - `.spec_system/docs-audit.md` must name the codebase
+   files, spec artifacts, commands, or targeted inspections that support each
+   created, updated, verified, or unresolved documentation conclusion
 
 ### No Deferral Policy
 
@@ -71,7 +74,7 @@ Check if a phase was recently completed:
 - Use when: first run, after multiple phases, or user requests full audit
 - **Monorepo**: Verify all packages have README files and that root documentation covers workspace structure
 
-Record the audit mode in the output summary.
+Record the audit mode in the output summary and evidence ledger.
 
 ### 3. Audit Existing Documentation
 
@@ -112,11 +115,10 @@ Check for `README_<dirname>.md` in each significant directory. Pattern: `[parent
 
 ### 4. Generate Audit Report
 
-Create a mental checklist of:
-- Missing files (need to create)
-- Stale files (need to update)
-- Redundant content (need to consolidate)
-- Wordy sections (need to trim)
+Create a checklist of missing files, stale files, redundant content, and wordy
+sections. For each finding, record the inspected documentation file and the
+code, spec-system artifact, command output, or link check that proves the
+finding is current.
 
 Record findings in the output summary and `.spec_system/docs-audit.md`.
 
@@ -135,22 +137,19 @@ For each missing required file:
 ```markdown
 # [PROJECT_NAME]
 
-[One-line description of what this project does]
+[One-line verified description.]
 
 ## Quick Start
 
 ```bash
-# One command to run everything
 [COMMAND]
 ```
 
 ## Repository Structure
 
-```
+```text
 .
-|-- [dir1]/          # [Purpose]
-|-- [dir2]/          # [Purpose]
-\-- [dir3]/          # [Purpose]
+|-- [dir]/  # [verified purpose]
 ```
 
 ## Documentation
@@ -162,19 +161,13 @@ For each missing required file:
 
 ## Tech Stack
 
-- [Technology 1] - [Why]
+- [Technology] - [verified purpose]
 
-[MONOREPO ONLY]
-## Packages
-
-| Package | Path | Description | Stack |
-|---------|------|-------------|-------|
-| [name] | [path] | [Purpose] | [Stack] |
-[END MONOREPO ONLY]
+[MONOREPO ONLY: add package table from state.json]
 
 ## Project Status
 
-See [PRD](.spec_system/PRD/PRD.md) for current progress and roadmap.
+See [PRD](.spec_system/PRD/PRD.md).
 ```
 
 #### CONTRIBUTING.md Template
@@ -195,11 +188,10 @@ Use conventional commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`
 
 ## Pull Request Process
 
-1. Create feature branch from `develop`
-2. Make changes with clear commits
-3. Write/update tests and documentation
-4. Open PR with description
-5. Address review feedback, squash and merge
+1. Create a branch
+2. Make focused changes with tests and docs
+3. Open a PR with what changed and why
+4. Address review feedback
 ```
 
 #### docs/ARCHITECTURE.md Template
@@ -209,47 +201,22 @@ Use conventional commits: `feat:`, `fix:`, `docs:`, `refactor:`, `test:`
 
 ## System Overview
 
-[High-level description of the system]
-
-## Dependency Graph
-
-```
-[Service A] --> [Service B] --> [Database]
-```
+[Verified system summary.]
 
 ## Components
 
-### [Component 1]
-- **Purpose**: [What it does]
-- **Tech**: [Technology used]
-- **Location**: `[path/]`
+| Component | Location | Tech | Purpose |
+|-----------|----------|------|---------|
+| [name] | `[path/]` | [tech] | [purpose] |
 
-## Tech Stack Rationale
+## Data And Dependencies
 
-| Technology | Purpose | Why Chosen |
-|------------|---------|------------|
-| [Tech 1] | [Purpose] | [Rationale] |
-
-## Data Layer
-
-- **Database**: [Type, hosting, extensions]
-- **Migration Tool**: [Name, location, naming convention]
-
-## Data Flow
-
-[Describe how data moves through the system]
-
-[MONOREPO ONLY]
-## Package Dependencies
-
-| Package | Depends On | Depended By |
-|---------|-----------|-------------|
-| [name] | [list] | [list] |
-[END MONOREPO ONLY]
+- **Data layer**: [verified database/storage or N/A]
+- **Dependency flow**: [verified service/package relationship]
 
 ## Key Decisions
 
-See [Architecture Decision Records](docs/adr/) for detailed decision history.
+See [Architecture Decision Records](docs/adr/).
 ```
 
 #### docs/onboarding.md Template
@@ -259,27 +226,18 @@ See [Architecture Decision Records](docs/adr/) for detailed decision history.
 
 ## Prerequisites
 
-- [ ] [Tool 1] installed
-- [ ] [Tool 2] installed
-- [ ] Access to [System/Service]
+- [ ] [verified tool/access requirement]
 
 ## Setup Steps
 
 1. Clone: `git clone [repo-url] && cd [project-name]`
 2. Install: `[install command]`
-3. Configure: `cp .env.example .env` (edit with your values)
+3. Configure: `[config command]`
 4. Start: `[start command]`
-
-## Required Secrets
-
-| Variable | Where to Get | Description |
-|----------|--------------|-------------|
-| `API_KEY` | [Location] | [Purpose] |
 
 ## Verify Setup
 
-- [ ] App runs at `http://localhost:[port]`
-- [ ] Tests pass: `[test command]`
+- [ ] `[test or smoke-check command]`
 ```
 
 #### docs/development.md Template
@@ -289,33 +247,18 @@ See [Architecture Decision Records](docs/adr/) for detailed decision history.
 
 ## Required Tools
 
-- [Tool 1] v[version]+
-- [Tool 2] v[version]+
-
-## Port Mappings
-
-| Service | Port | URL |
-|---------|------|-----|
-| [Service 1] | [port] | http://localhost:[port] |
+- [Tool] v[version]+
 
 ## Dev Scripts
 
 | Command | Purpose |
 |---------|---------|
-| `[cmd]` | [Description] |
-
-## Database
-
-1. Start: `[start command]`
-2. Migrate: `[migration command]`
-3. Seed: `[seed command]`
-4. Reset: `[reset command]`
+| `[cmd]` | [verified purpose] |
 
 ## Testing
 
 ```bash
-[test command]          # Run all tests
-[coverage command]      # Run with coverage
+[test command]
 ```
 ```
 
@@ -327,18 +270,10 @@ See [Architecture Decision Records](docs/adr/) for detailed decision history.
 | Environment | URL | Purpose |
 |-------------|-----|---------|
 | Development | localhost | Local development |
-| Staging | [url] | Pre-production testing |
-| Production | [url] | Live system |
-
-## Configuration Differences
-
-| Config | Dev | Staging | Prod |
-|--------|-----|---------|------|
-| [Setting 1] | [value] | [value] | [value] |
 
 ## Required Environment Variables
 
-- `[VAR_1]`: [Description]
+- `[VAR]`: [verified purpose]
 ```
 
 #### docs/deployment.md Template
@@ -349,31 +284,19 @@ See [Architecture Decision Records](docs/adr/) for detailed decision history.
 ## Local Dev
 
 ```bash
-[one-command start]     # Start everything
-curl localhost:[port]/health  # Verify
-[stop command]          # Stop
+[one-command start]
+[smoke-check command]
+[stop command]
 ```
 
 ## CI/CD Pipeline
 
-```
-Push --> Build --> Test --> [Staging] --> [Production]
-```
+[Verified pipeline summary.]
 
-## Release Process
+## Release And Rollback
 
-1. Merge to `main`
-2. CI runs tests and builds artifacts
-3. Deploy to staging, run smoke tests
-4. Deploy to production, verify health
-
-## Rollback
-
-```bash
-[rollback command]
-```
-
-**When to rollback**: Health check fails post-deploy, error rate spikes, or critical bug reported.
+- Release: [verified release path]
+- Rollback: [verified rollback path or documented gap]
 ```
 
 #### docs/adr/0000-template.md (ADR Template)
@@ -385,17 +308,13 @@ Push --> Build --> Test --> [Staging] --> [Production]
 **Date:** YYYY-MM-DD
 
 ## Context
-What prompted this decision?
-
-## Options Considered
-1. [Option A] - [pros/cons]
-2. [Option B] - [pros/cons]
+[Why this decision is needed.]
 
 ## Decision
-What we chose and why.
+[What was chosen and why.]
 
 ## Consequences
-Trade-offs, what this enables, what it prevents.
+[Trade-offs.]
 ```
 
 #### docs/runbooks/incident-response.md Template
@@ -407,14 +326,12 @@ Trade-offs, what this enables, what it prevents.
 |-------|-------------|---------------|
 | P0 | Complete outage | Immediate |
 | P1 | Major feature broken | < 1 hour |
-| P2 | Minor feature broken | < 4 hours |
-| P3 | Cosmetic/minor | Next business day |
 
 ## Common Incidents
 
 ### [Incident Type]
-**Symptoms**: [What you'll see]
-**Resolution**: [Steps to fix]
+**Symptoms**: [verified symptoms]
+**Resolution**: [verified steps]
 ```
 
 #### README_[dirname].md Template (Per-Package/Service)
@@ -422,23 +339,17 @@ Trade-offs, what this enables, what it prevents.
 ```markdown
 # [PACKAGE_NAME]
 
-[One-line description]
-
-## Usage
-
-```bash
-[import/install command]
-```
+[One-line verified description.]
 
 ## Run Commands
 
 | Command | Purpose |
 |---------|---------|
-| `[cmd]` | [Description] |
+| `[cmd]` | [verified purpose] |
 
 ## Key Dependencies
 
-- [Dependency 1] - [Why]
+- [Dependency] - [verified purpose]
 ```
 
 ### 6. Update Existing Documentation
@@ -449,7 +360,9 @@ For each existing documentation file:
 2. Compare against project state from `.spec_system/`
 3. Identify discrepancies: features documented but not implemented, features implemented but not documented, outdated instructions, broken links
 4. Update to reflect current state
-5. Remove redundancy and wordiness
+5. Record the evidence behind every create, update, verified-current, or gap
+   conclusion
+6. Remove redundancy and wordiness
 
 ### 7. Sync with Spec System Progress
 
@@ -488,7 +401,21 @@ files. Keep command-specific requirements here:
 
 ### 9. Generate Documentation Report
 
-Create `.spec_system/docs-audit.md` with: audit date, project name, audit mode, a summary table (root files, /docs/ files, ADRs, package READMEs -- each with required/found/status counts), sections for files created, files updated, files verified as current, and any remaining documentation gaps that require external product, platform, legal, or operational decisions.
+Create `.spec_system/docs-audit.md` with: audit date, project name, audit mode,
+a summary table (root files, /docs/ files, ADRs, package READMEs -- each with
+required/found/status counts), sections for files created, files updated, files
+verified as current, and any remaining documentation gaps that require external
+product, platform, legal, or operational decisions.
+
+Include an evidence ledger:
+
+```markdown
+## Evidence Ledger
+
+| Area | Document | Codebase or Spec Evidence | Result |
+|------|----------|---------------------------|--------|
+| Quick start | `README.md` | `package.json` scripts inspected | Updated |
+```
 
 ### 10. Determine Next Action from PRD.md
 
@@ -519,6 +446,7 @@ Summary:
 - Files created: [count and brief list]
 - Files updated: [count and brief list]
 - Documentation coverage: [summary]
+- Evidence: [commands or targeted inspections recorded in docs-audit.md]
 - External decision gaps: [none | brief list]
 - Report: .spec_system/docs-audit.md
 

@@ -71,10 +71,8 @@ This returns structured JSON with:
 - `completed_sessions` - Completed session IDs
 - `candidate_sessions` - Current-phase session stubs and status; each candidate includes a `package` field parsed from the stub or `null`
 - `phases` - All phases with status and session counts
-- `monorepo` - `true`, `false`, or `null`
-- `packages` - Registered package objects with `name`, `path`, and `stack_hint` when monorepo is enabled
-- `active_package` - Package object resolved from `--package` or CWD inference, or `null`
-- `monorepo_detection` - Auto-detection result when `monorepo` is `null`
+- `monorepo` and `monorepo_detection` - configured or auto-detected monorepo state
+- `packages` and `active_package` - registered package objects and resolved package context when monorepo is enabled
 
 Use this JSON output as ground truth for project state. Do not re-read `state.json` directly.
 

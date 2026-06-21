@@ -4,6 +4,15 @@ Pull the latest from origin, increment the project version, commit all non-gitig
 changes, and push to origin. Designed as a single command to bundle routine
 commit-and-push workflows without separate version tracking.
 
+## When Not To Use
+
+- Do not use `copush` when only a selective subset of changes should be committed;
+  this command stages all non-gitignored changes by design.
+- Do not use `copush` to synchronize from an upstream/original repository; use
+  `pullndoc` for upstream pulls that need change documentation.
+- Do not use `copush` to finish implementation or validation work that is still
+  incomplete; run the appropriate workflow or quick command first.
+
 ## Rules
 
 1. **Origin only** - Pull and push to `origin` remote only; never touch `upstream`

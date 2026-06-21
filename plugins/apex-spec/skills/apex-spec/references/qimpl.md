@@ -14,6 +14,15 @@ qimpl <work-file>
 - `<work-file>` -- Path to the markdown work file that defines the session goals
   and serves as the running workspace (e.g., `work.md`, `docs/impl-plan.md`)
 
+## When Not To Use
+
+- Do not use `qimpl` to bypass the staged workflow when a current session already
+  has `spec.md` and `tasks.md`; use `implement` for that session instead.
+- Do not use `qimpl` for frontend polish or backend/infrastructure work that
+  needs the specialized quality gates in `qfrontdev` or `qbackenddev`.
+- Do not use `qimpl` for repository publish/version workflows; use `copush`
+  when the goal is to pull, bump, commit, and push.
+
 ## Rules
 
 1. **Senior engineer mindset** -- Approach implementation like a craftsperson who
@@ -33,7 +42,11 @@ qimpl <work-file>
    off, it probably is. Investigate rather than hand-wave.
 7. **Read-only on spec system** -- Never modify state.json, session specs, or task
    checklists.
-8. **ASCII only** -- All generated/modified files use characters 0-127 only.
+8. **Evidence required** -- The work-file update and final output must
+   distinguish files changed, commands run, checks attempted, check results, and
+   unresolved blockers. Do not report a check as passed unless it was actually
+   run or inspected.
+9. **ASCII only** -- All generated/modified files use characters 0-127 only.
 
 ## Steps
 
@@ -60,6 +73,8 @@ Execute the work described in the work file. Follow these principles:
 - Validate each change before moving to the next
 - If you encounter uncertainty about an API, library, or pattern, look it up
   rather than guessing
+- Record files changed, commands or checks run, results, and unresolved blockers
+  as you work so wrap-up evidence is specific
 - Track your session resource consumption
 
 ### 4. Monitor resource consumption
@@ -74,16 +89,34 @@ Before ending the session, update the work file with:
 - What was completed this session
 - What remains to be done
 - Current state of the implementation (what works, what is partial)
+- Evidence: files created or modified, commands run, checks attempted, check
+  results, and unresolved blockers
 - Any concise notes that would help the next session pick up efficiently
   (gotchas discovered, decisions made, patterns established)
 - Clear next steps so a fresh session can continue without re-investigation
 
 ## Output
 
-Report:
-- What was accomplished in this session
-- How much of the work file's goals were completed
-- Whether the session ended due to completion or session resource discipline
-- The work file has been updated for session continuity
-- `Next command: none` when the work file goals are complete
-- `Next command: qimpl` when work remains and another autonomous utility session should continue from the updated work file
+Report what was accomplished, how much of the work file's goals were completed,
+whether the session ended due to completion or session resource discipline, and
+the evidence behind verification claims. Use "not run" only with a concise
+reason when a relevant check could not be attempted.
+
+Use this shape:
+
+```text
+qimpl complete! OR qimpl session paused.
+
+Summary:
+- Completed: [brief list of completed goals]
+- Work remaining: [none | brief list]
+- Files changed: [brief list or none]
+- Commands run: [brief list or none]
+- Checks attempted: [brief list, targeted inspections, or none]
+- Check results: [pass/fail/not run with concise reason]
+- Unresolved blockers: [none | exact blocker and why it remains]
+- Work file updated: <work-file>
+
+Next command: `[none | qimpl]`
+Reason: [work file goals are complete | work remains and another autonomous utility session should continue from the updated work file]
+```

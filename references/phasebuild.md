@@ -11,6 +11,18 @@ Use this command only when there is clear evidence that another phase should be 
 3. **Resolve misalignment before building** - as projects progress, later phases may drift from reality. Reconcile with actual progress before creating artifacts.
 4. **If interrupted mid-process**, delete partial artifacts before retrying
 5. Each session must have a single clear objective, 12-25 tasks, 2-4 hours scope
+6. **Resolve normal ambiguity with evidence-backed working assumptions** - incomplete phase detail is not a reason to ask or stop when PRD and state evidence can support a defensible phase
+7. **Surface and resolve material conflicts** between PRD phase definitions, state tracking, completed work, and institutional memory before creating artifacts
+8. **Record material resolutions** in the phase PRD when they shape the generated phase or session stubs
+9. **Keep hard blockers out of successful artifacts** - successful phase files must not contain blocker placeholders or interactive follow-up notes
+
+### No Deferral Policy
+
+- Read PRD.md, state.json, existing phase artifacts, CONSIDERATIONS.md, and SECURITY-COMPLIANCE.md when present before declaring a blocker
+- Ambiguity alone is not a blocker; resolve it with evidence-backed working assumptions when phase artifacts can still be created safely
+- If PRD.md and state.json disagree, choose the best-supported interpretation, update stale tracking where required, and record the resolution when material
+- Stop only when neither PRD.md nor state.json provides clear evidence that another phase should be created
+- Successful output must not contain unresolved template placeholders, hard-blocker text, or requests for user arbitration
 
 ## Steps
 
@@ -57,7 +69,46 @@ If `.spec_system/SECURITY-COMPLIANCE.md` exists, review it for:
   ```
 - This is advisory only -- do not block phase creation
 
-### 2. Create Phase Directory and PRD Markdown
+### 2. Resolve Assumptions And Phase Conflicts
+
+Before creating any phase directory or session stub, reconcile PRD phase
+definitions and state tracking into one source decision.
+
+**Materiality threshold**:
+- Treat an assumption or conflict as material if it changes the next phase
+  number, phase name, phase objective, session count, session ordering,
+  prerequisites, completed-phase status, package ownership, security scope, or
+  whether phasebuild should create anything at all
+- Do not record cosmetic wording cleanup, routine status normalization, or
+  obvious markdown-table repair as material decisions
+
+For each material working assumption, state:
+- The assumption itself
+- The PRD, state, existing artifact, consideration, or security evidence
+  supporting it
+- Why phasebuild can proceed without user arbitration
+
+For each material conflict, state:
+- The conflicting sources
+- The viable interpretations
+- The chosen interpretation
+- Why that interpretation is the best-supported one
+- Which artifact will be updated to reconcile stale information, if any
+
+Rules for this step:
+- Prefer PRD.md for intended phase scope when it clearly defines the next phase
+- Prefer state.json for completed-session and completed-phase facts when those
+  facts conflict with stale prose
+- If state.json indicates a phase that PRD.md does not describe, update PRD.md
+  only when surrounding PRD evidence supports that phase; otherwise stop with
+  `Next command: none`
+- If PRD.md indicates the next phase but state.json is stale, update state.json
+  during this run so both sources align
+- Record material assumptions and conflict resolutions in the generated phase
+  PRD
+- Do not create artifacts from contradictory unreconciled inputs
+
+### 3. Create Phase Directory and PRD Markdown
 
 Create directory `.spec_system/PRD/phase_NN/` and markdown `.spec_system/PRD/phase_NN/PRD_phase_NN.md`:
 
@@ -116,6 +167,20 @@ Create directory `.spec_system/PRD/phase_NN/` and markdown `.spec_system/PRD/pha
 
 ---
 
+## Planning Assumptions And Resolutions
+
+<!-- Omit this section if no material assumptions or conflicts shaped the phase -->
+
+### Working Assumptions
+
+- [Working assumption]: [Supporting evidence and why it is safe to proceed]
+
+### Conflict Resolutions
+
+- [Conflict]: [Chosen interpretation, supporting evidence, and any artifact reconciled]
+
+---
+
 ## Technical Considerations
 
 ### Architecture
@@ -153,7 +218,12 @@ Phase complete when:
 - Phase NN+1: [Name]
 ```
 
-### 3. Create All Session Stubs
+Notes:
+- If no material working assumptions or conflicts shaped the phase, omit `Planning Assumptions And Resolutions`
+- If only assumptions or only conflicts exist, include only the relevant subsection
+- Do not include hard-blocker text in a successful phase PRD
+
+### 4. Create All Session Stubs
 
 For each session, create `session_NN_name.md` (use `snake_case` for name):
 
@@ -220,7 +290,7 @@ This annotation is parsed by `analyze-project.sh` to enable `--package` filterin
 
 **Cross-package guidance**: When a session touches multiple packages, note which package owns the primary deliverables and which are secondary dependencies. Keep cross-package sessions to 2-3 packages maximum -- split if more are needed.
 
-### 4. Update State
+### 5. Update State
 
 Merge into `.spec_system/state.json` (add to existing `phases` object):
 
@@ -237,7 +307,7 @@ Merge into `.spec_system/state.json` (add to existing `phases` object):
 }
 ```
 
-### 5. Update Master PRD
+### 6. Update Master PRD
 
 Add the new phase to the Phases table in `.spec_system/PRD/PRD.md`. Also update any stale info (completed phases marked as such, session counts reflecting reality):
 
@@ -277,6 +347,8 @@ Phase NN Created: Phase Name
 Summary:
 - Created phase NN with N session stubs
 - Phase source: [PRD.md | state.json reconciled with PRD.md]
+- Working Assumptions: N recorded
+- Conflict Resolutions: N recorded
 - Scope: [brief phase objective]
 
 Structure:

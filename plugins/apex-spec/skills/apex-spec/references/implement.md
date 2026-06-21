@@ -19,6 +19,7 @@ the next workflow command is `validate`.
 9. **Prefer cohesive, moderately sized modules** -- avoid multi-thousand-line god files; if a file grows beyond ~400-600 LOC or multiple responsibilities, schedule a refactor.
 10. **Behavioral correctness over speed** - Code must handle edge cases, cleanup, and failure paths before a task is marked done. A checked task with a behavioral bug costs 10x more to find in a later audit.
 11. **No schema drift on database work** -- If a task changes persisted data shape or database behavior, implement the matching schema artifact in the same session (migration, schema file, SQL patch, DDL, seed update, etc.) and verify it locally before marking the task complete.
+12. **Evidence per task** -- every completed task log entry must name the files changed and include exact verification checks with results.
 
 ### No Deferral Policy
 
@@ -29,6 +30,20 @@ the next workflow command is `validate`.
 - "The environment isn't set up" is NOT a blocker -- setting it up IS the task
 - The ONLY valid blocker is an external requirement you cannot satisfy from the repository or environment, such as missing credentials, API keys, billing, or sudo access
 - If you skip a task that was executable, that is a **critical failure**
+
+### Rationalizations To Reject
+
+- "I can update all checkboxes at the end" -> No. Task status and notes must be updated immediately after each completed task.
+- "The change is obvious, so verification can wait for validate" -> No. Record task-level evidence now; `validate` is a later gate, not a substitute for implementation checks.
+- "This file looks unrelated, so I do not need to read it" -> No. Read the code, spec, and surrounding context before inferring intent or impact.
+- "The test failure is probably pre-existing" -> No. Investigate the current failure and record evidence before deciding whether it blocks this session.
+
+### Red Flags
+
+- A checked task without a matching `implementation-notes.md` task entry.
+- A task log entry that says "done" or "verified" without exact commands, checks, or inspected files.
+- Files changed outside the task or package scope without a recorded justification.
+- Tests, schema verification, or BQC fixes deferred even though the repository provides enough context to run or apply them now.
 
 ## Steps
 
@@ -196,6 +211,10 @@ Find the first unchecked `- [ ]` task in tasks.md
 - **Behavioral quality verification** (if BQC loaded in Step 3a): Before marking this task complete, scan your code against the applicable checklist items. Fix violations now -- do not defer. Note any BQC fixes in the task log entry (Step 5D).
 
 #### C. Update Task Status
+Before marking the task complete, write the task log entry from Step 5D,
+including the `Verification` subsection. Do not check the task off until that
+evidence exists.
+
 In `tasks.md`, change:
 ```markdown
 - [ ] T001 [S0101] Task description
@@ -220,6 +239,11 @@ Add to `.spec_system/specs/[current-session]/implementation-notes.md`:
 
 **Files Changed**:
 - `path/to/file` - [changes made]
+
+**Verification**:
+- Command/check: `[exact command or targeted inspection]`
+  - Result: PASS/FAIL/N/A - [specific result]
+  - Evidence: [test count, diff inspected, output summary, or why no automated check applies]
 
 **BQC Fixes** (if any):
 - [Category]: [What was caught and fixed] (`path/to/file`)
@@ -299,6 +323,7 @@ BQC: [X] fixes applied across [Y] tasks [or "N/A - no application code in sessio
 
 Summary:
 - Completed all implementation tasks for [current-session]
+- Task evidence recorded in implementation-notes.md with files changed and verification results
 - Tests/checks run: [brief list]
 - Remaining blockers: none
 

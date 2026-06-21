@@ -22,6 +22,15 @@ The work file determines the mode of work. It might contain:
 - A specific bug or UI issue to investigate and fix
 - Documentation to write or update
 
+## When Not To Use
+
+- Do not use `qfrontdev` to bypass the staged workflow when a current session
+  already has `spec.md` and `tasks.md`; use `implement` for that session instead.
+- Do not use `qfrontdev` for backend, infrastructure, CLI, database, or DevOps
+  work that does not change UI behavior; use `qbackenddev` or `qimpl`.
+- Do not use `qfrontdev` for interface ideation without a work file or target
+  implementation scope; use `sculpt-ui` for standalone frontend design guidance.
+
 ## Rules
 
 1. **Senior frontend engineer with a designer's eye** -- Obsess over 1px alignment
@@ -46,7 +55,11 @@ The work file determines the mode of work. It might contain:
    relevant files, understand the patterns, then make changes.
 9. **Read-only on spec system** -- Never modify state.json, session specs, or task
    checklists.
-10. **ASCII only** -- All generated/modified files use characters 0-127 only.
+10. **Evidence required** -- The work-file update and final output must
+    distinguish files changed, commands run, checks attempted, check results, and
+    unresolved blockers. Do not report a check as passed unless it was actually
+    run or inspected.
+11. **ASCII only** -- All generated/modified files use characters 0-127 only.
 
 ## Design North Star
 
@@ -71,6 +84,10 @@ Before considering any change complete, verify:
   UI paths
 - **Performant** -- No unnecessary re-renders, optimized assets, animations target
   60fps; test with 6x CPU throttling mentally
+
+Record evidence for each applicable quality gate when UI behavior is changed.
+Use `N/A` with a concise reason for gates that do not apply to documentation,
+planning, or non-UI-only work.
 
 ## Steps
 
@@ -105,6 +122,8 @@ Work through the tasks defined in the work file. Follow these principles:
 - Make small, deliberate, atomic changes
 - Validate each change before moving to the next
 - Apply the Quality Gate to every change
+- Record files changed, commands or checks run, results, and unresolved blockers
+  as you work so wrap-up evidence is specific
 
 **For audit work:**
 - Analyze every relevant file thoroughly -- do not skip or skim
@@ -141,6 +160,8 @@ Before ending the session, update the work file with:
 - What was completed this session
 - What remains to be done
 - Current state of the implementation (what works, what is partial)
+- Evidence: files created or modified, commands run, checks attempted, quality
+  gate results when applicable, and unresolved blockers
 - Any discoveries, decisions, or gotchas for the next session
 - Clear next steps so a fresh session can continue without re-investigation
 - If relevant architectural or engineering changes were made, update any
@@ -150,11 +171,28 @@ If the work file references a changelog, update it too.
 
 ## Output
 
-Report:
-- What was accomplished in this session
-- How much of the work file's goals were completed
-- Any issues, warnings, or quality concerns discovered
-- Whether the session ended due to completion or session resource discipline
-- The work file has been updated for session continuity
-- `Next command: none` when the work file goals are complete
-- `Next command: qfrontdev` when frontend work remains and another autonomous utility session should continue from the updated work file
+Report what was accomplished, how much of the work file's goals were completed,
+any issues, warnings, or quality concerns discovered, whether the session ended
+due to completion or session resource discipline, and the evidence behind
+verification claims. Use "not run" only with a concise reason when a relevant
+check could not be attempted.
+
+Use this shape:
+
+```text
+qfrontdev complete! OR qfrontdev session paused.
+
+Summary:
+- Completed: [brief list of completed goals]
+- Work remaining: [none | brief list]
+- Files changed: [brief list or none]
+- Commands run: [brief list or none]
+- Checks attempted: [brief list, targeted inspections, quality gates, or none]
+- Check results: [pass/fail/N/A/not run with concise reason]
+- Issues or quality concerns: [none | brief list]
+- Unresolved blockers: [none | exact blocker and why it remains]
+- Work file updated: <work-file>
+
+Next command: `[none | qfrontdev]`
+Reason: [work file goals are complete | frontend work remains and another autonomous utility session should continue from the updated work file]
+```

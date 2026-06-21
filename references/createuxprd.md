@@ -12,12 +12,25 @@ This is a companion to `PRD.md` (functional requirements). plansession reads bot
 2. **Autonomous execution** - do not ask questions, request approval, or wait for human feedback
 3. **Never destroy a real PRD_UX.md** - back it up before replacing it, or update it in place when safer
 4. **Make evidence-backed design decisions** - use PRD, codebase UI evidence, domain clues, and recorded assumptions
-5. **ASCII-only characters** and Unix LF line endings in all output
-6. **Reference PRD.md, don't duplicate it** - link to functional requirements, don't restate them
-7. **Keep it actionable** - every section should directly inform implementation
-8. **Design brief before structure** - always establish emotional targets and aesthetic identity before documenting screens and flows
-9. **Performance budget** - target locked 60fps; note any performance-sensitive interactions
-10. **Accessibility baseline** - WCAG AA contrast minimum, semantic HTML, focus states, reduced-motion support
+5. **Resolve normal UX ambiguity with working assumptions** - sparse design input is not a reason to stop when PRD and repo evidence can support a defensible UX PRD
+6. **Surface and resolve material conflicts** between design sources, PRD requirements, and existing UI evidence before writing
+7. **Distinguish working assumptions from true hard blockers** - successful UX artifacts must not contain blocker placeholders or interactive follow-up notes
+8. **ASCII-only characters** and Unix LF line endings in all output
+9. **Reference PRD.md, don't duplicate it** - link to functional requirements, don't restate them
+10. **Keep it actionable** - every section should directly inform implementation
+11. **Design brief before structure** - always establish emotional targets and aesthetic identity before documenting screens and flows
+12. **Performance budget** - target locked 60fps; note any performance-sensitive interactions
+13. **Accessibility baseline** - WCAG AA contrast minimum, semantic HTML, focus states, reduced-motion support
+
+### No Deferral Policy
+
+- Read PRD.md, provided design material, codebase UI evidence, and project state before declaring a blocker
+- Ambiguity alone is not a blocker; in Mode C, make evidence-backed design decisions and record material ones as working assumptions
+- If inputs disagree, choose the best-supported interpretation and record the resolution when it materially shapes the UX PRD
+- Do not write PRD_UX.md when PRD.md is missing; run `createprd` first, then resume this command
+- Stop only when PRD.md is inaccessible or when available evidence is too thin to produce a defensible UX PRD
+- Use Open UX Decisions only for non-blocking product, brand, legal, or compliance decisions that cannot be resolved from available evidence
+- Successful output must not contain unresolved template placeholders, hard-blocker text, or requests for user arbitration
 
 ## Steps
 
@@ -70,7 +83,45 @@ When source material is sparse, resolve these areas from PRD and code evidence:
 - Emotional targets and aesthetic identity
 - Material metaphor and signature moment
 
-### 4. Decide Whether to Create or Update
+### 4. Resolve Assumptions And Conflicts
+
+Before writing or updating the UX PRD, explicitly resolve ambiguity that will
+shape the artifact.
+
+**Materiality threshold**:
+- Treat an assumption or conflict as material if it changes emotional targets,
+  aesthetic identity, screen inventory, navigation, critical flows, interaction
+  patterns, responsive strategy, accessibility requirements, performance
+  constraints, or design-system direction
+- Do not record cosmetic phrasing choices, routine section ordering,
+  placeholder cleanup, or obvious deduplication as material decisions
+
+For each material working assumption, state:
+- The assumption itself
+- The PRD, source-design, repo UI, or project-state evidence supporting it
+- Why the UX PRD can proceed without user arbitration
+
+For each material conflict between inputs, state:
+- The conflicting sources
+- The viable interpretations
+- The chosen interpretation
+- Why that interpretation is the best-supported one
+
+Mode C requirements:
+- Every material autonomous design decision must be traceable to PRD, repo UI
+  evidence, project domain, or project state
+- If no material assumption remains after evidence review, do not invent one
+  just to satisfy format
+
+Rules for this step:
+- A working assumption is not a hard blocker
+- Hard blockers stop the command only when PRD.md is inaccessible or evidence
+  is insufficient for a defensible UX PRD
+- Record assumptions and conflict resolutions in the generated UX PRD when they
+  materially shape the artifact
+- Keep hard blockers out of successful UX PRD sections
+
+### 5. Decide Whether to Create or Update
 
 Check whether `.spec_system/PRD/PRD_UX.md` already exists.
 
@@ -78,9 +129,10 @@ Check whether `.spec_system/PRD/PRD_UX.md` already exists.
 - If it exists with template placeholders (2+ bracket markers like `[Screen Name]`): overwrite silently
 - If it exists with real content: create a timestamped backup in `.spec_system/archive/PRD/` before replacing it, or update it in place when that is safer
 
-### 5. Extract and Normalize UX Requirements
+### 6. Extract and Normalize UX Requirements
 
-From the source material (Modes A/B) or PRD.md alone (Mode C), extract:
+From the source material (Modes A/B) or PRD.md plus resolved assumptions and
+conflict decisions (Mode C), extract:
 
 **Design identity:**
 - **Emotional targets**: 2-3 feeling words that define the experience
@@ -113,11 +165,12 @@ From the source material (Modes A/B) or PRD.md alone (Mode C), extract:
 
 Important:
 - Derive flows from PRD.md use cases -- don't invent new ones
-- If design details are missing, make the best-supported decision and record it as an assumption
+- If design details are missing, make the best-supported decision and record it as a working assumption when it materially shapes the UX PRD
+- Apply chosen assumptions and conflict resolutions consistently across all sections
 - Use Open UX Decisions only for non-blocking product, brand, legal, or compliance decisions that cannot be resolved from evidence
 - The Design Brief can be populated even without visual design assets -- it captures intent and direction
 
-### 6. Generate UX PRD
+### 7. Generate UX PRD
 
 Create `.spec_system/PRD/PRD_UX.md`:
 
@@ -335,7 +388,19 @@ Palette character: [WARM or COOL? NATURAL or SYNTHETIC? LOUD or QUIET?]
 
 ---
 
-## 13. Open UX Decisions
+## 13. Assumptions And Conflict Resolutions
+
+<!-- Omit this section if no material assumptions or conflicts shaped the UX PRD -->
+
+### Working Assumptions
+
+- [Working assumption]: [Supporting evidence and why it is safe to proceed]
+
+### Conflict Resolutions
+
+- [Conflict]: [Chosen interpretation and supporting evidence]
+
+## 14. Open UX Decisions
 
 1. [Decision needing later product, brand, legal, or compliance resolution]
 2. [Decision]
@@ -346,8 +411,11 @@ Notes:
 - Sections 1 (Design Brief), 6 (Motion), 7 (Layout), 10 (Design System), and 12 (Anti-Patterns) are optional for purely utilitarian interfaces (admin panels, internal CRUD tools) but recommended for any consumer-facing product
 - Keep flows as ASCII diagrams, not verbose prose
 - The Design Brief can be populated even without visual design assets -- it captures intent and direction
+- If no material working assumptions or conflicts shaped the UX PRD, omit `Assumptions And Conflict Resolutions`
+- If only assumptions or only conflicts exist, include only the relevant subsection
+- Open UX Decisions must be non-blocking; do not use them for true hard blockers
 
-### 7. Validate Output
+### 8. Validate Output
 
 ```bash
 file .spec_system/PRD/PRD_UX.md
@@ -373,6 +441,8 @@ Summary:
 - Interaction Patterns: N documented
 - Motion Strategy: [populated / omitted]
 - Design System: [populated / partial / omitted]
+- Working Assumptions: N recorded
+- Conflict Resolutions: N recorded
 - Open UX Decisions: N items
 
 Next command: `phasebuild`

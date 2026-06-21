@@ -13,6 +13,15 @@ pullndoc <upstream-dir>
 - `<upstream-dir>` -- Path to the upstream/original repo directory
   (e.g., `.001_ORIGINAL`)
 
+## When Not To Use
+
+- Do not use `pullndoc` for the current project's normal origin pull, version
+  bump, commit, and push flow; use `copush` for that routine.
+- Do not use `pullndoc` to decide which upstream changes should be ported after
+  documentation is written; use `up2imp` for implementation curation.
+- Do not use `pullndoc` for ordinary implementation or refactoring work without
+  an upstream pull to document; use `qimpl` or `qbackenddev`.
+
 ## Rules
 
 1. **Document everything** -- Every changed file must appear in the output document;
