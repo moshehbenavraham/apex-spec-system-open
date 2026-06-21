@@ -56,9 +56,9 @@ Conditional follow-through:
   `references/workflow-overview.md`
 - Preserve autonomy inside command steps; ambiguity is not a reason to ask,
   pause, or route through approval
-- Every command output must include a concise `Summary:` and literal
-  `Next command:` handoff, using `none` only when the workflow or standalone
-  utility is complete
+- Every command output must include concise `Summary:`, `Next command:`, and
+  `Reason:` lines, using `none` only when the workflow or standalone utility
+  is complete
 - Treat assumption handling as resolve-and-proceed behavior, not a
   clarification loop
 - Keep stop conditions command-shaped. Do not paste generic blocker categories
@@ -71,7 +71,9 @@ Conditional follow-through:
   repo-native state semantics intact
 - Do not weaken existing pass/fail bars, testing requirements, or completion
   criteria while tightening prompt language
-- Keep reference files under 500 lines and follow `docs/CONVENTIONS.md`
+- Keep reference files under 500 lines and follow `docs/CONVENTIONS.md`; when a
+  target is already over budget, trim first or keep the prompt patch
+  line-neutral
 - Translate useful prompt patterns into Apex form; do not copy external
   anatomy, wording, or workflow logic verbatim
 - Any new table, quota, checklist, example, or template line must survive a
@@ -108,8 +110,8 @@ Apply this checklist before patching any command reference.
    applicable, `## Steps`, `## Output`, and `## Next Action`.
 3. Reconcile every workflow handoff against both `SKILL.md` and
    `references/workflow-overview.md`. Do not preserve stale transitions.
-4. Keep the file under the 500-line budget. Tighten surrounding prose or move
-   reusable detail into supporting references if needed.
+4. Keep the file under the 500-line budget. If the target is already over
+   budget, trim first or keep the prompt patch line-neutral.
 5. Treat artifact template edits as schema changes. Audit downstream
    references, scripts, and tests when sections, fields, or state semantics
    change.
@@ -263,8 +265,9 @@ Primary targets:
 
 Use a compact format:
 
-- 3-5 rationalizations per file
-- 3-5 red flags per file
+- Aim for 3-5 rationalizations per file only when each maps to a real shortcut
+  risk
+- Aim for 3-5 red flags per file only when each maps to a real review signal
 - Each rationalization is written as excuse -> counterpoint
 - Keep the section short; tighten surrounding prose if line budget becomes
   tight
@@ -363,7 +366,7 @@ A prompt-improvement patch is not complete unless all of the following are
 true:
 
 - Workflow handoffs match the orchestrator and workflow overview
-- Each command output has a `Summary:` and a clear `Next command:` line
+- Each command output has clear `Summary:`, `Next command:`, and `Reason:` lines
 - New wording preserves or strengthens existing success criteria
 - Any artifact shape change is reconciled across downstream consumers
 - Claimed specificity improvements produce concrete repo-derived output
