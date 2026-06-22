@@ -9,7 +9,7 @@ it fails, fix the issues and rerun the correct workflow command.
 ## Rules
 
 1. **Autonomous execution** - do not ask questions, request approval, or wait for human feedback
-2. **PASS requires ALL of**: `code-review.md` exists with `Result: RESOLVED`, 100% tasks complete, all deliverables exist, all files ASCII-encoded with LF endings, all tests passing, all success criteria met, database/schema alignment verified when the session touches the DB layer, no security or GDPR violations, no critical behavioral quality violations (when BQC applies)
+2. **PASS requires ALL of**: `code-review.md` exists with `Result: RESOLVED`, 100% tasks complete, all deliverables exist, all files ASCII-encoded with LF endings, all tests passing, all success criteria met, database/schema alignment verified when the session touches the DB layer, no security or GDPR violations, no critical behavioral quality violations (when BQC applies), and no implementation diagnostics polluting normal user-facing UI (when UI changed)
 3. **Any single failure = overall FAIL** - no partial passes
 4. **Script first** - run `analyze-project.sh --json` before any analysis
 5. **Evidence required** - every PASS/FAIL/N/A claim in `validation.md` must name the exact command, check, or inspected artifact that produced it
@@ -27,6 +27,7 @@ it fails, fix the issues and rerun the correct workflow command.
 - "Tests passed, so validation is done" -> No. Tests are one check; tasks, deliverables, encoding, success criteria, schema, security, GDPR, BQC, and conventions still need evidence.
 - "This failure was probably pre-existing" -> No. Prove it with a current comparison against the pre-session commit or fix it.
 - "Security review is unnecessary for simple changes" -> No. Apply the scoped checklist to touched session files and record PASS or N/A evidence.
+- "The debug/status panel proves the feature works" -> No. Evidence belongs in validation reports, tests, logs, devtools, hidden dev overlays, or separate debug/admin routes; normal product UI must stay product-focused.
 - "The result is obvious, so I can summarize without the command" -> No. Report the exact command or targeted inspection that produced each claim.
 
 ### Red Flags
@@ -205,6 +206,17 @@ priority spot-check categories from that checklist.
 - 1-2 low-severity (e.g., missing retry backoff on non-critical read path): WARN -- log but do not block
 - Any high-severity in top priorities: FAIL -- fix before passing
 
+#### K. UI Product-Surface Spot-Check
+
+If the session creates or modifies user-facing UI, inspect the primary affected
+route/component in the rendered app when feasible, or inspect code when runtime
+render is unavailable. PASS only if normal product surfaces are free of debug
+panels, runtime telemetry, seed/frame/input/resize readouts, readiness badges,
+route ownership notes, package/version labels, data-source status blocks,
+"shell ready" messages, and scaffolding copy. FAIL and repair if diagnostics
+appear outside explicit developer/admin/debug surfaces, hidden dev overlays,
+logs, tests, or implementation notes.
+
 ### 4. Generate Security & Compliance Report
 
 Create `security-compliance.md` in the session directory (`.spec_system/specs/[current-session]/security-compliance.md`):
@@ -309,6 +321,7 @@ Create `validation.md` in the session directory:
 | Conventions | PASS/SKIP | [issues or "No CONVENTIONS.md"] |
 | Security & GDPR | PASS/FAIL/N/A | [issues] |
 | Behavioral Quality | PASS/WARN/FAIL/N/A | [issues or "N/A -- no application code"] |
+| UI Product Surface | PASS/FAIL/N/A | [issues or "N/A -- no user-facing UI changed"] |
 
 **Overall**: PASS / FAIL
 
@@ -329,24 +342,21 @@ Every row must name the exact command or targeted inspection used.
 | Conventions | [conventions inspection] | PASS/SKIP | [issues or skip reason] |
 | Security/GDPR | [checklist inspection and commands] | PASS/FAIL/N/A | [findings or N/A reason] |
 | Behavioral quality | [BQC inspection] | PASS/WARN/FAIL/N/A | [files checked, violations] |
+| UI product surface | [rendered route/component inspection or code inspection] | PASS/FAIL/N/A | [surfaces checked, viewport, diagnostics found or N/A reason] |
 
 ## 1. Code Review Gate
-
 ### Status: PASS/FAIL
 **Report**: `code-review.md`
 **Result**: RESOLVED / BLOCKED / missing / other
 **Issues**: [list or "None"]
 
 ## 2. Task Completion
-
 ### Status: PASS/FAIL
 **Tasks**: X/Y complete
 **Incomplete tasks**: [list or "None"]
 
 ## 3. Deliverables Verification
-
 ### Status: PASS/FAIL
-
 | File | Found | Status |
 |------|-------|--------|
 | `path/file1` | Yes | PASS |
@@ -355,9 +365,7 @@ Every row must name the exact command or targeted inspection used.
 **Missing deliverables**: [list or "None"]
 
 ## 4. ASCII Encoding Check
-
 ### Status: PASS/FAIL
-
 | File | Encoding | Line Endings | Status |
 |------|----------|--------------|--------|
 | `path/file1` | ASCII | LF | PASS |
@@ -365,9 +373,7 @@ Every row must name the exact command or targeted inspection used.
 **Encoding issues**: [list or "None"]
 
 ## 5. Test Results
-
 ### Status: PASS/FAIL
-
 | Metric | Value |
 |--------|-------|
 | Total Tests | N |
@@ -378,9 +384,7 @@ Every row must name the exact command or targeted inspection used.
 **Failed tests**: [list or "None"]
 
 ## 6. Database/Schema Alignment
-
 ### Status: PASS/FAIL/N/A
-
 *N/A if the session introduced no DB-layer changes.*
 
 **Evidence**: [schema artifact, code/schema alignment, migration/status/diff
@@ -389,19 +393,13 @@ command, seed/rollback checks, or "N/A -- no DB-layer changes"]
 **Issues found**: [list or "None"]
 
 ## 7. Success Criteria
-
 From spec.md:
-
 **Functional requirements**: [checked list from spec.md]
-
 **Testing requirements**: [checked list from spec.md]
-
 **Quality gates**: [checked list from spec.md]
 
 ## 8. Conventions Compliance
-
 ### Status: PASS/SKIP
-
 *Skipped if no `.spec_system/CONVENTIONS.md` exists.*
 
 **Categories spot-checked**: naming, file structure, error handling, comments,
@@ -410,9 +408,7 @@ testing, and database conventions when relevant.
 **Convention violations**: [list or "None" or "Skipped - no CONVENTIONS.md"]
 
 ## 9. Security & GDPR Compliance
-
 ### Status: PASS/FAIL/N/A
-
 **Full report**: See `security-compliance.md` in this session directory.
 
 #### Summary
@@ -424,9 +420,7 @@ testing, and database conventions when relevant.
 **Critical violations**: [list critical/high severity items or "None"]
 
 ## 10. Behavioral Quality Spot-Check
-
 ### Status: PASS/WARN/FAIL/N/A
-
 *N/A if session produced no application code.*
 
 **Checklist applied**: [Yes / N/A]
@@ -439,19 +433,23 @@ safety, failure paths, and contract alignment.
 
 **Fixes applied during validation**: [list fixes, or "None"]
 
+## 11. UI Product-Surface Spot-Check
+### Status: PASS/FAIL/N/A
+*N/A if session changed no user-facing UI.*
+**Surfaces inspected**: [routes/components and viewport or code-inspection scope]
+**Diagnostics found in primary UI**: [list with file:line or route evidence, or "None"]
+**Allowed debug/admin surfaces**: [explicitly scoped surfaces, or "None"]
+**Fixes applied during validation**: [list fixes, or "None"]
+
 ## Validation Result
-
 ### PASS / FAIL
-
 [Summary of validation outcome]
 
 ### Unresolved Failures And Blockers
-
 [List unresolved failures, exact external blocker and why it cannot be resolved
 autonomously, or "None"]
 
 ## Next Steps
-
 [If PASS]: Next command: `updateprd`
 [If FAIL because `code-review.md` is missing, BLOCKED, or not RESOLVED]: Next command: `creview`
 [If FAIL otherwise]: Next command: `implement` for code, task, deliverable, test, schema, security, or behavioral fixes; `validate` only when validation was blocked by an external requirement and no implementation change is pending.

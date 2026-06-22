@@ -21,6 +21,10 @@ This is a companion to `PRD.md` (functional requirements). plansession reads bot
 11. **Design brief before structure** - always establish emotional targets and aesthetic identity before documenting screens and flows
 12. **Performance budget** - target locked 60fps; note any performance-sensitive interactions
 13. **Accessibility baseline** - WCAG AA contrast minimum, semantic HTML, focus states, reduced-motion support
+14. **Product surface boundaries** - primary user-facing screens must describe
+    the product experience, not internal runtime diagnostics. Debug/status
+    telemetry belongs only in explicitly scoped developer, admin, or debug
+    surfaces.
 
 ### No Deferral Policy
 
@@ -145,6 +149,9 @@ conflict decisions (Mode C), extract:
 - **Screen inventory**: every distinct screen/page/view
 - **Navigation structure**: how screens connect
 - **Interaction patterns**: forms, modals, notifications, real-time elements
+- **Product surface boundaries**: what belongs on primary user-facing surfaces,
+  what diagnostics are excluded, and whether any developer/admin/debug surface is
+  explicitly required
 
 **Design system:**
 - **Color architecture**: dominant surface (60%), secondary (25%), accent (10%), signal (5%)
@@ -266,6 +273,11 @@ Create `.spec_system/PRD/PRD_UX.md`:
 
 ### Notifications
 - [Toast, banner, inline -- when each is used]
+
+### Product Surface Boundaries
+- Primary surfaces: [What users should see first and why it supports the core experience]
+- Developer/admin/debug surfaces: [Separate route, hidden development overlay, logs/tests, or "none"]
+- Excluded from primary UI: [Runtime telemetry, seed/frame/input panels, resize readouts, readiness badges, route ownership notes, scaffolding labels, or other implementation diagnostics]
 
 ---
 
@@ -410,6 +422,9 @@ Notes:
 - Omit sections that have no content rather than leaving placeholders
 - Sections 1 (Design Brief), 6 (Motion), 7 (Layout), 10 (Design System), and 12 (Anti-Patterns) are optional for purely utilitarian interfaces (admin panels, internal CRUD tools) but recommended for any consumer-facing product
 - Keep flows as ASCII diagrams, not verbose prose
+- Primary product screens must not contain internal implementation diagnostics
+  unless the product itself is a developer/admin tool and the diagnostics are
+  explicitly part of the user goal
 - The Design Brief can be populated even without visual design assets -- it captures intent and direction
 - If no material working assumptions or conflicts shaped the UX PRD, omit `Assumptions And Conflict Resolutions`
 - If only assumptions or only conflicts exist, include only the relevant subsection

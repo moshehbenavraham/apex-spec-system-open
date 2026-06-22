@@ -25,6 +25,7 @@ This is the first command in the Session Workflow stage. Run it after `phasebuil
 17. **Behavioral quality by design** - When a Behavioral Quality Checklist applies, embed edge-case handling into task descriptions instead of leaving it for `implement`, `creview`, or `validate`
 18. **Resolve ambiguity with evidence-backed working assumptions** - Normal ambiguity is not a reason to stop
 19. **Surface and resolve conflicts** - When inputs disagree, choose the best-supported interpretation and record it when it materially shapes the plan
+20. **Plan product surfaces, not debug surfaces** - UI sessions must deliver the user-facing experience; diagnostics belong only in explicit dev/admin/debug scope.
 
 ### No Deferral Policy
 
@@ -256,6 +257,7 @@ Generate `spec.md` with all sections filled in and no unresolved placeholders:
 - [ ] All files ASCII-encoded
 - [ ] Unix LF line endings
 - [ ] Code follows project conventions
+- [ ] [UI only] Primary user-facing surfaces contain product-facing copy only
 
 ---
 
@@ -323,6 +325,7 @@ Spec-writing rules:
 - All deliverables must be repo-derived and specific
 - Do not use placeholder paths, generic module names, or non-committal language
 - If a monorepo session is intentionally cross-cutting, write `Package: null` instead of omitting the decision
+- For UI sessions, separate product surfaces from dev/admin/debug surfaces; say "none" if no debug surface is required.
 - Do not include hard-blocker placeholders in a successful spec
 
 ### 5a. Enrich Task Descriptions With Behavioral Quality
@@ -346,6 +349,7 @@ When behavioral quality applies, enrich task descriptions in Step 6 with concret
 | Interactive control or element | "with platform-appropriate accessibility labels, focus management, and input support" |
 | Optimistic state update | "with scoped rollback on error" |
 | Component consuming external contract (API response, event payload) | "with types matching declared contract; exhaustive enum handling" |
+| User-facing screen, dashboard, game, extension, or visual route | "with product-facing copy only and diagnostics confined to dev-only surfaces" |
 
 These additions are short, but they prevent high-cost bugs from being deferred into later sessions.
 
@@ -363,13 +367,7 @@ Create `tasks.md` from the selected spec's deliverables, success criteria, techn
 
 ---
 
-## Legend
-
-- `[x]` = Completed
-- `[ ]` = Pending
-- `[P]` = Parallelizable
-- `[SNNMM]` = Session reference
-- `TNNN` = Task ID
+Legend: `[x]` completed; `[ ]` pending; `[P]` parallelizable; `[SNNMM]` session ref; `TNNN` task ID.
 
 ---
 
@@ -428,6 +426,7 @@ Task-writing rules:
 - Every task must reference concrete repo paths, commands, or deliverables
 - Generic filler such as "continue implementation" or "do testing" is not acceptable
 - Parallelize only when tasks do not depend on each other
+- UI tasks that touch normal user-facing routes must include product-surface verification; diagnostics belong in tests, screenshots, or notes, not the UI.
 
 ### Path Scoping Rules (Monorepo Only)
 

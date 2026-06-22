@@ -140,6 +140,11 @@ reasoning. Review across these categories:
   missing cases?
 - **Dead code and leftovers** - debug prints, commented-out blocks, unused
   imports, stray scaffolding
+- **Product surface discipline** - user-facing UI polluted with debug panels,
+  runtime telemetry, readiness badges, route ownership notes, seed/frame/input
+  readouts, resize readouts, package/version labels, or scaffolding copy that
+  belongs in logs, tests, devtools, hidden dev overlays, or separate debug/admin
+  routes
 - **Consistency and readability** - naming, duplication, unclear logic,
   convention violations
 - **Performance** - N+1s, needless work in loops, blocking calls on hot paths

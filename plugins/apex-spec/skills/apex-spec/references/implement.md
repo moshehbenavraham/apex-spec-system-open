@@ -20,6 +20,18 @@ the next workflow command is `creview`.
 10. **Behavioral correctness over speed** - Code must handle edge cases, cleanup, and failure paths before a task is marked done. A checked task with a behavioral bug costs 10x more to find in a later audit.
 11. **No schema drift on database work** -- If a task changes persisted data shape or database behavior, implement the matching schema artifact in the same session (migration, schema file, SQL patch, DDL, seed update, etc.) and verify it locally before marking the task complete.
 12. **Evidence per task** -- every completed task log entry must name the files changed and include exact verification checks with results.
+13. **Product surface discipline for UI work** -- User-facing routes, screens,
+    dashboards, games, extensions, and visual components must present the product
+    experience, not implementation telemetry. Do not expose debug labels,
+    runtime boundaries, seed/frame/input panels, resize readouts, "shell ready",
+    readiness badges, data-source status, route ownership notes, or scaffolding
+    copy in the primary interface unless the spec explicitly requires a
+    developer/admin/debug surface. Put diagnostics in logs, tests, devtools,
+    hidden development overlays, or separate developer-only routes.
+14. **UI craft floor** -- UI implementation is not just data plumbing. For UI
+    work, follow PRD_UX and existing product/design evidence, preserve or improve
+    visual hierarchy, responsive behavior, accessibility, and interaction polish,
+    and reject generic filler layouts.
 
 ### No Deferral Policy
 
@@ -134,6 +146,8 @@ Using the `current_session` value from the script output, read:
 - `.spec_system/specs/[current-session]/tasks.md` - Task checklist
 - `.spec_system/specs/[current-session]/implementation-notes.md` - Progress log (if exists)
 - `.spec_system/specs/[current-session]/security-compliance.md` - Prior security report (if exists from previous validation run)
+- `.spec_system/PRD/PRD_UX.md` - UX requirements, design brief, product surface
+  boundaries, and anti-patterns when the session changes UI (if present)
 - `.spec_system/CONVENTIONS.md` - Project coding conventions (if exists)
 
 **Resuming?** If `implementation-notes.md` and completed tasks already exist, read them to understand current state and resume from the next incomplete task.
@@ -209,6 +223,16 @@ Find the first unchecked `- [ ]` task in tasks.md
 - **Database completion rule**: If this task changes persisted data shape, constraints, indexes, queries that depend on schema, or other DB-layer behavior, add the matching schema artifact now (migration, patch, schema definition, ORM metadata, seed/test updates, etc.), apply or verify it locally, and do not mark the task complete until code and schema are aligned
 - **Monorepo path validation**: If a package was resolved in Step 1a, verify that files being created or modified fall within the declared package directory (e.g., `apps/web/...`). Warn if a task references files outside the package scope -- this may indicate scope creep. Exception: cross-cutting sessions (package: null) may touch any file.
 - **Behavioral quality verification** (if BQC loaded in Step 3a): Before marking this task complete, scan your code against the applicable checklist items. Fix violations now -- do not defer. Note any BQC fixes in the task log entry (Step 5D).
+- **UI product-surface verification**: If the task changes a user-facing
+  surface, inspect the rendered route or component at the target viewport before
+  marking it complete. Confirm the first viewport is product-focused and does not
+  contain implementation diagnostics or generic scaffolding. If diagnostics are
+  needed for development, move them to a developer-only route, hidden dev-only
+  overlay, logs, tests, or implementation notes.
+- **UI craft verification**: For UI tasks, compare the result to PRD_UX,
+  existing design patterns, and adjacent product surfaces. Fix generic spacing,
+  weak hierarchy, broken responsive behavior, inaccessible controls, or rough
+  interaction states before marking the task complete.
 
 #### C. Update Task Status
 Before marking the task complete, write the task log entry from Step 5D,
@@ -244,6 +268,11 @@ Add to `.spec_system/specs/[current-session]/implementation-notes.md`:
 - Command/check: `[exact command or targeted inspection]`
   - Result: PASS/FAIL/N/A - [specific result]
   - Evidence: [test count, diff inspected, output summary, or why no automated check applies]
+- UI product-surface check: [PASS/FAIL/N/A] - [route/component inspected,
+  viewport, and confirmation that debug/runtime/scaffolding copy is absent from
+  the normal product surface]
+- UI craft check: [PASS/FAIL/N/A] - [UX PRD/design evidence used, viewports or
+  components inspected, and polish issues fixed]
 
 **BQC Fixes** (if any):
 - [Category]: [What was caught and fixed] (`path/to/file`)

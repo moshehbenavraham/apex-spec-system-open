@@ -60,6 +60,10 @@ The work file determines the mode of work. It might contain:
     unresolved blockers. Do not report a check as passed unless it was actually
     run or inspected.
 11. **ASCII only** -- All generated/modified files use characters 0-127 only.
+12. **Product surface discipline** -- User-facing UI must not expose debug
+    panels, runtime telemetry, seed/frame/input readouts, resize readouts,
+    readiness badges, route ownership notes, or scaffolding copy unless the work
+    file explicitly scopes a developer/admin/debug surface.
 
 ## Design North Star
 
@@ -84,6 +88,9 @@ Before considering any change complete, verify:
   UI paths
 - **Performant** -- No unnecessary re-renders, optimized assets, animations target
   60fps; test with 6x CPU throttling mentally
+- **Product-focused** -- Primary routes show product-relevant content only; any
+  diagnostics are hidden behind dev-only access, separate debug/admin routes,
+  logs, tests, or implementation notes
 
 Record evidence for each applicable quality gate when UI behavior is changed.
 Use `N/A` with a concise reason for gates that do not apply to documentation,
@@ -122,6 +129,8 @@ Work through the tasks defined in the work file. Follow these principles:
 - Make small, deliberate, atomic changes
 - Validate each change before moving to the next
 - Apply the Quality Gate to every change
+- Remove or relocate prototype/debug scaffolding before considering any
+  user-facing route complete
 - Record files changed, commands or checks run, results, and unresolved blockers
   as you work so wrap-up evidence is specific
 

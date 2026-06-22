@@ -80,6 +80,20 @@ Think like a graphic designer or architect, not a Bootstrap user:
 - **Asymmetry as intentional placement**: Elements should not be centered by default. Every element should feel PLACED with purpose -- pushed to a margin, offset from center, anchored to an edge. Symmetry is a choice, not a fallback. The asymmetry should create energy and direct the eye.
 - **Vary spatial rhythm dramatically**: Not every section should be the same height or density. Some sections should breathe with massive whitespace; others should be dense and information-rich. The variation itself creates pacing and narrative.
 
+#### Product Surface Discipline
+The primary interface is not a diagnostics dump. A user-facing page, dashboard,
+game, extension, or focused tool should expose only the copy, controls, state,
+and feedback that help the target person complete the experience. Internal
+status belongs in logs, tests, devtools, a hidden development overlay, or a
+separate developer/admin/debug route.
+
+Ban these from normal product surfaces unless the product explicitly serves
+developers and the spec names them as user goals: runtime status blocks,
+seed/frame/input panels, resize readouts, readiness badges, route ownership
+notes, data-source status, package/version labels, "shell ready" messages, and
+generic scaffolding labels. If a focused game surface needs state, make it
+diegetic or gameplay-relevant; do not frame the game as a runtime cockpit.
+
 #### Section Transitions as Choreography
 Sections should NOT end with hard cuts. Transitions between content areas happen through:
 - **Color shifts**: Background color evolving over scroll distance, not switching abruptly
@@ -184,6 +198,9 @@ Avoid these not because they are on a list, but because they signal LACK OF THOU
 - Decorative elements that do not move or respond to anything -- dead ornaments
 - Sans-serif body text smaller than 18px on desktop
 - Stock photography or placeholder image boxes when CSS/SVG visuals would be more distinctive
+- User-facing screens littered with implementation diagnostics, runtime
+  telemetry, debug labels, readiness badges, resize readouts, route ownership
+  notes, or scaffolding copy
 
 The test: If you removed the content and just looked at the structure and styling, could you tell this was designed for THIS specific context? If not, push further.
 
