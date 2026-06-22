@@ -4,6 +4,21 @@ All notable changes to the Apex Spec System are documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.1.1-codex] - 2026-06-22
+
+### Added
+- `creview` staged workflow command for code review and repair between
+  `implement` and `validate`.
+- `references/creview.md` command reference and `code-review.md` session
+  artifact contract.
+- ADR 0002 documenting the dedicated review/repair step.
+
+### Changed
+- Staged workflow count updated to 14 commands and 24 commands total.
+- `implement` now hands off to `creview`; `creview` hands off to `validate`.
+- `validate` now requires a resolved `code-review.md` before it can pass.
+- Apex Infinite CLI command lists and prompt references now include `creview`.
+
 ## [2.0.13-codex] - 2026-03-09
 
 ### Added

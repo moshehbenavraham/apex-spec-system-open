@@ -6,7 +6,7 @@ Philosophy: 1 session = 1 spec = 2-4 hours (12-25 tasks)
 
 ## Version
 
-Current version: 2.0.29-codex
+Current version: 2.1.1-codex
 
 When updating version, update it in all the following files:
 
@@ -23,7 +23,7 @@ skill copy directly.
 ## Project Context
 
 This project is an Agent Skill packaged for the Agent Skills standard. It
-provides a 23-command surface: a 13-command staged workflow for breaking large
+provides a 24-command surface: a 14-command staged workflow for breaking large
 projects into manageable implementation sessions, plus 10 utility commands for
 out-of-band support tasks. The skill uses a "Skill Family with Shared
 References" pattern: a root orchestrator (SKILL.md) dispatches to
@@ -77,7 +77,8 @@ fast starting point, route by stage:
 - Stage 1, PRD is ready and phase structure is missing: `phasebuild`
 - Stage 2, initialized project and next scoped session needed: `plansession`
 - Stage 2, current session already has `spec.md` and `tasks.md`: `implement`
-- Stage 2, implementation needs verification: `validate`
+- Stage 2, implementation is done and needs review/repair: `creview`
+- Stage 2, review is done and implementation needs verification: `validate`
 - Stage 2, validation passed and progress should be synced: `updateprd`
 - Stage 3, all sessions in the current phase are done: `audit`
 - Utility work outside the staged flow: `copush`, `qimpl`, `dockbuild`,

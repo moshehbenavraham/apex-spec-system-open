@@ -79,7 +79,7 @@ Push --> Quality (shellcheck, shfmt, encoding) --> Tests (bats) --> Security (au
 5. release.yml workflow runs automatically:
    - Verify ASCII encoding (no non-ASCII in core files)
    - Verify version sync (SKILL.md and README.md match tag)
-   - Verify file inventory (26+ references, 3 scripts, all executable)
+   - Verify file inventory (23+ references, 3 scripts, all executable)
    - Create GitHub Release with installation instructions
 
 ## Updating an Existing Installation

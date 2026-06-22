@@ -2,7 +2,7 @@
 
 ## A Claude Code Plugin Version Available Here: https://github.com/moshehbenavraham/apex-spec-system
 
-**Version: 2.0.29-codex**
+**Version: 2.1.1-codex**
 
 A specification-driven workflow system for AI-assisted development, packaged as
 an Agent Skill following the [Agent Skills standard](https://agentskills.io).
@@ -46,6 +46,7 @@ $apex-spec phasebuild
 # 5. Plan and implement sessions
 $apex-spec plansession
 $apex-spec implement
+$apex-spec creview
 $apex-spec validate
 $apex-spec updateprd
 ```
@@ -62,7 +63,8 @@ If you are not starting from `SKILL.md`, use this quick routing fallback:
 - PRD is ready and you need the next right-sized unit of work: use `phasebuild`
 - `.spec_system/` exists and you need the next scoped session: use `plansession`
 - A session already has `spec.md` and `tasks.md`: use `implement`
-- Implementation is finished and needs verification: use `validate`
+- Implementation is done and the new code needs review/repair: use `creview`
+- Review is done and the session needs verification: use `validate`
 - Validation passed and the session should be marked complete: use `updateprd`
 - All sessions in the current phase are complete: start Phase Transition at `audit`
 - You want an autonomous implementation burst against an existing current
@@ -129,7 +131,7 @@ After installation, verify: `ls ~/.agents/skills/apex-spec/SKILL.md`
 
 ## Command Structure
 
-Apex Spec exposes 23 commands total: 13 staged workflow commands and 10 utility
+Apex Spec exposes 24 commands total: 14 staged workflow commands and 10 utility
 commands. The staged workflow drives the spec lifecycle; utilities are separate
 helpers for out-of-band tasks.
 
@@ -142,7 +144,7 @@ assumption, and continues. Each command ends with a short summary and an
 explicit `Next command:` line so another agent can route the next step without
 guessing.
 
-## The 13-Command Workflow
+## The 14-Command Workflow
 
 The workflow has 3 distinct stages. See
 [references/workflow-overview.md](references/workflow-overview.md) for the
@@ -162,6 +164,7 @@ phasebuild    ->  Create first phase structure
 ```
 plansession   ->  Analyze project, create spec + task checklist
 implement     ->  AI-led task-by-task implementation
+creview       ->  Review and repair all uncommitted changes
 validate      ->  Verify session completeness
 updateprd     ->  Mark session complete, sync state
 ```
@@ -249,7 +252,7 @@ workspaces, Go modules, Lerna.
 
 ## Features
 
-- **23 Commands Total**: 13 staged workflow commands plus 10 utility commands
+- **24 Commands Total**: 14 staged workflow commands plus 10 utility commands
 - **Session Scoping**: 12-25 tasks per session, 2-4 hours max
 - **Progress Tracking**: State file and checklists track progress
 - **Validation Gates**: Verify completeness and security before marking done
@@ -268,7 +271,7 @@ workspaces, Go modules, Lerna.
 - [Deployment](docs/deployment.md) - Installation, CI/CD, release process
 - [Usage Guidance](references/guidance.md) - When to use, workflow modes, team patterns
 - [Production Walkthrough](references/walkthrough.md) - Real-world examples
-- [Workflow Quick-Reference](references/workflow-overview.md) - 13-command staged workflow overview
+- [Workflow Quick-Reference](references/workflow-overview.md) - 14-command staged workflow overview
 - [Contributing](CONTRIBUTING.md) - Branch conventions, commit style, PR process
 - [ADRs](docs/adr/) - Architecture decision records
 

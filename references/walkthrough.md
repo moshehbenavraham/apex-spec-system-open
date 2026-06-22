@@ -120,7 +120,7 @@ After this succeeds, the next workflow command is always `implement`.
 .spec_system/specs/phase09-session01-rutgers-modiv-analysis/
 |-- spec.md
 |-- tasks.md
-\-- (security-compliance.md, validation.md created by validate)
+\-- (code-review.md created by creview; security-compliance.md and validation.md created by validate)
 ```
 
 **Actual spec.md excerpt:**
@@ -203,13 +203,29 @@ Status: Complete
 Reference: 44 fields in current schema
 ```
 
-### Step 6: validate
+### Step 6: creview
+
+```
+User: creview
+```
+
+Claude reviews every uncommitted change in the working tree and repairs issues
+before the validation gate:
+
+- Inventories staged, unstaged, and untracked files
+- Reads the session spec, tasks, implementation notes, and conventions
+- Reviews each changed hunk for correctness, security, edge cases, tests, and
+  consistency
+- Applies surgical fixes and adds or updates tests for bugs found
+- Writes code-review.md with findings, fixes, assumptions, and verification
+
+### Step 7: validate
 
 ```
 User: validate
 ```
 
-Claude verifies session completeness:
+Claude verifies session completeness after code review and repair:
 
 **Actual validation.md:**
 
@@ -254,7 +270,7 @@ Claude verifies session completeness:
 | docs/historical-data/partition-design.md | Yes | 189 | PASS |
 ```
 
-### Step 7: updateprd
+### Step 8: updateprd
 
 ```
 User: updateprd
@@ -284,7 +300,7 @@ Next: Run plansession for session 02 recommendation.
 
 Continue the cycle:
 ```
-plansession -> implement -> validate -> updateprd
+plansession -> implement -> creview -> validate -> updateprd
 ```
 
 Until all sessions in the phase are done.
@@ -454,8 +470,10 @@ Apex Spec supports monorepo projects with per-package session scoping. Here is a
 3. **phasebuild** annotates session stubs with `Package:` lines
 4. **plansession** resolves package context from stub annotations and scopes tasks to the package directory
 5. **implement** validates files stay within the declared package boundary
-6. **validate** runs package-scoped tests first, then repo-root tests
-7. **updateprd** records package in completed_sessions and history entries
+6. **creview** uses the declared package for context, but still reviews and
+   repairs the full uncommitted working tree before `validate`
+7. **validate** runs package-scoped tests first, then repo-root tests
+8. **updateprd** records package in completed_sessions and history entries
 
 ### Key Monorepo Takeaways
 
@@ -474,7 +492,7 @@ Stage 1: INITIALIZATION (once)
 initspec -> createprd -> createuxprd (optional) -> phasebuild
 
 Stage 2: SESSION WORKFLOW (repeat per session)
-plansession -> implement -> validate -> updateprd
+plansession -> implement -> creview -> validate -> updateprd
 
 Stage 3: PHASE TRANSITION (after all phase sessions complete)
 audit -> pipeline -> infra -> carryforward -> documents -> phasebuild

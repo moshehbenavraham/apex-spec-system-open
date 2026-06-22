@@ -1,6 +1,6 @@
 {
   "name": "apex-spec",
-  "version": "2.0.29-codex",
+  "version": "2.1.1-codex",
   "description": "Specification-driven workflow system for AI-assisted development in Codex.",
   "author": {
     "name": "Apex Spec System Contributors",
@@ -20,7 +20,7 @@
   "interface": {
     "displayName": "Apex Spec System",
     "shortDescription": "Plan, implement, validate, and ship scoped spec-driven sessions.",
-    "longDescription": "Apex Spec System packages a 23-command specification-driven workflow for Codex. It guides initialization, PRD creation, phase and session planning, implementation, validation, documentation, and utility workflows such as copush and Docker builds.",
+    "longDescription": "Apex Spec System packages a 24-command specification-driven workflow for Codex. It guides initialization, PRD creation, phase and session planning, implementation, code review, validation, documentation, and utility workflows such as copush and Docker builds.",
     "developerName": "Apex Spec System Contributors",
     "category": "Productivity",
     "capabilities": [

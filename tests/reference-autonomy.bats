@@ -10,6 +10,7 @@ COMMAND_REFERENCES=(
     "references/phasebuild.md"
     "references/plansession.md"
     "references/implement.md"
+    "references/creview.md"
     "references/validate.md"
     "references/updateprd.md"
     "references/audit.md"

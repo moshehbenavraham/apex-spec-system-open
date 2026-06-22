@@ -53,7 +53,7 @@ Proven patterns and anti-patterns. Reference during implementation.
 - [P03] **Use current version, not spec's target**: Version drift between spec creation and implementation is normal; always use the actual current version.
 - [P04] **Two-layer session approach**: Separating mechanical renaming (Session 01) from prompt rewriting (Session 02) keeps sessions focused and avoids complexity bleed.
 - [P04] **Systematic cataloging before rewriting**: Cataloging all 18 occurrences across 6 prompt sections before editing prevents missed references.
-- [P04] **Parametrized tests across all commands**: Testing `build_codex_prompt()` for all 13 KNOWN_COMMANDS with parametrize catches regressions efficiently with minimal code.
+- [P04] **Parametrized tests across all commands**: Testing `build_codex_prompt()` for all 14 KNOWN_COMMANDS with parametrize catches regressions efficiently with minimal code.
 - [P04] **Grep audit as final validation**: Essential for catching stale references in test fixtures, archived files, and documentation.
 - [P04] **Read full file before documentation edits**: Documentation-only sessions maintain narrative coherence when the entire file is read first.
 

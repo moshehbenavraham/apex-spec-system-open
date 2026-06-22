@@ -4,7 +4,7 @@ Execute each task in the session's task list, updating progress as you go.
 
 This is the second command in the Session Workflow stage. Run it after
 `plansession` has created `spec.md` and `tasks.md`. When `implement` finishes,
-the next workflow command is `validate`.
+the next workflow command is `creview`.
 
 ## Rules
 
@@ -327,8 +327,8 @@ Summary:
 - Tests/checks run: [brief list]
 - Remaining blockers: none
 
-Next command: `validate`
-Reason: implementation is complete and must be verified before updateprd can mark the session complete.
+Next command: `creview`
+Reason: implementation is complete and all uncommitted changes must be reviewed and repaired before validation.
 ```
 
 If an external blocker remains:
@@ -347,5 +347,5 @@ Reason: implementation must resume after the external requirement exists; valida
 
 ## Next Action
 
-After `implement` completes, run `validate`. Do not jump directly from
-`implement` to `updateprd`.
+After `implement` completes, run `creview`. Do not jump directly from
+`implement` to `validate` or `updateprd`.

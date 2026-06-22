@@ -34,7 +34,7 @@ This creates a `.spec_system/` directory with state tracking, scripts, and conve
 ### 3. Follow the Workflow
 
 ```
-initspec -> createprd -> phasebuild -> plansession -> implement -> validate -> updateprd
+initspec -> createprd -> phasebuild -> plansession -> implement -> creview -> validate -> updateprd
 ```
 
 See [references/workflow-overview.md](../references/workflow-overview.md) for the full command reference.

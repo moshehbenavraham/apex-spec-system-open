@@ -37,6 +37,7 @@ KNOWN_COMMANDS = {
     "createuxprd",
     "plansession",
     "implement",
+    "creview",
     "validate",
     "updateprd",
     "audit",
@@ -174,6 +175,24 @@ Steps:
 
 Rules: ASCII-only, LF endings, follow conventions, implement spec exactly (no extras)
 
+Next: creview
+
+---
+creview
+
+Purpose: Review and repair all uncommitted changes before validation
+
+Steps:
+1. Run analyze-project.sh --json for current session context
+2. Inventory all uncommitted changes with git status, git diff HEAD, git diff --cached, and git ls-files --others --exclude-standard
+3. Read spec.md, tasks.md, implementation-notes.md, CONVENTIONS.md, and CONSIDERATIONS.md
+4. Review every changed hunk for correctness, spec adherence, security, error handling, edge cases, data integrity, tests, dead code, consistency, and performance
+5. Write code-review.md with findings grouped by severity, assumptions, behavior changes, and verification evidence
+6. Fix every repo-fixable finding with minimal edits and add or update tests for every bug fixed
+7. Run applicable tests, linter, formatter, type checker, and re-read the final diff
+
+Rules: Review ALL uncommitted changes, no human decision gate, no QUESTION outcome, record evidence-backed assumptions and continue
+
 Next: validate
 
 ---
@@ -183,8 +202,9 @@ Purpose: Verify session completeness and quality gates
 
 Steps:
 1. Run analyze-project.sh --json for current session
-2. Read spec.md, tasks.md, implementation-notes.md, CONVENTIONS.md
-3. Run 6 checks:
+2. Read spec.md, tasks.md, implementation-notes.md, code-review.md, CONVENTIONS.md
+3. Run 7 checks:
+   - 0. Code review gate (code-review.md Result: RESOLVED)
    - A. Task completion (100% [x])
    - B. Deliverables exist (non-empty)
    - C. ASCII encoding (no non-ASCII, no CRLF)
@@ -362,6 +382,7 @@ Quick Reference
 |---------------|------------|------------------------|-------------------------------------|
 | plansession   | Sessions   | State, PRD, candidates | NEXT_SESSION.md spec.md tasks.md    |
 | implement     | Sessions   | spec.md, tasks.md      | Code + implementation-notes.md      |
+| creview       | Sessions   | Uncommitted changes    | code-review.md                      |
 | validate      | Sessions   | All session files      | validation.md                       |
 | updateprd     | Sessions   | validation.md          | Summary, commit, push, version bump |
 | audit         | Transition | Codebase               | Local dev tooling, report           |

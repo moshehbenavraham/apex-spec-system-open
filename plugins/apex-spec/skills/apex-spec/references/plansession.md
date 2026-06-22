@@ -22,7 +22,7 @@ This is the first command in the Session Workflow stage. Run it after `phasebuil
 14. **Every task must have** - Task ID (`TNNN`), session ref (`[SPPSS]`), action verb, and target file path
 15. **Mark `[P]`** only when tasks are truly independent
 16. **Sequence by reality** - Dependencies first, then setup, foundation, implementation, and testing
-17. **Behavioral quality by design** - When a Behavioral Quality Checklist applies, embed edge-case handling into task descriptions instead of leaving it for `implement` or `validate`
+17. **Behavioral quality by design** - When a Behavioral Quality Checklist applies, embed edge-case handling into task descriptions instead of leaving it for `implement`, `creview`, or `validate`
 18. **Resolve ambiguity with evidence-backed working assumptions** - Normal ambiguity is not a reason to stop
 19. **Surface and resolve conflicts** - When inputs disagree, choose the best-supported interpretation and record it when it materially shapes the plan
 
@@ -414,7 +414,7 @@ Create `tasks.md` from the selected spec's deliverables, success criteria, techn
 - [ ] All tests and checks passing
 - [ ] All files ASCII-encoded with LF line endings
 - [ ] implementation-notes.md updated
-- [ ] Ready for the `validate` workflow step
+- [ ] Ready for `implement` to start the implement -> creview -> validate sequence
 
 ---
 

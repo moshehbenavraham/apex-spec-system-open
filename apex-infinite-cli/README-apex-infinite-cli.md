@@ -29,7 +29,7 @@ Originally powered by an n8n workflow with Airtable, Slack, and SSH nodes, this 
 
 1. **Fetch history** -- Last 15 interactions from SQLite
 2. **Summarize** -- LLM condenses history to <2000 chars
-3. **Decide** -- Manager LLM picks the next command (plansession, implement, validate, etc.)
+3. **Decide** -- Manager LLM picks the next command (plansession, implement, creview, validate, etc.)
 4. **Execute** -- Runs `codex exec` with the chosen command in your project directory
 5. **Log** -- Records the interaction
 6. **Repeat** -- Until `alldonebaby` or max iterations reached
@@ -45,7 +45,7 @@ All Apex Spec commands are recognized and routed through the skill invocation pr
 | Stage | Commands |
 |-------|----------|
 | Initialization | `initspec`, `createprd`, `createuxprd` |
-| Session workflow | `plansession`, `implement`, `validate`, `updateprd` |
+| Session workflow | `plansession`, `implement`, `creview`, `validate`, `updateprd` |
 | Phase transition | `audit`, `pipeline`, `infra`, `carryforward`, `documents`, `phasebuild` |
 | Terminal | `alldonebaby` (stops loop) |
 
@@ -159,14 +159,14 @@ pip install -r requirements.txt -r requirements-dev.txt
 pytest tests/ -v
 ```
 
-The test suite has 54 tests across 5 classes:
+The test suite has 57 tests across 5 classes:
 
 | Class | Tests | Coverage |
 |-------|-------|----------|
-| TestManagerSystemPrompt | 12 | Content validation, forbidden strings, structure |
+| TestManagerSystemPrompt | 13 | Content validation, forbidden strings, structure |
 | TestSummarizerSystemPrompt | 5 | Prompt content and formatting |
 | TestUserMessageTemplate | 4 | Mock LLM integration, message assembly |
-| TestBuildCodexPrompt | 18 | Parametrized across all 13 known commands + edge cases |
+| TestBuildCodexPrompt | 33 | Parametrized across all 14 known commands + edge cases |
 | TestJsonParsing | 2 | json_mode parsing and regex fallback |
 
 ## Deep-Dive Docs

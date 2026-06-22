@@ -5,7 +5,10 @@ These can be run at any time -- they do not read or modify session state (`state
 
 ## When to Use
 
-Use utility commands for ad-hoc operations that support your workflow but are not part of the plan-implement-validate cycle. They are safe to run at any point -- mid-session, between sessions, or before initialization.
+Use utility commands for ad-hoc operations that support your workflow but are
+not part of the staged session workflow (`plansession -> implement -> creview
+-> validate -> updateprd`). They are safe to run at any point -- mid-session,
+between sessions, or before initialization.
 
 ## Command Reference
 

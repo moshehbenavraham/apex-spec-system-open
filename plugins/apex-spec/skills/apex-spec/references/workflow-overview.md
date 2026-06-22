@@ -1,6 +1,6 @@
 # Workflow Overview
 
-Quick-reference for the Apex Spec System's 13-command staged workflow. Apex
+Quick-reference for the Apex Spec System's 14-command staged workflow. Apex
 Spec also exposes 10 utility commands, listed separately below, for out-of-band
 support tasks.
 
@@ -47,12 +47,14 @@ technical PRD.
 |------|---------|---------|
 | 1 | plansession | Analyze project state, create spec + task checklist |
 | 2 | implement | AI-led task-by-task implementation |
-| 3 | validate | Verify session completeness and quality gates |
-| 4 | updateprd | Mark session complete, sync PRD and state |
+| 3 | creview | Review and repair all uncommitted changes |
+| 4 | validate | Verify session completeness and quality gates |
+| 5 | updateprd | Mark session complete, sync PRD and state |
 
 Repeat this cycle for each session in the phase.
 
 Important: after a successful `plansession` run that creates `spec.md` and `tasks.md`, the next workflow command is always `implement`.
+Important: after a successful `implement` run, the next workflow command is always `creview`; after `creview`, the next workflow command is `validate`.
 Important: after a successful `updateprd` run, return to `plansession` if the phase still has unfinished sessions; otherwise begin Phase Transition at `audit`.
 
 ### Stage 3: Phase Transition (After All Phase Sessions Complete)
@@ -83,13 +85,13 @@ initspec                plansession ----+         audit
 createprd (opt)         implement       |         pipeline
     |                       |           |             |
     v                       v           |             v
-createuxprd (opt)       validate        |         infra
+createuxprd (opt)       creview         |         infra
     |                       |           |             |
     v                       v           |             v
-phasebuild              updateprd ------+         carryforward
-                                                      |
-                                                      v
-                                                  documents
+phasebuild              validate        |         carryforward
+                            |           |             |
+                            v           |             v
+                        updateprd ------+         documents
                                                       |
                                                       v
                                                   phasebuild --> Stage 2
@@ -122,7 +124,8 @@ the session workflow and can be used for support tasks at any time:
 | createuxprd | Design docs | PRD/PRD_UX.md | phasebuild |
 | phasebuild | PRD | PRD/phase_NN/ | plansession or none |
 | plansession | state.json, PRD | spec.md + tasks.md | implement or audit |
-| implement | spec.md, tasks.md | implementation-notes.md | validate |
+| implement | spec.md, tasks.md | implementation-notes.md | creview |
+| creview | All uncommitted changes | code-review.md | validate |
 | validate | All session files | validation.md | updateprd or implement |
 | updateprd | validation.md | Updated state.json | plansession or audit |
 | audit | CONVENTIONS.md | Updated dev tools | pipeline or audit |

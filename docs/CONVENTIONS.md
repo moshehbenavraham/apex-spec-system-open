@@ -122,7 +122,7 @@ before adding more prose. The goal is predictability, not longer files.
 - Verify ASCII-only encoding: `LC_ALL=C grep -n '[^[:print:][:space:]]' file`
 - Verify LF line endings: `grep -n "$(printf '\r')" file`
 - Test each command dispatch independently via the orchestrator
-- End-to-end test: initspec -> plansession -> implement -> validate
+- End-to-end test: initspec -> plansession -> implement -> creview -> validate
 
 ## Git & Version Control
 

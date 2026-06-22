@@ -77,16 +77,19 @@ initspec -> createprd -> createuxprd (optional) -> phasebuild
 Ran repeatedly until all the sessions of the Phase are completed.
 
 ```
-plansession -> implement -> validate -> updateprd
+plansession -> implement -> creview -> validate -> updateprd
 ```
 
 After a successful `plansession` run, `implement` is always the next workflow command.
+After a successful `implement` run, `creview` reviews and repairs all
+uncommitted changes; after `creview`, `validate` verifies the session.
 After a successful `updateprd` run, the workflow either returns to `plansession` for the next session in the current phase or exits the session loop and begins Phase Transition at `audit` if the phase is complete.
 
 **Artifacts created:**
 - spec.md (detailed specification)
 - tasks.md (12-25 task checklist)
 - implementation-notes.md (progress log)
+- code-review.md (code review and repair log)
 - security-compliance.md (security & GDPR review)
 - validation.md (quality verification)
 - IMPLEMENTATION_SUMMARY.md (completion record)
@@ -151,13 +154,14 @@ Marks tasks complete          Suggests improvements
 Developer                     Team
 ---------                     ----
 Complete session       ->
+creview               ->     Review code-review.md
 validate              ->     Review validation.md
 updateprd             ->     Merge approved
 ```
 
 **Important**: This is a team process outside the autonomous Apex workflow. The
 workflow commands themselves do not wait for review feedback; they keep routing
-through `validate -> updateprd`.
+through `creview -> validate -> updateprd`.
 
 ### What Apex Spec Does NOT Handle
 
@@ -292,6 +296,7 @@ export --format html
 | Create phase structure | `phasebuild` |
 | Analyze, spec, and generate tasks | `plansession` |
 | Implement tasks | `implement` |
+| Review and repair uncommitted changes | `creview` |
 | Verify completion | `validate` |
 | Mark session complete | `updateprd` |
 | Add dev tooling | `audit` |

@@ -4,14 +4,14 @@ description: >
   Specification-driven workflow system for AI-assisted development.
   Use when the user mentions "spec system", "session workflow", "create PRD",
   "UX PRD", "plan session", "implement session", "validate session",
-  "phase build", "session scope", "task checklist", "initspec", "plansession",
-  "audit", "pipeline", "infra", "carryforward", "documents", "copush",
-  "sculpt-ui", "seshsplit", "session split", "split plan into sessions",
-  "docker build", "upstream changes", "quick implement", "quick frontend",
-  "quick backend", "pull upstream",
+  "code review", "creview", "phase build", "session scope", "task checklist",
+  "initspec", "plansession", "audit", "pipeline", "infra", "carryforward",
+  "documents", "copush", "sculpt-ui", "seshsplit", "session split",
+  "split plan into sessions", "docker build", "upstream changes",
+  "quick implement", "quick frontend", "quick backend", "pull upstream",
   or when working in a project containing a .spec_system/ directory.
   Philosophy: 1 session = 1 spec = 2-4 hours (12-25 tasks).
-version: 2.0.29-codex
+version: 2.1.1-codex
 ---
 
 # Apex Spec Workflow
@@ -49,7 +49,7 @@ technical PRD.
 
 ## Command Structure
 
-The skill exposes 23 commands total: 13 staged workflow commands and 10 utility
+The skill exposes 24 commands total: 14 staged workflow commands and 10 utility
 commands. The staged workflow drives the spec lifecycle; utility commands are
 listed separately and run outside the session workflow.
 
@@ -77,7 +77,7 @@ Reason: [why that command is the correct next workflow step]
 Use `none` only when the project is complete or the command is a utility that
 does not participate in the staged workflow.
 
-## The 13-Command Workflow
+## The 14-Command Workflow
 
 The workflow has **3 distinct stages**:
 
@@ -105,6 +105,9 @@ plansession    ->  Analyze project, create spec + task checklist
 implement      ->  AI-led task-by-task implementation
       |
       v
+creview        ->  Review and repair all uncommitted changes
+      |
+      v
 validate       ->  Verify session completeness
       |
       v
@@ -115,6 +118,10 @@ updateprd      ->  Sync PRD, mark session complete
 ```
 
 After a successful `plansession` run that creates the session spec and task checklist, the next workflow command is always `implement`.
+
+After a successful `implement` run, the next workflow command is always
+`creview`. After a successful `creview` run, the next workflow command is
+`validate`.
 
 After a successful `updateprd` run, the next workflow command has two paths: return to `plansession` if the phase still has unfinished sessions; otherwise exit the session loop and begin Phase Transition at `audit`.
 
@@ -189,6 +196,7 @@ in the table below.
 |---------------|----------------|-------------|
 | "plan session", "next session" | references/plansession.md | Analyze project, create spec and task checklist |
 | "implement", "execute tasks" | references/implement.md | AI-led task-by-task implementation |
+| "code review", "creview", "review and repair" | references/creview.md | Review and repair all uncommitted changes |
 | "validate", "verify session" | references/validate.md | Verify session completeness |
 | "update PRD", "mark complete" | references/updateprd.md | Sync PRD, mark session complete |
 
@@ -217,7 +225,7 @@ in the table below.
 | "quick backend" | references/qbackenddev.md | Autonomous backend development |
 | "pull upstream", "pull and document" | references/pullndoc.md | Pull and document upstream changes |
 
-**Total**: 23 command references: 13 staged workflow commands and 10 utilities.
+**Total**: 24 command references: 14 staged workflow commands and 10 utilities.
 
 ---
 
@@ -240,6 +248,7 @@ project/
 |   |       |-- spec.md
 |   |       |-- tasks.md
 |   |       |-- implementation-notes.md
+|   |       |-- code-review.md
 |   |       |-- security-compliance.md
 |   |       \-- validation.md
 |   |-- scripts/                # Bash automation (copied during init)
@@ -324,6 +333,7 @@ All files must use ASCII-only characters (code points 0-127):
 | createuxprd | Generate UX PRD | Design docs | PRD/PRD_UX.md |
 | plansession | Analyze, spec, task list | state.json, PRD | spec.md + tasks.md |
 | implement | Code implementation | spec.md, tasks.md | implementation-notes.md |
+| creview | Review and repair | All uncommitted changes | code-review.md |
 | validate | Verify completeness | All session files | validation.md |
 | updateprd | Mark complete | validation.md | Updated state.json |
 | audit | Local dev tooling | CONVENTIONS.md | Updated tools |

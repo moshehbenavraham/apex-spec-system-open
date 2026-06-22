@@ -66,7 +66,7 @@ class TestManagerSystemPrompt:
         parts = re.split(r"```.*?```", MANAGER_SYSTEM_PROMPT, flags=re.DOTALL)
         prose = " ".join(parts)
         # Check for /commandname patterns that reference workflow commands
-        slash_cmds = re.findall(r"/(?:plansession|implement|validate|updateprd|audit|pipeline|infra|carryforward|documents|phasebuild)\b", prose)
+        slash_cmds = re.findall(r"/(?:plansession|implement|creview|validate|updateprd|audit|pipeline|infra|carryforward|documents|phasebuild)\b", prose)
         assert len(slash_cmds) == 0, (
             f"Found slash-command references in prose: {slash_cmds}"
         )
@@ -192,10 +192,11 @@ class TestUserMessageTemplate:
 class TestBuildCodexPrompt:
     """T016: build_codex_prompt() output for each known command."""
 
-    # The 10 workflow commands from the command reference table
+    # The 11 workflow commands from the command reference table
     WORKFLOW_COMMANDS = [
         "plansession",
         "implement",
+        "creview",
         "validate",
         "updateprd",
         "audit",

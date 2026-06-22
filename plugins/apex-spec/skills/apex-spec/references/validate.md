@@ -2,14 +2,14 @@
 
 Verify that all session requirements are met before marking the session complete.
 
-This is the third command in the Session Workflow stage. Run it after
-`implement`. If `validate` passes, the next workflow command is `updateprd`. If
-it fails, fix the issues and rerun `validate`.
+This is the fourth command in the Session Workflow stage. Run it after
+`creview`. If `validate` passes, the next workflow command is `updateprd`. If
+it fails, fix the issues and rerun the correct workflow command.
 
 ## Rules
 
 1. **Autonomous execution** - do not ask questions, request approval, or wait for human feedback
-2. **PASS requires ALL of**: 100% tasks complete, all deliverables exist, all files ASCII-encoded with LF endings, all tests passing, all success criteria met, database/schema alignment verified when the session touches the DB layer, no security or GDPR violations, no critical behavioral quality violations (when BQC applies)
+2. **PASS requires ALL of**: `code-review.md` exists with `Result: RESOLVED`, 100% tasks complete, all deliverables exist, all files ASCII-encoded with LF endings, all tests passing, all success criteria met, database/schema alignment verified when the session touches the DB layer, no security or GDPR violations, no critical behavioral quality violations (when BQC applies)
 3. **Any single failure = overall FAIL** - no partial passes
 4. **Script first** - run `analyze-project.sh --json` before any analysis
 5. **Evidence required** - every PASS/FAIL/N/A claim in `validation.md` must name the exact command, check, or inspected artifact that produced it
@@ -74,10 +74,11 @@ Using the `current_session` value from the script output, read all session docum
 - `.spec_system/specs/[current-session]/spec.md` - Requirements
 - `.spec_system/specs/[current-session]/tasks.md` - Task checklist
 - `.spec_system/specs/[current-session]/implementation-notes.md` - Progress log
+- `.spec_system/specs/[current-session]/code-review.md` - Code review and repair report from `creview`
 - `.spec_system/specs/[current-session]/security-compliance.md` - Prior security report (if exists from previous validation run)
 - `.spec_system/CONVENTIONS.md` - Project coding conventions (if exists)
 
-**CONVENTIONS.md** is used in the Quality Gates check (section 3.F) to verify code follows project conventions for naming, structure, error handling, testing, etc.
+**CONVENTIONS.md** is used in the Quality Gates check (section 3.H) to verify code follows project conventions for naming, structure, error handling, testing, etc.
 
 ### 3. Run Validation Checks
 
@@ -87,20 +88,33 @@ For every check below, capture evidence before writing `validation.md`:
 - Result, output summary, and any fix applied during validation
 - Remaining blocker, if any, and why it cannot be resolved autonomously
 
-#### A. Task Completion
+#### A. Code Review Gate
+
+Verify `code-review.md` exists and has `Result: RESOLVED`:
+- Confirm the file is present in the current session directory
+- Confirm the result is exactly `RESOLVED`
+- Confirm the review scope says all uncommitted changes were reviewed
+- If `code-review.md` is missing, `BLOCKED`, or not `RESOLVED`, validation must
+  FAIL and the correct handoff is `Next command: creview`
+
+This is a workflow-order gate. It does not change ordinary validation failure
+routing: code, task, deliverable, test, schema, security, or behavioral fixes
+still hand off to `implement`.
+
+#### B. Task Completion
 Verify all tasks in tasks.md are marked `[x]`:
 - Count total tasks
 - Count completed tasks
 - List any incomplete tasks
 
-#### B. Deliverables Check
+#### C. Deliverables Check
 From spec.md deliverables section:
 - Verify each file exists
 - Check file is non-empty
 - Note any missing files
 - **Monorepo**: File paths should be repo-root-relative (e.g., `apps/web/src/auth.ts`). Verify files are within the declared package scope (from Step 1a). Flag any deliverables outside the package boundary.
 
-#### C. ASCII Encoding Check
+#### D. ASCII Encoding Check
 For each deliverable file:
 ```bash
 # Check encoding
@@ -115,7 +129,7 @@ grep -l $'\r' [filename]
 - Report any non-ASCII characters found
 - Report any CRLF line endings
 
-#### D. Test Verification
+#### E. Test Verification
 Run the project's test suite:
 - Record exact command(s) and exit status
 - Record total tests
@@ -131,7 +145,7 @@ Run the project's test suite:
 4. Only after all tests pass (0 failures) may you mark Test Verification as PASS
 5. If a failure is genuinely unrelated (e.g., flaky network test), you must PROVE it by showing the exact command also fails on the pre-session commit -- do not assume
 
-#### E. Database/Schema Alignment (if relevant)
+#### F. Database/Schema Alignment (if relevant)
 If the session changes persisted data shape, constraints, indexes, migrations, seeds, or other DB-layer behavior that project conventions track in versioned artifacts:
 - Verify the matching schema artifact exists in the session changes (migration, schema file, SQL patch, DDL, ORM metadata update, seed/test fixture update, etc.)
 - Verify application code and schema artifacts describe the same tables, columns, constraints, indexes, and generated types
@@ -141,13 +155,13 @@ If the session changes persisted data shape, constraints, indexes, migrations, s
 
 If the session includes no DB-layer changes, mark this check N/A with a brief justification.
 
-#### F. Success Criteria
+#### G. Success Criteria
 From spec.md success criteria:
 - Check each functional requirement
 - Verify testing requirements met
 - Confirm quality gates passed
 
-#### G. Conventions Compliance (if CONVENTIONS.md exists)
+#### H. Conventions Compliance (if CONVENTIONS.md exists)
 Spot-check deliverables against project conventions:
 - **Naming**: Functions, variables, files follow naming conventions
 - **Structure**: Files are organized according to file structure conventions
@@ -158,7 +172,7 @@ Spot-check deliverables against project conventions:
 
 Note: This is a spot-check, not exhaustive. Flag obvious violations only.
 
-#### H. Security & GDPR Compliance
+#### I. Security & GDPR Compliance
 
 Use `references/security-compliance-checklist.md` as the reusable checklist for
 this section.
@@ -174,7 +188,7 @@ Apply the checklist's:
 This review is mandatory for touched session files. It remains targeted to
 session deliverables, not a full codebase audit.
 
-#### I. Behavioral Quality Spot-Check
+#### J. Behavioral Quality Spot-Check
 
 Determine whether a BQC applies: does this session produce application code?
 
@@ -274,7 +288,6 @@ Create `validation.md` in the session directory:
 
 ```markdown
 # Validation Report
-
 **Session ID**: `phaseNN-sessionNN-name`
 [MONOREPO ONLY - include when monorepo: true]
 **Package**: [package-path]
@@ -282,12 +295,11 @@ Create `validation.md` in the session directory:
 **Validated**: [YYYY-MM-DD]
 **Result**: PASS / FAIL
 
----
-
 ## Validation Summary
 
 | Check | Status | Notes |
 |-------|--------|-------|
+| Code Review | PASS/FAIL | `code-review.md` Result: RESOLVED |
 | Tasks Complete | PASS/FAIL | X/Y tasks |
 | Files Exist | PASS/FAIL | X/Y files |
 | ASCII Encoding | PASS/FAIL | [issues] |
@@ -300,8 +312,6 @@ Create `validation.md` in the session directory:
 
 **Overall**: PASS / FAIL
 
----
-
 ## Evidence Ledger
 
 Every row must name the exact command or targeted inspection used.
@@ -309,6 +319,7 @@ Every row must name the exact command or targeted inspection used.
 | Check | Command or Inspection | Result | Evidence / Blocker |
 |-------|-----------------------|--------|--------------------|
 | Project state | `bash .../analyze-project.sh --json` | PASS/FAIL | [summary] |
+| Code review | `code-review.md` inspection | PASS/FAIL | [Result: RESOLVED or handoff to creview] |
 | Task completion | [task checklist inspection] | PASS/FAIL | [X/Y tasks] |
 | Deliverables | [file existence/non-empty command or inspection] | PASS/FAIL | [X/Y files] |
 | ASCII/LF | `file ...`; `LC_ALL=C grep ...`; `grep ...` | PASS/FAIL | [issues or none] |
@@ -319,19 +330,20 @@ Every row must name the exact command or targeted inspection used.
 | Security/GDPR | [checklist inspection and commands] | PASS/FAIL/N/A | [findings or N/A reason] |
 | Behavioral quality | [BQC inspection] | PASS/WARN/FAIL/N/A | [files checked, violations] |
 
----
-
-## 1. Task Completion
+## 1. Code Review Gate
 
 ### Status: PASS/FAIL
+**Report**: `code-review.md`
+**Result**: RESOLVED / BLOCKED / missing / other
+**Issues**: [list or "None"]
 
+## 2. Task Completion
+
+### Status: PASS/FAIL
 **Tasks**: X/Y complete
-
 **Incomplete tasks**: [list or "None"]
 
----
-
-## 2. Deliverables Verification
+## 3. Deliverables Verification
 
 ### Status: PASS/FAIL
 
@@ -342,9 +354,7 @@ Every row must name the exact command or targeted inspection used.
 
 **Missing deliverables**: [list or "None"]
 
----
-
-## 3. ASCII Encoding Check
+## 4. ASCII Encoding Check
 
 ### Status: PASS/FAIL
 
@@ -354,9 +364,7 @@ Every row must name the exact command or targeted inspection used.
 
 **Encoding issues**: [list or "None"]
 
----
-
-## 4. Test Results
+## 5. Test Results
 
 ### Status: PASS/FAIL
 
@@ -369,9 +377,7 @@ Every row must name the exact command or targeted inspection used.
 
 **Failed tests**: [list or "None"]
 
----
-
-## 5. Database/Schema Alignment
+## 6. Database/Schema Alignment
 
 ### Status: PASS/FAIL/N/A
 
@@ -382,9 +388,7 @@ command, seed/rollback checks, or "N/A -- no DB-layer changes"]
 
 **Issues found**: [list or "None"]
 
----
-
-## 6. Success Criteria
+## 7. Success Criteria
 
 From spec.md:
 
@@ -394,9 +398,7 @@ From spec.md:
 
 **Quality gates**: [checked list from spec.md]
 
----
-
-## 7. Conventions Compliance
+## 8. Conventions Compliance
 
 ### Status: PASS/SKIP
 
@@ -407,9 +409,7 @@ testing, and database conventions when relevant.
 
 **Convention violations**: [list or "None" or "Skipped - no CONVENTIONS.md"]
 
----
-
-## 8. Security & GDPR Compliance
+## 9. Security & GDPR Compliance
 
 ### Status: PASS/FAIL/N/A
 
@@ -423,9 +423,7 @@ testing, and database conventions when relevant.
 
 **Critical violations**: [list critical/high severity items or "None"]
 
----
-
-## 9. Behavioral Quality Spot-Check
+## 10. Behavioral Quality Spot-Check
 
 ### Status: PASS/WARN/FAIL/N/A
 
@@ -455,7 +453,8 @@ autonomously, or "None"]
 ## Next Steps
 
 [If PASS]: Next command: `updateprd`
-[If FAIL]: Next command: `implement` for code, task, deliverable, test, schema, security, or behavioral fixes; `validate` only when validation was blocked by an external requirement and no implementation change is pending.
+[If FAIL because `code-review.md` is missing, BLOCKED, or not RESOLVED]: Next command: `creview`
+[If FAIL otherwise]: Next command: `implement` for code, task, deliverable, test, schema, security, or behavioral fixes; `validate` only when validation was blocked by an external requirement and no implementation change is pending.
 ```
 
 ### 6. Update State
@@ -477,6 +476,7 @@ Report PASS/FAIL with a summary of each check, including database/schema alignme
 The output must include:
 - `Summary:` with check results and any fixes applied during validation
 - `Next command: updateprd` when PASS
+- `Next command: creview` when `code-review.md` is missing, BLOCKED, or not RESOLVED
 - `Next command: implement` when FAIL requires implementation, task, test, schema, security, or behavioral fixes
 - `Next command: validate` only when validation could not complete because of an external requirement and no implementation change is pending
 - `Reason:` explaining the handoff
@@ -484,5 +484,6 @@ The output must include:
 ## Next Action
 
 - If PASS: run `updateprd`
+- If FAIL because `code-review.md` is missing, BLOCKED, or not RESOLVED: run `creview`
 - If FAIL with implementation or artifact issues: run `implement`
 - If FAIL because validation itself was externally blocked and no implementation change is pending: rerun `validate` after the external requirement exists

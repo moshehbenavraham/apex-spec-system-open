@@ -21,10 +21,11 @@ After a successful `updateprd` run, the next workflow command has exactly two pa
 Read `.spec_system/specs/[current-session]/validation.md`:
 - Confirm overall result is PASS
 - If FAIL, do not update PRD or state. Report the validation failure and set
-  `Next command: implement` for code, task, deliverable, test, schema,
-  security, or behavioral fixes; use `Next command: validate` only when the
-  validation report says validation itself was externally blocked and no
-  implementation change is pending.
+  `Next command: creview` when `code-review.md` is missing, BLOCKED, or not
+  RESOLVED; set `Next command: implement` for code, task, deliverable, test,
+  schema, security, or behavioral fixes; use `Next command: validate` only
+  when the validation report says validation itself was externally blocked and
+  no implementation change is pending.
 
 Also read `.spec_system/specs/[current-session]/spec.md` to extract the `Package:` field (if present). This determines the package context for state updates below.
 
@@ -266,6 +267,6 @@ Summary:
 - Session was not marked complete
 - State, PRD, version, commit, and push were not changed
 
-Next command: `[implement | validate]`
-Reason: [validation failure requires fixes | validation itself was externally blocked and should rerun]
+Next command: `[creview | implement | validate]`
+Reason: [code review is missing or unresolved | validation failure requires fixes | validation itself was externally blocked and should rerun]
 ```

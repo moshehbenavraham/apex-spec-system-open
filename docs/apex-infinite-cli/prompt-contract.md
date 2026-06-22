@@ -14,13 +14,14 @@ implements, not a generic design note.
 
 ## Known Command Set
 
-The CLI recognizes 13 Apex Spec workflow commands as structured outputs:
+The CLI recognizes 14 Apex Spec workflow commands as structured outputs:
 
 - `initspec`
 - `createprd`
 - `createuxprd`
 - `plansession`
 - `implement`
+- `creview`
 - `validate`
 - `updateprd`
 - `audit`
@@ -98,7 +99,7 @@ unsafe.
 
 ### Allowed Output Classes
 
-- Known workflow command, such as `validate`
+- Known workflow command, such as `creview` or `validate`
 - `alldonebaby`
 - Arbitrary instruction text, such as `Fix the two failing tests then rerun validate`
 

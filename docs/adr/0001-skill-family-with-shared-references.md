@@ -5,20 +5,20 @@
 
 ## Context
 
-The Apex Spec System has 23 commands total: 13 staged workflow commands and 10
+The Apex Spec System has 24 commands total: 14 staged workflow commands and 10
 utility commands. When porting from a Claude Code plugin to a Codex CLI Agent
-Skill, we needed to decide how to structure the skill directory so that all 23
+Skill, we needed to decide how to structure the skill directory so that all 24
 commands are accessible without polluting the skill namespace.
 
 ## Options Considered
 
-1. **Single Compound Skill** -- One SKILL.md containing all 23 command
+1. **Single Compound Skill** -- One SKILL.md containing all 24 command
    instructions inline. Pro: simple discovery. Con: SKILL.md would exceed
    practical size limits and defeat progressive disclosure.
 
-2. **Individual Skills per Command** -- 23 separate skill directories
+2. **Individual Skills per Command** -- 24 separate skill directories
    (apex-initspec/, apex-createprd/, etc.), each independently discoverable.
-   Pro: granular invocation. Con: pollutes the skill namespace with 23 entries;
+   Pro: granular invocation. Con: pollutes the skill namespace with 24 entries;
    many commands only make sense as part of the workflow.
 
 3. **Skill Family with Shared References** -- Root orchestrator SKILL.md
