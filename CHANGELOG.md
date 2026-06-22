@@ -4,6 +4,12 @@ All notable changes to the Apex Spec System are documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [2.1.2-codex] - 2026-06-22
+
+### Removed
+- Completed `creview` implementation planning document from
+  `docs/ongoing-projects/`.
+
 ## [2.1.1-codex] - 2026-06-22
 
 ### Added
