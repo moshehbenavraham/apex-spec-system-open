@@ -34,6 +34,13 @@ The CLI recognizes 14 Apex Spec workflow commands as structured outputs:
 Anything else is treated as free-form instructions unless it is `help` or
 `alldonebaby`.
 
+The autonomous manager prompt is scoped to initialized projects. It documents
+and normally chooses only the 11 post-initialization staged commands:
+`plansession`, `implement`, `creview`, `validate`, `updateprd`, `audit`,
+`pipeline`, `infra`, `carryforward`, `documents`, and `phasebuild`.
+Initialization commands remain structured commands for explicit starts or
+external routing, but they are not part of the normal manager decision loop.
+
 ## Summarizer Contract
 
 ### Input
@@ -99,7 +106,7 @@ unsafe.
 
 ### Allowed Output Classes
 
-- Known workflow command, such as `creview` or `validate`
+- Known post-initialization workflow command, such as `creview` or `validate`
 - `alldonebaby`
 - Arbitrary instruction text, such as `Fix the two failing tests then rerun validate`
 

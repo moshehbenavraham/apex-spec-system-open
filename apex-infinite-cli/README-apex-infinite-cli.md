@@ -40,11 +40,14 @@ Codex CLI when a fix must happen before the next command.
 
 ## Supported Commands
 
-All Apex Spec commands are recognized and routed through the skill invocation prompt:
+The CLI recognizes the staged Apex Spec commands and routes them through the
+skill invocation prompt. The autonomous manager loop is intended for projects
+that have already been initialized, so normal manager decisions use only the
+session workflow and phase-transition commands.
 
 | Stage | Commands |
 |-------|----------|
-| Initialization | `initspec`, `createprd`, `createuxprd` |
+| Initialization, explicit start only | `initspec`, `createprd`, `createuxprd` |
 | Session workflow | `plansession`, `implement`, `creview`, `validate`, `updateprd` |
 | Phase transition | `audit`, `pipeline`, `infra`, `carryforward`, `documents`, `phasebuild` |
 | Terminal | `alldonebaby` (stops loop) |

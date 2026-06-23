@@ -42,6 +42,9 @@ class TestManagerSystemPrompt:
                 f"Found forbidden string '{forbidden}' in MANAGER_SYSTEM_PROMPT"
             )
 
+    def test_no_claude_artifacts(self):
+        assert "CLAUDE.md" not in MANAGER_SYSTEM_PROMPT
+
     def test_no_cc_abbreviation(self):
         matches = CC_PATTERN.findall(MANAGER_SYSTEM_PROMPT)
         assert len(matches) == 0, (
@@ -88,6 +91,44 @@ class TestManagerSystemPrompt:
     def test_manager_uses_next_command_handoff(self):
         assert "primary routing signal" in MANAGER_SYSTEM_PROMPT
         assert "Use the command's `Next command:` line" in MANAGER_SYSTEM_PROMPT
+
+    def test_manager_prompt_is_post_initialization_scoped(self):
+        assert "post-initialization staged loop only" in MANAGER_SYSTEM_PROMPT
+        assert "Do not choose initialization commands" in MANAGER_SYSTEM_PROMPT
+        assert "11 post-initialization staged commands" in MANAGER_SYSTEM_PROMPT
+
+    def test_manager_prompt_keeps_utilities_out_of_scope(self):
+        utility_commands = [
+            "copush",
+            "sculpt-ui",
+            "seshsplit",
+            "dockbuild",
+            "dockcleanbuild",
+            "up2imp",
+            "qimpl",
+            "qfrontdev",
+            "qbackenddev",
+            "pullndoc",
+        ]
+        for command in utility_commands:
+            assert command not in MANAGER_SYSTEM_PROMPT
+
+    def test_creview_is_required_between_implement_and_validate(self):
+        assert "After implement succeeds, the next command is creview." in (
+            MANAGER_SYSTEM_PROMPT
+        )
+        assert "After creview succeeds and its report is resolved" in (
+            MANAGER_SYSTEM_PROMPT
+        )
+        assert "code-review.md Result: RESOLVED" in MANAGER_SYSTEM_PROMPT
+
+    def test_phase_transition_order_is_current(self):
+        assert "audit -> pipeline -> infra -> carryforward -> documents -> phasebuild" in (
+            MANAGER_SYSTEM_PROMPT
+        )
+        assert "When: After pipeline, before carryforward" in MANAGER_SYSTEM_PROMPT
+        assert "When: After infra, before documents" in MANAGER_SYSTEM_PROMPT
+        assert "carryover" not in MANAGER_SYSTEM_PROMPT
 
     def test_prompt_is_well_structured(self):
         """Verify key structural sections exist."""
