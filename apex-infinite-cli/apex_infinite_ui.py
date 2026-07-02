@@ -42,6 +42,10 @@ class ThemeTokens:
     success: str
     warning: str
     error: str
+    info: str
+    dry_run: str
+    complete: str
+    separator: str
     panel: str
     border: str
     emphasis: str
@@ -117,6 +121,29 @@ class CodexCommandSnapshot:
     return_code: int | None = None
 
 
+@dataclass(frozen=True)
+class IterationSnapshot:
+    """Display facts for an autonomous loop iteration."""
+
+    project_path: str
+    provider_name: str
+    model_name: str
+    iteration: int
+    operation: str
+    dry_run: bool
+    elapsed_seconds: float | None = None
+
+
+@dataclass(frozen=True)
+class DbLogSnapshot:
+    """Display facts for a successful durable history write."""
+
+    project_path: str
+    manager_output: str
+    stored_state: str
+    created_at: str | None = None
+
+
 class UiConfigError(ValueError):
     """Raised when UI configuration is malformed."""
 
@@ -135,6 +162,10 @@ BUILT_IN_THEMES: Mapping[str, ThemeTokens] = {
         success="bright_green",
         warning="yellow",
         error="bright_red",
+        info="bright_cyan",
+        dry_run="magenta",
+        complete="bright_green",
+        separator="green4",
         panel="green",
         border="bright_green",
         emphasis="bold bright_green",
@@ -148,6 +179,10 @@ BUILT_IN_THEMES: Mapping[str, ThemeTokens] = {
         success="bright_green",
         warning="khaki1",
         error="orange_red1",
+        info="spring_green2",
+        dry_run="magenta",
+        complete="bright_green",
+        separator="green4",
         panel="green",
         border="spring_green2",
         emphasis="bold spring_green2",
@@ -161,6 +196,10 @@ BUILT_IN_THEMES: Mapping[str, ThemeTokens] = {
         success="green3",
         warning="bright_yellow",
         error="red1",
+        info="orange1",
+        dry_run="dark_orange",
+        complete="green3",
+        separator="dark_orange3",
         panel="dark_orange3",
         border="orange1",
         emphasis="bold orange1",
@@ -174,6 +213,10 @@ BUILT_IN_THEMES: Mapping[str, ThemeTokens] = {
         success="bright_green",
         warning="bright_yellow",
         error="bright_red",
+        info="bright_cyan",
+        dry_run="bright_magenta",
+        complete="bright_green",
+        separator="blue",
         panel="blue",
         border="bright_blue",
         emphasis="bold bright_white",
@@ -187,11 +230,51 @@ BUILT_IN_THEMES: Mapping[str, ThemeTokens] = {
         success="white",
         warning="white",
         error="white",
+        info="white",
+        dry_run="white",
+        complete="white",
+        separator="white",
         panel="white",
         border="white",
         emphasis="white",
         dim="white",
     ),
+}
+
+SEMANTIC_LABELS: Mapping[str, str] = {
+    "boot": "BOOT",
+    "iteration": "ITERATION",
+    "history": "HISTORY",
+    "decision": "DECISION",
+    "prompt": "PROMPT",
+    "executing": "EXECUTING",
+    "dry_run": "DRY RUN",
+    "response": "RESPONSE",
+    "logged": "LOGGED",
+    "help": "HELP",
+    "interrupt": "INTERRUPT",
+    "timeout": "TIMEOUT",
+    "error": "ERROR",
+    "complete": "COMPLETE",
+    "stop": "STOP",
+}
+
+CODEX_STATE_LABELS: Mapping[str, str] = {
+    "dry-run": SEMANTIC_LABELS["dry_run"],
+    "start": SEMANTIC_LABELS["executing"],
+    "non-zero": SEMANTIC_LABELS["error"],
+    "timeout": SEMANTIC_LABELS["timeout"],
+    "missing": SEMANTIC_LABELS["error"],
+    "error": SEMANTIC_LABELS["error"],
+}
+
+CODEX_STATE_TEXT: Mapping[str, str] = {
+    "dry-run": "No Codex subprocess launched",
+    "start": "Codex subprocess starting",
+    "non-zero": "Codex exited with a non-zero status",
+    "timeout": "Codex command timed out",
+    "missing": "Codex binary was not found",
+    "error": "Codex execution failed",
 }
 
 UNICODE_GLYPHS = GlyphSet(
@@ -201,7 +284,7 @@ UNICODE_GLYPHS = GlyphSet(
     ok=chr(0x2713),
     warn="!",
     error="x",
-    horizontal=chr(0x2500),
+    horizontal="-",
 )
 
 ASCII_GLYPHS = GlyphSet(
@@ -451,7 +534,7 @@ def resolve_ui_settings(
     )
 
 
-class ApexRenderer:
+class ApexRenderer:  # pylint: disable=too-many-public-methods
     """Semantic renderer for operator-facing CLI output."""
 
     def __init__(self, settings: UiSettings, output_console: Console | None = None):
@@ -463,17 +546,21 @@ class ApexRenderer:
         title: str,
         rows: Sequence[tuple[str, object] | str],
         severity: str = "accent",
+        label: str | None = None,
     ) -> None:
         """Print a semantic block using the active renderer mode."""
+        block_label = label or self._label_for_title(title, severity)
         if self.settings.plain:
-            self._print_plain_block(title, rows, severity)
+            self._print_plain_block(title, rows, severity, block_label)
             return
 
+        self._print_effect_separator()
+        panel_title = f"{block_label} {title}" if block_label else title
         body = Text()
         for index, row in enumerate(rows):
             if isinstance(row, tuple):
-                label, value = row
-                body.append(f"{label}: ", style=self.settings.tokens.emphasis)
+                row_label, value = row
+                body.append(f"{row_label}: ", style=self.settings.tokens.emphasis)
                 body.append(str(value), style=self.settings.tokens.foreground)
             else:
                 body.append(str(row), style=self.settings.tokens.foreground)
@@ -482,7 +569,7 @@ class ApexRenderer:
         self.console.print(
             Panel(
                 body,
-                title=title,
+                title=panel_title,
                 border_style=self._style(severity),
                 box=box.ASCII if self.settings.ascii_only else box.ROUNDED,
                 expand=False,
@@ -493,11 +580,17 @@ class ApexRenderer:
         """Render startup context before the loop begins."""
         rows: list[tuple[str, object] | str] = [
             ("Project", snapshot.project_path),
-            ("Provider", f"{snapshot.provider_name} ({snapshot.model_name})"),
+            ("Provider", snapshot.provider_name),
+            ("Model", snapshot.model_name),
             ("Config", snapshot.config_path),
             ("Max iterations", snapshot.max_iterations),
-            ("Theme", f"{snapshot.theme_name} (requested {snapshot.requested_theme})"),
-            ("Dry run", "yes" if snapshot.dry_run else "no"),
+            (
+                "Theme",
+                f"{snapshot.theme_name} requested={snapshot.requested_theme}",
+            ),
+            ("Effects", self.settings.effect_level),
+            ("Glyphs", self.settings.glyphs.name),
+            ("Dry run", "enabled" if snapshot.dry_run else "disabled"),
         ]
         if self.settings.constraint_reason:
             rows.append(("Output fallback", self.settings.constraint_reason))
@@ -505,11 +598,19 @@ class ApexRenderer:
             rows.append(("Start command", snapshot.start_command))
         if snapshot.ceo_present:
             rows.append(("CEO instructions", "provided"))
-        self.print_block("Apex Infinite CLI", rows)
+        self.print_block(
+            "Apex Infinite Operator Console",
+            rows,
+            label=SEMANTIC_LABELS["boot"],
+        )
 
     def print_intro(self) -> None:
         """Render the interactive startup intro."""
-        self.print_block("Apex Infinite CLI", ["Autonomous Codex session manager"])
+        self.print_block(
+            "Apex Infinite CLI",
+            ["Autonomous Codex session manager"],
+            label=SEMANTIC_LABELS["boot"],
+        )
 
     def print_project_list(self, project_dirs: Sequence[object]) -> None:
         """Render available project choices."""
@@ -533,9 +634,11 @@ class ApexRenderer:
         """Render a visible warning block."""
         self.print_block(title, [message], severity="warning")
 
-    def print_status(self, message: str, title: str = "Status") -> None:
+    def print_status(
+        self, message: str, title: str = "Status", label: str | None = None
+    ) -> None:
         """Render an operator status block."""
-        self.print_block(title, [message])
+        self.print_block(title, [message], label=label)
 
     def print_history(
         self,
@@ -591,37 +694,58 @@ class ApexRenderer:
             )
         self.console.print(table)
 
-    def print_iteration(self, iteration: int, operation: str | None = None) -> None:
+    def print_iteration(
+        self, iteration: int | IterationSnapshot, operation: str | None = None
+    ) -> None:
         """Render the current loop iteration."""
-        rows: list[tuple[str, object] | str] = [("Iteration", iteration)]
-        if operation:
-            rows.append(("Operation", operation))
-        self.print_block("Iteration", rows)
+        if isinstance(iteration, IterationSnapshot):
+            snapshot = iteration
+        else:
+            snapshot = IterationSnapshot(
+                project_path="",
+                provider_name="",
+                model_name="",
+                iteration=iteration,
+                operation=operation or "working",
+                dry_run=False,
+            )
+        self.print_status_strip(snapshot)
 
     def print_manager_decision(
         self, output_value: str, reason: str, known_command: bool
     ) -> None:
         """Render the manager decision and reason."""
         decision_type = "workflow command" if known_command else "custom instruction"
+        preview_width = self._preview_width()
         self.print_block(
             "Manager Decision",
             [
-                ("Output", output_value),
+                ("Output", self._truncate(output_value, preview_width)),
                 ("Type", decision_type),
-                ("Reason", reason or "No reason supplied"),
+                (
+                    "Reason",
+                    self._truncate(reason or "No reason supplied", preview_width),
+                ),
             ],
+            label=SEMANTIC_LABELS["decision"],
         )
 
     def print_prompt_preview(self, prompt: str) -> None:
         """Render a width-aware prompt preview."""
         self.print_block(
-            "Prompt Preview", [self._truncate(prompt, self._preview_width())]
+            "Prompt Preview",
+            [
+                ("Length", f"{len(prompt)} chars"),
+                ("Preview", self._truncate(prompt, self._preview_width())),
+            ],
+            label=SEMANTIC_LABELS["prompt"],
         )
 
     def print_codex_command(self, state: str, snapshot: CodexCommandSnapshot) -> None:
         """Render Codex execution state, dry-run, or failure details."""
+        state_label = CODEX_STATE_LABELS.get(state, SEMANTIC_LABELS["executing"])
         rows: list[tuple[str, object] | str] = [
-            ("State", state),
+            ("State", CODEX_STATE_TEXT.get(state, state)),
             ("Binary", snapshot.binary),
             ("Project", snapshot.project_path),
         ]
@@ -632,29 +756,60 @@ class ApexRenderer:
         if snapshot.return_code is not None:
             rows.append(("Return code", snapshot.return_code))
         rows.append(("Prompt", self._truncate(snapshot.prompt, self._preview_width())))
-        severity = (
-            "error"
-            if state in {"timeout", "missing", "error", "non-zero"}
-            else "accent"
+        self.print_block(
+            "Codex Execution",
+            rows,
+            severity=self._codex_severity(state),
+            label=state_label,
         )
-        self.print_block("Codex Execution", rows, severity=severity)
 
     def print_agent_response(self, output: str, verbose: bool = False) -> None:
         """Render captured Codex output without altering the returned raw value."""
         limit = 2000 if verbose else 500
         rendered = output if verbose else self._truncate(output, limit)
-        self.print_block("Agent Response", [rendered or "(empty response)"])
+        self.print_block(
+            "Agent Response",
+            [
+                ("Mode", "verbose" if verbose else "summary"),
+                ("Output", rendered or "(empty response)"),
+            ],
+            label=SEMANTIC_LABELS["response"],
+        )
+
+    def print_db_log(self, snapshot: DbLogSnapshot) -> None:
+        """Render a successful SQLite history write without mutating row data."""
+        rows: list[tuple[str, object] | str] = [
+            ("Project", snapshot.project_path),
+            ("Manager output", snapshot.manager_output or "(empty)"),
+            ("Stored state", snapshot.stored_state or "history row"),
+        ]
+        if snapshot.created_at:
+            rows.append(("Recorded at", snapshot.created_at))
+        self.print_block(
+            "History Write",
+            rows,
+            severity="success",
+            label=SEMANTIC_LABELS["logged"],
+        )
 
     def print_interrupt(self, state: str, message: str) -> None:
         """Render interrupt and operator pause states."""
         severity = "error" if state == "force-quit" else "warning"
         self.print_block(
-            "Operator Interrupt", [("State", state), ("Message", message)], severity
+            "Operator Interrupt",
+            [("State", state), ("Message", message)],
+            severity,
+            label=SEMANTIC_LABELS["interrupt"],
         )
 
     def print_help(self, reason: str) -> None:
         """Render emergency help pause state."""
-        self.print_block("Manager Needs Help", [("Reason", reason)], severity="warning")
+        self.print_block(
+            "Manager Needs Help",
+            [("Reason", reason)],
+            severity="warning",
+            label=SEMANTIC_LABELS["help"],
+        )
 
     def print_completion(self, reason: str, iteration: int) -> None:
         """Render workflow completion state."""
@@ -662,6 +817,7 @@ class ApexRenderer:
             "Project Complete",
             [("Reason", reason), ("Total iterations", iteration)],
             severity="success",
+            label=SEMANTIC_LABELS["complete"],
         )
 
     def print_max_iterations(self, max_iterations: int) -> None:
@@ -670,6 +826,7 @@ class ApexRenderer:
             "Safety Stop",
             [f"Reached max iterations ({max_iterations}). Stopping."],
             severity="warning",
+            label=SEMANTIC_LABELS["stop"],
         )
 
     def print_llm_retry(
@@ -684,13 +841,24 @@ class ApexRenderer:
                 ("Next wait", f"{wait_seconds}s"),
             ],
             severity="warning",
+            label=SEMANTIC_LABELS["error"],
         )
 
     def print_json_fallback(self) -> None:
         """Render manager JSON parsing fallback state."""
-        self.print_warning(
+        self.print_status(
             "Could not parse LLM response as JSON; using raw output.",
             "Manager Parse Fallback",
+            label=SEMANTIC_LABELS["decision"],
+        )
+
+    def print_status_strip(self, snapshot: IterationSnapshot) -> None:
+        """Render a stable iteration frame and status strip."""
+        self.print_block(
+            "Iteration Frame",
+            self._status_rows(snapshot),
+            severity="dry-run" if snapshot.dry_run else "accent",
+            label=SEMANTIC_LABELS["iteration"],
         )
 
     def _print_plain_block(
@@ -698,24 +866,23 @@ class ApexRenderer:
         title: str,
         rows: Sequence[tuple[str, object] | str],
         severity: str,
+        label: str | None,
     ) -> None:
-        label = severity.upper()
-        if not self.settings.compact:
-            self.console.print(self._separator())
-        self.console.print(f"{label} {title}")
+        block_label = label or severity.upper()
+        self.console.print(f"{block_label} {title}")
         for row in rows:
             if isinstance(row, tuple):
                 row_label, value = row
                 self.console.print(f"{row_label}: {value}")
             else:
                 self.console.print(str(row))
-        if not self.settings.compact:
-            self.console.print(self._separator())
 
     def _print_plain_history(
         self, rows: Sequence[Mapping[str, object]], verbose: bool
     ) -> None:
-        self._print_plain_block("History", [f"Rows: {len(rows)}"], "accent")
+        self._print_plain_block(
+            "History", [f"Rows: {len(rows)}"], "accent", SEMANTIC_LABELS["history"]
+        )
         response_limit = 160 if verbose else 80
         for row in rows:
             parts = [
@@ -739,6 +906,48 @@ class ApexRenderer:
         width = max(24, min(self._console_width(), 80))
         return self.settings.glyphs.horizontal * width
 
+    def _print_effect_separator(self) -> None:
+        if not self._effects_enabled():
+            return
+        self.console.print(
+            Text(self._separator(), style=self.settings.tokens.separator)
+        )
+
+    def _effects_enabled(self) -> bool:
+        return (
+            not self.settings.plain
+            and not self.settings.compact
+            and self.settings.effect_level != "off"
+        )
+
+    def _status_rows(
+        self, snapshot: IterationSnapshot
+    ) -> list[tuple[str, object] | str]:
+        rows: list[tuple[str, object] | str] = [
+            ("Iteration", snapshot.iteration),
+            ("Operation", snapshot.operation),
+        ]
+        if self.settings.show_provider and snapshot.provider_name:
+            rows.append(("Provider", snapshot.provider_name))
+        if self.settings.show_provider and snapshot.model_name:
+            rows.append(("Model", snapshot.model_name))
+        if snapshot.project_path:
+            rows.append(("Project", self._truncate(snapshot.project_path, 80)))
+        if self.settings.show_elapsed and snapshot.elapsed_seconds is not None:
+            rows.append(("Elapsed", self._format_elapsed(snapshot.elapsed_seconds)))
+        rows.append(("Dry run", "enabled" if snapshot.dry_run else "disabled"))
+        return rows
+
+    def _format_elapsed(self, elapsed_seconds: float) -> str:
+        whole_seconds = max(0, int(elapsed_seconds))
+        minutes, seconds = divmod(whole_seconds, 60)
+        hours, minutes = divmod(minutes, 60)
+        if hours:
+            return f"{hours}h {minutes}m {seconds}s"
+        if minutes:
+            return f"{minutes}m {seconds}s"
+        return f"{seconds}s"
+
     def _console_width(self) -> int:
         return int(getattr(self.console, "width", 100) or 100)
 
@@ -752,6 +961,30 @@ class ApexRenderer:
         suffix = f"... ({len(clean)} chars total)"
         return clean[: max(0, limit - len(suffix))].rstrip() + suffix
 
+    def _label_for_title(self, title: str, severity: str) -> str | None:
+        normalized = title.lower()
+        label = None
+        if "history" in normalized:
+            label = SEMANTIC_LABELS["history"]
+        elif "decision" in normalized or "manager" in normalized:
+            label = SEMANTIC_LABELS["decision"]
+        elif "prompt" in normalized:
+            label = SEMANTIC_LABELS["prompt"]
+        elif severity == "error":
+            label = SEMANTIC_LABELS["error"]
+        elif severity == "success":
+            label = SEMANTIC_LABELS["complete"]
+        elif severity == "warning":
+            label = SEMANTIC_LABELS["stop"]
+        return label
+
+    def _codex_severity(self, state: str) -> str:
+        if state in {"timeout", "missing", "error", "non-zero"}:
+            return "error"
+        if state == "dry-run":
+            return "dry-run"
+        return "accent"
+
     def _style(self, severity: str) -> str:
         token = self.settings.tokens
         styles = {
@@ -759,5 +992,6 @@ class ApexRenderer:
             "success": token.success,
             "warning": token.warning,
             "error": token.error,
+            "dry-run": token.dry_run,
         }
         return styles.get(severity, token.border)

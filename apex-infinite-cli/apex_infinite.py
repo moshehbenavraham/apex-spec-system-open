@@ -27,6 +27,8 @@ from rich.table import Table
 from apex_infinite_ui import (
     ApexRenderer,
     CodexCommandSnapshot,
+    DbLogSnapshot,
+    IterationSnapshot,
     StartupSnapshot,
     UiCliOverrides,
     UiConfigError,
@@ -523,6 +525,37 @@ def get_agent_config(config):
     return {k: codex_cfg.get(k, v) for k, v in defaults.items()}
 
 
+def build_iteration_snapshot(  # pylint: disable=too-many-arguments,too-many-positional-arguments
+    path,
+    config,
+    iteration,
+    operation,
+    dry_run,
+    run_started_at,
+):
+    """Build renderer-only loop context without changing workflow state."""
+    provider_name = config["provider"]
+    return IterationSnapshot(
+        project_path=path,
+        provider_name=provider_name,
+        model_name=config["providers"][provider_name]["model"],
+        iteration=iteration,
+        operation=operation,
+        dry_run=dry_run,
+        elapsed_seconds=time.monotonic() - run_started_at,
+    )
+
+
+def build_db_log_snapshot(path, manager_output, stored_state):
+    """Build renderer-only history write context after a successful DB commit."""
+    return DbLogSnapshot(
+        project_path=path,
+        manager_output=manager_output,
+        stored_state=stored_state,
+        created_at=time.strftime("%Y-%m-%d %H:%M:%S"),
+    )
+
+
 # ---------------------------------------------------------------------------
 # Database layer
 # ---------------------------------------------------------------------------
@@ -961,6 +994,7 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
     agent_response = ""
     ceo_msg = ceo_message or ""
     iteration = 0
+    run_started_at = time.monotonic()
 
     while iteration < max_iterations:
         iteration += 1
@@ -988,7 +1022,16 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
 
         # Banner
         if renderer:
-            renderer.print_iteration(iteration, "history summary")
+            renderer.print_iteration(
+                build_iteration_snapshot(
+                    path,
+                    config,
+                    iteration,
+                    "history summary",
+                    dry_run,
+                    run_started_at,
+                )
+            )
         else:
             console.print(f"\n[bold]{'=' * 60}[/bold]")
             console.print(f"  [bold cyan]ITERATION {iteration}[/bold cyan]")
@@ -1050,6 +1093,10 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
                 reason_val,
                 help_or_done_msg=reason_val,
             )
+            if renderer:
+                renderer.print_db_log(
+                    build_db_log_snapshot(path, output_val, "help pause")
+                )
             ceo_input = console.input(
                 renderer.input_prompt("CEO response (or 'quit')")
                 if renderer
@@ -1074,6 +1121,10 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
                 reason_val,
                 help_or_done_msg="ALL DONE BABY!",
             )
+            if renderer:
+                renderer.print_db_log(
+                    build_db_log_snapshot(path, output_val, "completion")
+                )
             if not renderer:
                 console.print(f"\n[bold]Total iterations: {iteration}[/bold]")
             break
@@ -1091,6 +1142,10 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
 
         # 5. Log to DB
         db_log(path, agent_response, output_val, reason_val)
+        if renderer:
+            renderer.print_db_log(
+                build_db_log_snapshot(path, output_val, "iteration result")
+            )
 
         # 6. Clear CEO message after first use
         ceo_msg = ""

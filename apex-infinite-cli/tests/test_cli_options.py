@@ -146,3 +146,95 @@ def test_history_mode_uses_renderer_and_does_not_start_loop(monkeypatch, tmp_pat
     assert history_call["path"] == str(project_path)
     assert history_call["verbose"] is True
     assert history_call["renderer"].settings.plain is True
+
+
+def test_infinite_loop_passes_operator_context_to_renderer(monkeypatch):
+    captured = {"iterations": [], "logs": [], "db": []}
+    config = {
+        "provider": "ollama",
+        "codex": {"binary": "codex", "exec_flags": "--test"},
+        "providers": {
+            "ollama": {
+                "base_url": "http://localhost:11434/v1",
+                "api_key": "ollama",
+                "model": "qwen2.5:7b",
+            }
+        },
+    }
+
+    class CapturingRenderer:
+        """Capture renderer snapshots without printing terminal output."""
+
+        def print_iteration(self, snapshot):
+            captured["iterations"].append(snapshot)
+
+        def print_status(self, *_args, **_kwargs):
+            return None
+
+        def print_manager_decision(self, *_args, **_kwargs):
+            return None
+
+        def print_completion(self, *_args, **_kwargs):
+            return None
+
+        def print_db_log(self, snapshot):
+            captured["logs"].append(snapshot)
+
+    monkeypatch.setattr(
+        apex_infinite, "get_llm_client", lambda _config: ("client", "model")
+    )
+    monkeypatch.setattr(apex_infinite, "db_fetch_history", lambda _path, limit=15: [])
+    monkeypatch.setattr(
+        apex_infinite,
+        "llm_summarize",
+        lambda _client, _model, _records, renderer=None: "summary",
+    )
+    monkeypatch.setattr(
+        apex_infinite,
+        "llm_manager_decide",
+        lambda _client, _model, _agent_response, _ceo_msg, _summary, renderer=None: {
+            "output": "alldonebaby",
+            "reason": "complete",
+        },
+    )
+    monkeypatch.setattr(
+        apex_infinite,
+        "db_log",
+        lambda *args, **kwargs: captured["db"].append((args, kwargs)),
+    )
+    monkeypatch.setattr(apex_infinite, "notify", lambda *_args, **_kwargs: None)
+
+    apex_infinite.infinite_loop(
+        path="/tmp/project/",
+        config=config,
+        max_iterations=1,
+        dry_run=True,
+        renderer=CapturingRenderer(),
+    )
+
+    iteration = captured["iterations"][0]
+    assert iteration.project_path == "/tmp/project/"
+    assert iteration.provider_name == "ollama"
+    assert iteration.model_name == "qwen2.5:7b"
+    assert iteration.iteration == 1
+    assert iteration.operation == "history summary"
+    assert iteration.dry_run is True
+    assert iteration.elapsed_seconds >= 0
+    assert captured["logs"][0].manager_output == "alldonebaby"
+    assert captured["logs"][0].stored_state == "completion"
+    assert captured["db"][0][0][2] == "alldonebaby"
+
+
+def test_operator_console_wiring_keeps_known_prompt_routing():
+    assert (
+        apex_infinite.build_codex_prompt("implement", "implement")
+        == "Run the apex-spec skill command /implement"
+    )
+    assert (
+        apex_infinite.build_codex_prompt("/validate", "/validate")
+        == "Run the apex-spec skill command /validate"
+    )
+    assert (
+        apex_infinite.build_codex_prompt("fix the tests", "fix the tests")
+        == "fix the tests"
+    )

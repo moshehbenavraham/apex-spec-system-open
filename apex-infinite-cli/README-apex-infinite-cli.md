@@ -131,6 +131,15 @@ disable color by itself. `--compact` reduces spacing but keeps errors, manager
 reasons, prompts, command output summaries, help pauses, completion, timeouts,
 and non-zero exits visible.
 
+The normal run surface is a compact operator console. Startup renders a `BOOT`
+panel with project, provider, model, config, theme, effects, glyph mode,
+dry-run state, and start context. Each loop uses an `ITERATION` frame with the
+current operation, provider/model, project, elapsed time, and dry-run state when
+those facts are available. Manager choices, prompt previews, Codex execution,
+captured responses, DB writes, help, interrupts, timeouts, completion, and
+safety stops use stable text labels so the same state remains clear in styled,
+plain, ASCII, compact, and non-terminal output.
+
 Display precedence is:
 
 ```text
@@ -155,7 +164,13 @@ ui:
 
 Theme token overrides must be non-empty strings and can use the same token keys
 as the built-in renderer: `foreground`, `accent`, `muted`, `success`,
-`warning`, `error`, `panel`, `border`, `emphasis`, and `dim`.
+`warning`, `error`, `info`, `dry_run`, `complete`, `separator`, `panel`,
+`border`, `emphasis`, and `dim`.
+
+Low-effect separators are ASCII-safe and are suppressed in `plain` and
+`compact` modes. Rendered labels, Rich markup, ANSI escapes, frame glyphs,
+separator characters, and theme tokens remain display-only and are not written
+to SQLite history.
 
 ## Usage
 

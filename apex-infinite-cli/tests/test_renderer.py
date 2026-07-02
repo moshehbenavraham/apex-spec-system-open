@@ -10,6 +10,7 @@ import apex_infinite
 from apex_infinite_ui import (
     ApexRenderer,
     CodexCommandSnapshot,
+    DbLogSnapshot,
     StartupSnapshot,
     UiCliOverrides,
     resolve_ui_settings,
@@ -20,6 +21,11 @@ FORBIDDEN_HISTORY_MARKERS = [
     "Agent Response",
     "Manager Decision",
     "Codex Execution",
+    "History Write",
+    "LOGGED",
+    "BOOT",
+    "ITERATION",
+    "DRY RUN",
     "ACCENT",
     "SUCCESS",
     "[bold]",
@@ -89,12 +95,12 @@ def test_renderer_outputs_semantic_sections_at_supported_widths(width):
     text = output_console.export_text()
 
     for expected in [
-        "Apex Infinite CLI",
-        "Iteration",
-        "Manager Decision",
-        "Prompt Preview",
-        "Codex Execution",
-        "Agent Response",
+        "BOOT Apex Infinite Operator Console",
+        "ITERATION Iteration Frame",
+        "DECISION Manager Decision",
+        "PROMPT Prompt Preview",
+        "DRY RUN Codex Execution",
+        "RESPONSE Agent Response",
     ]:
         assert expected in text
     assert "ready for implementation" in text
@@ -133,10 +139,10 @@ def test_plain_ascii_compact_renderer_uses_ascii_and_keeps_critical_states():
 
     text = output_console.export_text()
 
-    assert "WARNING Operator Interrupt" in text
-    assert "WARNING Manager Needs Help" in text
-    assert "SUCCESS Project Complete" in text
-    assert "WARNING Safety Stop" in text
+    assert "INTERRUPT Operator Interrupt" in text
+    assert "HELP Manager Needs Help" in text
+    assert "COMPLETE Project Complete" in text
+    assert "STOP Safety Stop" in text
     assert all(ord(character) < 128 for character in text)
 
 
@@ -174,7 +180,7 @@ def test_ascii_only_renderer_keeps_styled_layout_with_ascii_glyphs():
 
     text = output_console.export_text()
 
-    assert "Apex Infinite CLI" in text
+    assert "BOOT Apex Infinite Operator Console" in text
     assert "Apex Infinite - History" in text
     assert "ACCENT Apex Infinite CLI" not in text
     assert all(ord(character) < 128 for character in text)
@@ -190,9 +196,18 @@ def test_sqlite_history_stores_raw_values_without_renderer_labels(
     renderer, output_console = make_renderer(width=100)
     renderer.print_manager_decision("implement", "use current session", True)
     renderer.print_agent_response("rendered agent output")
+    renderer.print_db_log(
+        DbLogSnapshot(
+            project_path="/tmp/project/",
+            manager_output="implement",
+            stored_state="iteration result",
+            created_at="2026-07-03 01:00:00",
+        )
+    )
     rendered_text = output_console.export_text()
     assert "Manager Decision" in rendered_text
     assert "Agent Response" in rendered_text
+    assert "LOGGED History Write" in rendered_text
 
     project_path = f"{tmp_path}/project/"
     apex_infinite.db_log(

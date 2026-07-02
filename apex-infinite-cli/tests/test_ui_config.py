@@ -172,6 +172,17 @@ def test_custom_theme_registry_and_resolution():
     assert settings.tokens.accent == "cyan"
 
 
+def test_builtin_theme_tokens_include_operator_console_states():
+    registry = build_theme_registry({})
+
+    for theme_name in ("crt-green", "crt-amber", "ibm-dos", "plain"):
+        tokens = registry[theme_name]
+        assert tokens.info
+        assert tokens.dry_run
+        assert tokens.complete
+        assert tokens.separator
+
+
 @pytest.mark.parametrize(
     ("ui_config", "message"),
     [
