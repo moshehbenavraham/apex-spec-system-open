@@ -3,7 +3,7 @@
 **Status**: In Progress
 **Sessions**: 8
 **Estimated Duration**: 8-16 days
-**Progress**: 2/8 sessions (25%)
+**Progress**: 3/8 sessions (38%)
 **Source plan status**: proposed
 
 This file (`.spec_system/PRD/phase_00/PRD_phase_00.md`) consolidates the former
@@ -33,7 +33,7 @@ validation.
 |---------|------|--------|------------|----------|-----------|
 | 01 | Config And Renderer Boundary | Complete | ~18 | 2-4h | 2026-07-03 |
 | 02 | Rich Operator Console | Complete | ~18 | 2-4h | 2026-07-03 |
-| 03 | Subprocess And History Visibility | Not Started | ~18 | 2-4h | - |
+| 03 | Subprocess And History Visibility | Complete | ~18 | 2-4h | 2026-07-03 |
 | 04 | Event Stream Boundary | Not Started | ~18 | 2-4h | - |
 | 05 | Docs Samples And Runbooks | Not Started | ~16 | 2-4h | - |
 | 06 | Linux Wrapper Spike | Not Started | ~18 | 2-4h | - |
@@ -44,6 +44,7 @@ Completed sessions:
 
 - 2026-07-03: Session 01, Config And Renderer Boundary.
 - 2026-07-03: Session 02, Rich Operator Console.
+- 2026-07-03: Session 03, Subprocess And History Visibility.
 
 ---
 

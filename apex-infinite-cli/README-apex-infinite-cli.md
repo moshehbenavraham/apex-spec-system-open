@@ -190,6 +190,7 @@ python apex_infinite.py --path ~/projects/my-app/ --start plansession --dry-run
 # View history
 python apex_infinite.py --history
 python apex_infinite.py --history --path ~/projects/my-app/
+python apex_infinite.py --history --verbose
 
 # Override provider/model
 python apex_infinite.py --path ~/projects/my-app/ --provider ollama --model "qwen2.5:72b"
@@ -244,6 +245,10 @@ Rendered labels, ANSI escapes, Rich markup, frame glyphs, theme tokens, and
 display-only status text are not written to history rows. The database keeps
 raw agent responses, manager output, manager reasons, and terminal help/done
 state so styled, plain, and ASCII modes do not change durable workflow data.
+History display derives a compact ledger at render time with timestamp,
+status, project key, command, reason, and response summary. `--history
+--verbose` expands reason, response, and stored-state detail without adding a
+separate history-only flag or changing the SQLite schema.
 
 ## Testing
 

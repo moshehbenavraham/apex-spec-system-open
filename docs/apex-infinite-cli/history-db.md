@@ -74,6 +74,13 @@ The CLI uses the database in two ways:
 - Decision loop: reads the most recent 15 rows for the current project
 - `--history`: shows up to 50 rows, either globally or for one project path
 
+History display is a render-time ledger. Each row derives a compact status,
+project key, command, timestamp, reason, and response summary from the stored
+columns. Default history output keeps reason and response text truncated for
+80-column terminals. `--history --verbose` expands reason, response, and stored
+state detail. These labels, summaries, truncation counts, and status values are
+not written back to SQLite.
+
 ## History Summary Input Format
 
 Before summarization, each fetched row is transformed into this structure:

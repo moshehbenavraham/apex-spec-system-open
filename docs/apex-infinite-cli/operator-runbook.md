@@ -62,10 +62,13 @@ manager loop and prints the exact `codex exec` command without launching Codex.
 cd apex-infinite-cli
 python apex_infinite.py --history
 python apex_infinite.py --history --path ~/projects/my-app/
+python apex_infinite.py --history --verbose
 ```
 
 Use this to inspect the last 50 logged records globally or for a single
-normalized project path.
+normalized project path. Default history is a compact ledger with timestamp,
+status, project key, command, reason, and response summary. Add `--verbose` to
+expand reason, response, and stored-state detail.
 
 ## What Happens Per Iteration
 
@@ -105,6 +108,8 @@ normalized project path.
 - Default mode prints a truncated agent response panel.
 - `--verbose` prints a larger panel with up to 2000 characters of the full
   response.
+- With `--history`, `--verbose` expands ledger details instead of adding a
+  separate history-only flag.
 
 ## Recommended Operating Pattern
 

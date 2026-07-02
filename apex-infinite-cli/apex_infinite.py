@@ -14,6 +14,7 @@ import sqlite3
 import subprocess
 import sys
 import time
+from dataclasses import dataclass
 from pathlib import Path
 
 import click
@@ -63,12 +64,59 @@ KNOWN_COMMANDS = {
 COMMAND_ALIASES = {}
 
 COMMAND_TIMEOUT = 1800  # 30 minutes
+PROCESS_CLEANUP_TIMEOUT = 5
 DEFAULT_MAX_ITERATIONS = 50
 LLM_RETRY_COUNT = 3
 LLM_RETRY_WAIT = 5  # seconds (matches n8n waitBetweenTries: 5000)
 
 console = Console()
 _ACTIVE_RENDERER = None
+
+
+@dataclass(frozen=True)
+class CodexProcessResult:
+    """Raw facts returned by a Codex subprocess run."""
+
+    stdout: str
+    stderr: str
+    returncode: int
+
+
+def run_codex_process(cmd: list[str], cwd: str, timeout: int) -> CodexProcessResult:
+    """Run Codex and return raw captured process facts."""
+    process = subprocess.Popen(  # pylint: disable=consider-using-with
+        cmd,
+        cwd=cwd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    try:
+        stdout, stderr = process.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired as exc:
+        process.terminate()
+        try:
+            stdout, stderr = process.communicate(timeout=PROCESS_CLEANUP_TIMEOUT)
+        except subprocess.TimeoutExpired:
+            process.kill()
+            stdout, stderr = process.communicate()
+        raise subprocess.TimeoutExpired(
+            cmd=cmd,
+            timeout=timeout,
+            output=stdout,
+            stderr=stderr,
+        ) from exc
+    except Exception:
+        if process.poll() is None:
+            process.kill()
+            process.communicate()
+        raise
+    return CodexProcessResult(
+        stdout=stdout or "",
+        stderr=stderr or "",
+        returncode=process.returncode,
+    )
+
 
 # ---------------------------------------------------------------------------
 # System Prompts (verbatim from n8n JSON)
@@ -815,17 +863,28 @@ def execute_codex(  # pylint: disable=too-many-positional-arguments,too-many-bra
     binary = agent_cfg["binary"]
     exec_flags = agent_cfg["exec_flags"]
 
+    def build_command_snapshot(
+        snapshot_prompt,
+        return_code=None,
+        process_state=None,
+        elapsed_seconds=None,
+    ):
+        return CodexCommandSnapshot(
+            binary=binary,
+            exec_flags=exec_flags,
+            prompt=snapshot_prompt,
+            project_path=expanded_path,
+            timeout=COMMAND_TIMEOUT,
+            return_code=return_code,
+            process_state=process_state,
+            elapsed_seconds=elapsed_seconds,
+        )
+
     if dry_run:
         if renderer:
             renderer.print_codex_command(
                 "dry-run",
-                CodexCommandSnapshot(
-                    binary=binary,
-                    exec_flags=exec_flags,
-                    prompt=prompt,
-                    project_path=expanded_path,
-                    timeout=COMMAND_TIMEOUT,
-                ),
+                build_command_snapshot(prompt, process_state="not launched"),
             )
         else:
             console.print(f"  [dim][DRY RUN] Would execute in {expanded_path}:[/dim]")
@@ -835,28 +894,24 @@ def execute_codex(  # pylint: disable=too-many-positional-arguments,too-many-bra
     if renderer:
         renderer.print_codex_command(
             "start",
-            CodexCommandSnapshot(
-                binary=binary,
-                exec_flags=exec_flags,
-                prompt=prompt,
-                project_path=expanded_path,
-                timeout=COMMAND_TIMEOUT,
+            build_command_snapshot(
+                prompt,
+                process_state="running",
+                elapsed_seconds=0,
             ),
         )
     else:
-        console.print(f"  [dim]Executing {binary} in {expanded_path}...[/dim]")
+        console.print(
+            f"  [dim]Executing {binary} in {expanded_path} "
+            f"(timeout {COMMAND_TIMEOUT}s)...[/dim]"
+        )
 
+    started_at = time.monotonic()
     try:
         cmd = [binary, "exec", *exec_flags.split(), prompt]
 
-        result = subprocess.run(
-            cmd,
-            cwd=expanded_path,
-            capture_output=True,
-            text=True,
-            timeout=COMMAND_TIMEOUT,
-            check=False,
-        )
+        result = run_codex_process(cmd, expanded_path, COMMAND_TIMEOUT)
+        elapsed_seconds = time.monotonic() - started_at
 
         output = result.stdout
         if not output.strip() and result.stderr.strip():
@@ -868,19 +923,29 @@ def execute_codex(  # pylint: disable=too-many-positional-arguments,too-many-bra
             if renderer:
                 renderer.print_codex_command(
                     "non-zero",
-                    CodexCommandSnapshot(
-                        binary=binary,
-                        exec_flags=exec_flags,
-                        prompt=prompt,
-                        project_path=expanded_path,
-                        timeout=COMMAND_TIMEOUT,
+                    build_command_snapshot(
+                        prompt,
                         return_code=result.returncode,
+                        process_state="exited non-zero",
+                        elapsed_seconds=elapsed_seconds,
                     ),
                 )
             else:
                 console.print(
                     f"  [red]Codex exited with code {result.returncode}[/red]"
                 )
+        elif renderer:
+            renderer.print_codex_command(
+                "complete",
+                build_command_snapshot(
+                    prompt,
+                    return_code=result.returncode,
+                    process_state="completed",
+                    elapsed_seconds=elapsed_seconds,
+                ),
+            )
+        else:
+            console.print(f"  [dim]Codex completed in {elapsed_seconds:.1f}s[/dim]")
 
         if renderer:
             renderer.print_agent_response(output, verbose=verbose)
@@ -900,15 +965,14 @@ def execute_codex(  # pylint: disable=too-many-positional-arguments,too-many-bra
 
     except subprocess.TimeoutExpired:
         msg = f"[TIMEOUT] Codex command timed out after {COMMAND_TIMEOUT}s"
+        elapsed_seconds = time.monotonic() - started_at
         if renderer:
             renderer.print_codex_command(
                 "timeout",
-                CodexCommandSnapshot(
-                    binary=binary,
-                    exec_flags=exec_flags,
-                    prompt=msg,
-                    project_path=expanded_path,
-                    timeout=COMMAND_TIMEOUT,
+                build_command_snapshot(
+                    msg,
+                    process_state="timed out",
+                    elapsed_seconds=elapsed_seconds,
                 ),
             )
         else:
@@ -916,15 +980,14 @@ def execute_codex(  # pylint: disable=too-many-positional-arguments,too-many-bra
         return msg
     except FileNotFoundError:
         msg = f"[ERROR] '{binary}' command not found. Is Codex CLI installed?"
+        elapsed_seconds = time.monotonic() - started_at
         if renderer:
             renderer.print_codex_command(
                 "missing",
-                CodexCommandSnapshot(
-                    binary=binary,
-                    exec_flags=exec_flags,
-                    prompt=msg,
-                    project_path=expanded_path,
-                    timeout=COMMAND_TIMEOUT,
+                build_command_snapshot(
+                    msg,
+                    process_state="missing binary",
+                    elapsed_seconds=elapsed_seconds,
                 ),
             )
         else:
@@ -932,15 +995,14 @@ def execute_codex(  # pylint: disable=too-many-positional-arguments,too-many-bra
         return msg
     except Exception as e:  # pylint: disable=broad-exception-caught
         msg = f"[ERROR] Failed to execute {binary}: {e}"
+        elapsed_seconds = time.monotonic() - started_at
         if renderer:
             renderer.print_codex_command(
                 "error",
-                CodexCommandSnapshot(
-                    binary=binary,
-                    exec_flags=exec_flags,
-                    prompt=msg,
-                    project_path=expanded_path,
-                    timeout=COMMAND_TIMEOUT,
+                build_command_snapshot(
+                    msg,
+                    process_state="failed",
+                    elapsed_seconds=elapsed_seconds,
                 ),
             )
         else:

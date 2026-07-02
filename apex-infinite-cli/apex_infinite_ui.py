@@ -1,6 +1,6 @@
 """UI configuration and rendering helpers for Apex Infinite CLI."""
 
-# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-instance-attributes,too-many-lines
 
 from __future__ import annotations
 
@@ -12,7 +12,6 @@ from typing import Mapping, Sequence
 from rich import box
 from rich.console import Console
 from rich.panel import Panel
-from rich.table import Table
 from rich.text import Text
 
 BUILT_IN_THEME_NAMES = ("auto", "crt-green", "crt-amber", "ibm-dos", "plain")
@@ -119,6 +118,8 @@ class CodexCommandSnapshot:
     project_path: str
     timeout: int | None = None
     return_code: int | None = None
+    process_state: str | None = None
+    elapsed_seconds: float | None = None
 
 
 @dataclass(frozen=True)
@@ -262,6 +263,7 @@ SEMANTIC_LABELS: Mapping[str, str] = {
 CODEX_STATE_LABELS: Mapping[str, str] = {
     "dry-run": SEMANTIC_LABELS["dry_run"],
     "start": SEMANTIC_LABELS["executing"],
+    "complete": SEMANTIC_LABELS["complete"],
     "non-zero": SEMANTIC_LABELS["error"],
     "timeout": SEMANTIC_LABELS["timeout"],
     "missing": SEMANTIC_LABELS["error"],
@@ -271,6 +273,7 @@ CODEX_STATE_LABELS: Mapping[str, str] = {
 CODEX_STATE_TEXT: Mapping[str, str] = {
     "dry-run": "No Codex subprocess launched",
     "start": "Codex subprocess starting",
+    "complete": "Codex subprocess completed",
     "non-zero": "Codex exited with a non-zero status",
     "timeout": "Codex command timed out",
     "missing": "Codex binary was not found",
@@ -653,46 +656,11 @@ class ApexRenderer:  # pylint: disable=too-many-public-methods
             self._print_plain_history(rows, verbose)
             return
 
-        table = Table(
-            title="Apex Infinite - History",
-            show_lines=not self.settings.compact,
-            box=box.ASCII if self.settings.ascii_only else box.SIMPLE,
+        self.print_block(
+            "Apex Infinite - History",
+            self._history_display_rows(rows, verbose),
+            label=SEMANTIC_LABELS["history"],
         )
-        overflow = "crop" if self.settings.ascii_only else None
-        table.add_column(
-            "ID", style=self.settings.tokens.dim, width=5, overflow=overflow
-        )
-        table.add_column(
-            "Time", style=self.settings.tokens.dim, width=19, overflow=overflow
-        )
-        table.add_column(
-            "Project",
-            style=self.settings.tokens.accent,
-            max_width=28,
-            overflow=overflow,
-        )
-        table.add_column(
-            "Manager",
-            style=self.settings.tokens.success,
-            max_width=20,
-            overflow=overflow,
-        )
-        table.add_column("Reason", max_width=40, overflow=overflow)
-        table.add_column("Response", max_width=50 if verbose else 34, overflow=overflow)
-        table.add_column(
-            "State", style=self.settings.tokens.warning, max_width=16, overflow=overflow
-        )
-        for row in rows:
-            table.add_row(
-                str(row.get("id", "")),
-                str(row.get("created_at", "")),
-                self._truncate(str(row.get("path", "") or ""), 48),
-                self._truncate(str(row.get("ai_decision_output", "") or ""), 28),
-                self._truncate(str(row.get("ai_decision_reason", "") or ""), 80),
-                self._truncate(str(row.get("cc_response", "") or ""), 160),
-                self._truncate(str(row.get("help_or_done_msg", "") or ""), 32),
-            )
-        self.console.print(table)
 
     def print_iteration(
         self, iteration: int | IterationSnapshot, operation: str | None = None
@@ -749,6 +717,10 @@ class ApexRenderer:  # pylint: disable=too-many-public-methods
             ("Binary", snapshot.binary),
             ("Project", snapshot.project_path),
         ]
+        if snapshot.process_state:
+            rows.append(("Process state", snapshot.process_state))
+        if snapshot.elapsed_seconds is not None:
+            rows.append(("Elapsed", self._format_elapsed(snapshot.elapsed_seconds)))
         if snapshot.exec_flags:
             rows.append(("Flags", snapshot.exec_flags))
         if snapshot.timeout is not None:
@@ -881,26 +853,103 @@ class ApexRenderer:  # pylint: disable=too-many-public-methods
         self, rows: Sequence[Mapping[str, object]], verbose: bool
     ) -> None:
         self._print_plain_block(
-            "History", [f"Rows: {len(rows)}"], "accent", SEMANTIC_LABELS["history"]
+            "History",
+            self._history_display_rows(rows, verbose),
+            "accent",
+            SEMANTIC_LABELS["history"],
         )
-        response_limit = 160 if verbose else 80
-        for row in rows:
-            parts = [
-                f"ID {row.get('id', '')}",
-                str(row.get("created_at", "") or ""),
-                self._truncate(str(row.get("path", "") or ""), 48),
-                f"manager={self._truncate(str(row.get('ai_decision_output', '') or ''), 28)}",
-                f"state={self._truncate(str(row.get('help_or_done_msg', '') or ''), 24)}",
-            ]
-            self.console.print(" | ".join(parts))
-            reason = str(row.get("ai_decision_reason", "") or "")
-            response = str(row.get("cc_response", "") or "")
-            if reason:
-                self.console.print(f"Reason: {self._truncate(reason, 100)}")
-            if response:
-                self.console.print(
-                    f"Response: {self._truncate(response, response_limit)}"
+
+    def _history_display_rows(
+        self, rows: Sequence[Mapping[str, object]], verbose: bool
+    ) -> list[tuple[str, object] | str]:
+        display_rows: list[tuple[str, object] | str] = [("Rows", len(rows))]
+        for index, row in enumerate(rows, 1):
+            display_rows.append((f"Row {index}", self._history_summary_line(row)))
+            display_rows.extend(self._history_detail_rows(row, verbose))
+        return display_rows
+
+    def _history_summary_line(self, row: Mapping[str, object]) -> str:
+        row_id = self._history_text(row, "id", "?")
+        timestamp = self._history_text(row, "created_at", "unknown-time")
+        status = self._history_status(row)
+        project = self._history_project_key(row.get("path"))
+        command = self._truncate(
+            self._history_text(row, "ai_decision_output", "(blank)"),
+            28,
+        )
+        return (
+            f"#{row_id} {timestamp} "
+            f"status={status} project={project} command={command}"
+        )
+
+    def _history_detail_rows(
+        self, row: Mapping[str, object], verbose: bool
+    ) -> list[tuple[str, object]]:
+        reason_limit = 160 if verbose else 72
+        response_limit = 220 if verbose else 88
+        detail_rows: list[tuple[str, object]] = [
+            (
+                "Path",
+                self._truncate(
+                    self._history_text(row, "path", "(blank)"),
+                    160 if verbose else 48,
+                ),
+            ),
+            (
+                "Reason",
+                self._truncate(
+                    self._history_text(row, "ai_decision_reason", "(blank)"),
+                    reason_limit,
+                ),
+            ),
+            (
+                "Response",
+                self._truncate(
+                    self._history_text(row, "cc_response", "(blank)"),
+                    response_limit,
+                ),
+            ),
+        ]
+        if verbose:
+            detail_rows.append(
+                (
+                    "Stored state",
+                    self._truncate(
+                        self._history_text(row, "help_or_done_msg", "(blank)"),
+                        80,
+                    ),
                 )
+            )
+        return detail_rows
+
+    def _history_status(self, row: Mapping[str, object]) -> str:
+        stored_state = self._history_text(row, "help_or_done_msg", "")
+        if stored_state:
+            return self._truncate(stored_state, 24)
+        command = self._history_text(row, "ai_decision_output", "").lower()
+        if command == "alldonebaby":
+            return "complete"
+        if command == "help":
+            return "help"
+        if command:
+            return "iteration"
+        return "legacy"
+
+    def _history_project_key(self, path: object) -> str:
+        normalized = " ".join(str(path or "").split()).rstrip("/")
+        if not normalized:
+            return "(unknown)"
+        return self._truncate(normalized.rsplit("/", maxsplit=1)[-1] or normalized, 24)
+
+    def _history_text(
+        self,
+        row: Mapping[str, object],
+        key: str,
+        fallback: str,
+    ) -> str:
+        value = row.get(key)
+        text = " ".join(str(value).split()) if value is not None else ""
+        return text or fallback
 
     def _separator(self) -> str:
         width = max(24, min(self._console_width(), 80))
@@ -981,6 +1030,8 @@ class ApexRenderer:  # pylint: disable=too-many-public-methods
     def _codex_severity(self, state: str) -> str:
         if state in {"timeout", "missing", "error", "non-zero"}:
             return "error"
+        if state == "complete":
+            return "success"
         if state == "dry-run":
             return "dry-run"
         return "accent"

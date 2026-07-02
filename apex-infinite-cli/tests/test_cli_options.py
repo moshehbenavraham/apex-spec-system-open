@@ -148,6 +148,25 @@ def test_history_mode_uses_renderer_and_does_not_start_loop(monkeypatch, tmp_pat
     assert history_call["renderer"].settings.plain is True
 
 
+def test_history_verbose_does_not_register_duplicate_flag(monkeypatch, tmp_path):
+    config_path, project_path, captured = prepare_cli(monkeypatch, tmp_path)
+
+    result = CliRunner().invoke(
+        apex_infinite.main,
+        [
+            "--config",
+            str(config_path),
+            "--path",
+            str(project_path),
+            "--history-verbose",
+        ],
+    )
+
+    assert result.exit_code == 2
+    assert "No such option '--history-verbose'" in result.output
+    assert captured == {}
+
+
 def test_infinite_loop_passes_operator_context_to_renderer(monkeypatch):
     captured = {"iterations": [], "logs": [], "db": []}
     config = {
