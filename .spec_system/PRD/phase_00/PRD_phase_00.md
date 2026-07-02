@@ -1,9 +1,9 @@
 # PRD Phase 00: Apex Infinite CLI Upgrade
 
-**Status**: Not Started
+**Status**: In Progress
 **Sessions**: 8
 **Estimated Duration**: 8-16 days
-**Progress**: 0/8 sessions (0%)
+**Progress**: 1/8 sessions (13%)
 **Source plan status**: proposed
 
 This file (`.spec_system/PRD/phase_00/PRD_phase_00.md`) consolidates the former
@@ -31,7 +31,7 @@ validation.
 
 | Session | Name | Status | Est. Tasks | Duration | Validated |
 |---------|------|--------|------------|----------|-----------|
-| 01 | Config And Renderer Boundary | Not Started | ~18 | 2-4h | - |
+| 01 | Config And Renderer Boundary | Complete | ~18 | 2-4h | 2026-07-03 |
 | 02 | Rich Operator Console | Not Started | ~18 | 2-4h | - |
 | 03 | Subprocess And History Visibility | Not Started | ~18 | 2-4h | - |
 | 04 | Event Stream Boundary | Not Started | ~18 | 2-4h | - |
@@ -40,7 +40,9 @@ validation.
 | 07 | Linux Visual Wrapper Productization | Not Started | ~18 | 2-4h | - |
 | 08 | Release Verification | Not Started | ~16 | 2-4h | - |
 
-Completed sessions: none.
+Completed sessions:
+
+- 2026-07-03: Session 01, Config And Renderer Boundary.
 
 ---
 

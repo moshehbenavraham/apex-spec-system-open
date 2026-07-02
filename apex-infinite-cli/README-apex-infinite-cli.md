@@ -105,6 +105,58 @@ providers:
 
 API keys use `${ENV_VAR}` syntax, expanded at runtime. The `codex` section controls the agent binary and execution flags -- customize `binary` if codex is not on your PATH, and adjust `exec_flags` or `model_reasoning_effort` as needed.
 
+### Display Settings
+
+The CLI renders operator output through a UI boundary that keeps terminal
+styling separate from workflow data and SQLite history. Add or edit the `ui`
+section in `config.yaml`:
+
+```yaml
+ui:
+  theme: "auto"          # auto | crt-green | crt-amber | ibm-dos | plain
+  effect_level: "low"    # off | low | medium
+  ascii: false           # use ASCII-safe glyphs
+  compact: false         # reduce vertical spacing
+  show_elapsed: true
+  show_provider: true
+  themes: {}
+```
+
+Built-in themes are `auto`, `crt-green`, `crt-amber`, `ibm-dos`, and `plain`.
+`auto` resolves to `crt-green` for capable interactive terminals and to
+`plain` for constrained output such as `NO_COLOR`, `TERM=dumb`, non-terminal
+Rich consoles, or redirected/non-TTY output. `--plain` always forces plain
+output and disables effects. `--ascii` only changes glyph choices; it does not
+disable color by itself. `--compact` reduces spacing but keeps errors, manager
+reasons, prompts, command output summaries, help pauses, completion, timeouts,
+and non-zero exits visible.
+
+Display precedence is:
+
+```text
+CLI flags -> environment constraints -> config.yaml -> built-in defaults
+```
+
+An explicit `--theme` may opt back into color under `NO_COLOR` or other
+constraints. Invalid theme names, unknown `ui` keys, malformed `ui.themes`
+entries, and invalid effect levels fail fast instead of silently falling back.
+
+Custom themes live under `ui.themes.<name>` and inherit from a built-in base:
+
+```yaml
+ui:
+  themes:
+    night-shift:
+      base: "crt-green"
+      foreground: "bright_white"
+      accent: "cyan"
+      warning: "yellow"
+```
+
+Theme token overrides must be non-empty strings and can use the same token keys
+as the built-in renderer: `foreground`, `accent`, `muted`, `success`,
+`warning`, `error`, `panel`, `border`, `emphasis`, and `dim`.
+
 ## Usage
 
 ```bash
@@ -129,6 +181,10 @@ python apex_infinite.py --path ~/projects/my-app/ --provider ollama --model "qwe
 
 # Limit iterations
 python apex_infinite.py --path ~/projects/my-app/ --start plansession --max-iterations 5
+
+# Choose display modes
+python apex_infinite.py --path ~/projects/my-app/ --theme crt-amber
+python apex_infinite.py --path ~/projects/my-app/ --plain --ascii --compact
 ```
 
 ## Options
@@ -144,6 +200,10 @@ python apex_infinite.py --path ~/projects/my-app/ --start plansession --max-iter
 --max-iterations INTEGER  Safety limit (default: 50)
 --dry-run                 Show what would execute without running codex
 --verbose                 Show full agent output
+--theme TEXT              UI theme: auto|crt-green|crt-amber|ibm-dos|plain
+--plain                   Disable color and effects
+--ascii                   Use ASCII-safe glyphs
+--compact                 Reduce vertical spacing
 --version                 Show version
 ```
 
@@ -165,6 +225,10 @@ Operator intervention is outside the normal autonomous workflow:
 ## Data
 
 Interaction history is stored at `~/.apex-infinite/history.db` (SQLite with WAL mode).
+Rendered labels, ANSI escapes, Rich markup, frame glyphs, theme tokens, and
+display-only status text are not written to history rows. The database keeps
+raw agent responses, manager output, manager reasons, and terminal help/done
+state so styled, plain, and ASCII modes do not change durable workflow data.
 
 ## Testing
 
@@ -175,15 +239,8 @@ pytest tests/ -v
 pip-audit
 ```
 
-The test suite has 62 tests across 5 classes:
-
-| Class | Tests | Coverage |
-|-------|-------|----------|
-| TestManagerSystemPrompt | 18 | Content validation, forbidden strings, structure |
-| TestSummarizerSystemPrompt | 5 | Prompt content and formatting |
-| TestUserMessageTemplate | 4 | Mock LLM integration, message assembly |
-| TestBuildCodexPrompt | 33 | Parametrized across all 14 known commands + edge cases |
-| TestJsonParsing | 2 | json_mode parsing and regex fallback |
+The test suite covers prompt/routing compatibility, UI setting resolution,
+Click option wiring, renderer semantics, and SQLite history safety.
 
 ## Deep-Dive Docs
 

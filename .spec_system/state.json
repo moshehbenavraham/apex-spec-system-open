@@ -9,10 +9,28 @@
     "0": {
       "name": "Apex Infinite CLI Upgrade",
       "description": "Deliver the Rich terminal operator console, compatibility-preserving history and subprocess display, event stream boundary, documentation, optional Linux visual wrapper, and release verification.",
-      "status": "not_started",
+      "status": "in_progress",
       "session_count": 8
     }
   },
-  "completed_sessions": [],
-  "next_session_history": []
+  "completed_sessions": [
+    "phase00-session01-config-and-renderer-boundary"
+  ],
+  "next_session_history": [
+    {
+      "date": "2026-07-02",
+      "session": "phase00-session01-config-and-renderer-boundary",
+      "status": "planned"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session01-config-and-renderer-boundary",
+      "status": "validated"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session01-config-and-renderer-boundary",
+      "status": "completed"
+    }
+  ]
 }

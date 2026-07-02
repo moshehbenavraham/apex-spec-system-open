@@ -24,6 +24,15 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+from apex_infinite_ui import (
+    ApexRenderer,
+    CodexCommandSnapshot,
+    StartupSnapshot,
+    UiCliOverrides,
+    UiConfigError,
+    resolve_ui_settings,
+)
+
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
@@ -57,6 +66,7 @@ LLM_RETRY_COUNT = 3
 LLM_RETRY_WAIT = 5  # seconds (matches n8n waitBetweenTries: 5000)
 
 console = Console()
+_ACTIVE_RENDERER = None
 
 # ---------------------------------------------------------------------------
 # System Prompts (verbatim from n8n JSON)
@@ -441,12 +451,18 @@ _INTERRUPTED = False
 def _handle_sigint(_sig, _frame):
     global _INTERRUPTED  # pylint: disable=global-statement
     if _INTERRUPTED:
-        console.print("\n[bold red]Force quit.[/bold red]")
+        if _ACTIVE_RENDERER:
+            _ACTIVE_RENDERER.print_interrupt("force-quit", "Force quit.")
+        else:
+            console.print("\n[bold red]Force quit.[/bold red]")
         sys.exit(1)
     _INTERRUPTED = True
-    console.print(
-        "\n[bold yellow][CEO INTERRUPT] Will pause after current step...[/bold yellow]"
-    )
+    if _ACTIVE_RENDERER:
+        _ACTIVE_RENDERER.print_interrupt("requested", "Will pause after current step.")
+    else:
+        console.print(
+            "\n[bold yellow][CEO INTERRUPT] Will pause after current step...[/bold yellow]"
+        )
 
 
 signal.signal(signal.SIGINT, _handle_sigint)
@@ -561,7 +577,7 @@ def db_log(path, agent_response, ai_output, ai_reason, help_or_done_msg=None):
     conn.close()
 
 
-def db_show_history(path=None):
+def db_show_history(path=None, renderer=None, verbose=False):
     """Display history records as a Rich table."""
     conn = sqlite3.connect(str(DB_PATH))
     conn.row_factory = sqlite3.Row
@@ -578,7 +594,14 @@ def db_show_history(path=None):
     conn.close()
 
     if not rows:
+        if renderer:
+            renderer.print_history([], verbose=verbose)
+            return
         console.print("[dim]No history records found.[/dim]")
+        return
+
+    if renderer:
+        renderer.print_history([dict(row) for row in rows], verbose=verbose)
         return
 
     table = Table(title="Apex Infinite - History", show_lines=True)
@@ -630,7 +653,7 @@ def aggregate_history(records):
     return "\n\n".join(parts)
 
 
-def _llm_call_with_retry(client, model, messages, json_mode=False):
+def _llm_call_with_retry(client, model, messages, json_mode=False, renderer=None):
     """Call LLM with retry logic matching n8n retryOnFail + waitBetweenTries: 5000."""
     kwargs = {"model": model, "messages": messages}
     if json_mode:
@@ -644,20 +667,27 @@ def _llm_call_with_retry(client, model, messages, json_mode=False):
         except Exception as e:  # pylint: disable=broad-exception-caught
             last_error = e
             if attempt < LLM_RETRY_COUNT:
-                console.print(
-                    f"  [yellow]LLM call failed (attempt {attempt}/{LLM_RETRY_COUNT}): {e}[/yellow]"
-                )
-                console.print(f"  [dim]Retrying in {LLM_RETRY_WAIT}s...[/dim]")
+                if renderer:
+                    renderer.print_llm_retry(
+                        attempt, LLM_RETRY_COUNT, e, wait_seconds=LLM_RETRY_WAIT
+                    )
+                else:
+                    console.print(
+                        f"  [yellow]LLM call failed (attempt {attempt}/{LLM_RETRY_COUNT}): {e}[/yellow]"
+                    )
+                    console.print(f"  [dim]Retrying in {LLM_RETRY_WAIT}s...[/dim]")
                 time.sleep(LLM_RETRY_WAIT)
             else:
-                console.print(
-                    f"  [red]LLM call failed after {LLM_RETRY_COUNT} attempts: {e}[/red]"
-                )
+                message = f"LLM call failed after {LLM_RETRY_COUNT} attempts: {e}"
+                if renderer:
+                    renderer.print_error(message, "LLM Error")
+                else:
+                    console.print(f"  [red]{message}[/red]")
                 raise last_error from e
     return None
 
 
-def llm_summarize(client, model, records):
+def llm_summarize(client, model, records, renderer=None):
     """Summarize history records via LLM. Matches n8n 'Summarize History' node."""
     if not records:
         return "No prior interaction history."
@@ -671,10 +701,12 @@ def llm_summarize(client, model, records):
         {"role": "user", "content": user_msg},
     ]
 
-    return _llm_call_with_retry(client, model, messages)
+    return _llm_call_with_retry(client, model, messages, renderer=renderer)
 
 
-def llm_manager_decide(client, model, agent_response, ceo_msg, summary):
+def llm_manager_decide(  # pylint: disable=too-many-positional-arguments
+    client, model, agent_response, ceo_msg, summary, renderer=None
+):
     """Get manager LLM decision. Matches n8n 'LLM Generate Response' node."""
     user_msg = (
         f"IF EXISTS, CODEX CLI SENIOR DEVELOPER LATEST MESSAGE:\n{agent_response}\n\n"
@@ -689,7 +721,9 @@ def llm_manager_decide(client, model, agent_response, ceo_msg, summary):
 
     # Try JSON mode first, fall back to regex extraction
     try:
-        raw = _llm_call_with_retry(client, model, messages, json_mode=True)
+        raw = _llm_call_with_retry(
+            client, model, messages, json_mode=True, renderer=renderer
+        )
         result = json.loads(raw)
         if "output" in result and "reason" in result:
             return result
@@ -698,7 +732,9 @@ def llm_manager_decide(client, model, agent_response, ceo_msg, summary):
 
     # Fallback: try without json_mode and parse with regex
     try:
-        raw = _llm_call_with_retry(client, model, messages, json_mode=False)
+        raw = _llm_call_with_retry(
+            client, model, messages, json_mode=False, renderer=renderer
+        )
         # Try to extract JSON from the response
         json_match = re.search(
             r'\{[^{}]*"output"\s*:\s*"[^"]*"[^{}]*"reason"\s*:\s*"[^"]*"[^{}]*\}', raw
@@ -709,9 +745,12 @@ def llm_manager_decide(client, model, agent_response, ceo_msg, summary):
         return json.loads(raw)
     except (json.JSONDecodeError, Exception):  # pylint: disable=broad-exception-caught
         # Absolute fallback
-        console.print(
-            "  [yellow]Could not parse LLM response as JSON, using raw output[/yellow]"
-        )
+        if renderer:
+            renderer.print_json_fallback()
+        else:
+            console.print(
+                "  [yellow]Could not parse LLM response as JSON, using raw output[/yellow]"
+            )
         return {"output": raw.strip(), "reason": "Raw LLM output (JSON parse failed)"}
 
 
@@ -735,20 +774,44 @@ def build_codex_prompt(output_cmd, raw_output):
     return raw_output
 
 
-def execute_codex(path, prompt, agent_cfg, dry_run=False, verbose=False):
+def execute_codex(  # pylint: disable=too-many-positional-arguments,too-many-branches,too-many-statements
+    path, prompt, agent_cfg, dry_run=False, verbose=False, renderer=None
+):
     """Run codex exec subprocess in project directory. Returns stdout."""
     expanded_path = os.path.expanduser(path)
     binary = agent_cfg["binary"]
     exec_flags = agent_cfg["exec_flags"]
 
     if dry_run:
-        console.print(f"  [dim][DRY RUN] Would execute in {expanded_path}:[/dim]")
-        console.print(
-            f'  [dim]{binary} exec {exec_flags} "{prompt}"[/dim]'
-        )
+        if renderer:
+            renderer.print_codex_command(
+                "dry-run",
+                CodexCommandSnapshot(
+                    binary=binary,
+                    exec_flags=exec_flags,
+                    prompt=prompt,
+                    project_path=expanded_path,
+                    timeout=COMMAND_TIMEOUT,
+                ),
+            )
+        else:
+            console.print(f"  [dim][DRY RUN] Would execute in {expanded_path}:[/dim]")
+            console.print(f'  [dim]{binary} exec {exec_flags} "{prompt}"[/dim]')
         return f"[DRY RUN] Command: {prompt}"
 
-    console.print(f"  [dim]Executing {binary} in {expanded_path}...[/dim]")
+    if renderer:
+        renderer.print_codex_command(
+            "start",
+            CodexCommandSnapshot(
+                binary=binary,
+                exec_flags=exec_flags,
+                prompt=prompt,
+                project_path=expanded_path,
+                timeout=COMMAND_TIMEOUT,
+            ),
+        )
+    else:
+        console.print(f"  [dim]Executing {binary} in {expanded_path}...[/dim]")
 
     try:
         cmd = [binary, "exec", *exec_flags.split(), prompt]
@@ -769,9 +832,26 @@ def execute_codex(path, prompt, agent_cfg, dry_run=False, verbose=False):
         if result.returncode != 0:
             error_msg = result.stderr or "Unknown error"
             output = f"[ERROR exit code {result.returncode}]\nstdout: {result.stdout}\nstderr: {error_msg}"
-            console.print(f"  [red]Codex exited with code {result.returncode}[/red]")
+            if renderer:
+                renderer.print_codex_command(
+                    "non-zero",
+                    CodexCommandSnapshot(
+                        binary=binary,
+                        exec_flags=exec_flags,
+                        prompt=prompt,
+                        project_path=expanded_path,
+                        timeout=COMMAND_TIMEOUT,
+                        return_code=result.returncode,
+                    ),
+                )
+            else:
+                console.print(
+                    f"  [red]Codex exited with code {result.returncode}[/red]"
+                )
 
-        if verbose:
+        if renderer:
+            renderer.print_agent_response(output, verbose=verbose)
+        elif verbose:
             console.print(
                 Panel(output[:2000], title="Agent Response (full)", border_style="blue")
             )
@@ -787,15 +867,51 @@ def execute_codex(path, prompt, agent_cfg, dry_run=False, verbose=False):
 
     except subprocess.TimeoutExpired:
         msg = f"[TIMEOUT] Codex command timed out after {COMMAND_TIMEOUT}s"
-        console.print(f"  [red]{msg}[/red]")
+        if renderer:
+            renderer.print_codex_command(
+                "timeout",
+                CodexCommandSnapshot(
+                    binary=binary,
+                    exec_flags=exec_flags,
+                    prompt=msg,
+                    project_path=expanded_path,
+                    timeout=COMMAND_TIMEOUT,
+                ),
+            )
+        else:
+            console.print(f"  [red]{msg}[/red]")
         return msg
     except FileNotFoundError:
         msg = f"[ERROR] '{binary}' command not found. Is Codex CLI installed?"
-        console.print(f"  [red]{msg}[/red]")
+        if renderer:
+            renderer.print_codex_command(
+                "missing",
+                CodexCommandSnapshot(
+                    binary=binary,
+                    exec_flags=exec_flags,
+                    prompt=msg,
+                    project_path=expanded_path,
+                    timeout=COMMAND_TIMEOUT,
+                ),
+            )
+        else:
+            console.print(f"  [red]{msg}[/red]")
         return msg
     except Exception as e:  # pylint: disable=broad-exception-caught
         msg = f"[ERROR] Failed to execute {binary}: {e}"
-        console.print(f"  [red]{msg}[/red]")
+        if renderer:
+            renderer.print_codex_command(
+                "error",
+                CodexCommandSnapshot(
+                    binary=binary,
+                    exec_flags=exec_flags,
+                    prompt=msg,
+                    project_path=expanded_path,
+                    timeout=COMMAND_TIMEOUT,
+                ),
+            )
+        else:
+            console.print(f"  [red]{msg}[/red]")
         return msg
 
 
@@ -827,7 +943,7 @@ def notify(title, message):
 # ---------------------------------------------------------------------------
 
 
-def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-statements
+def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-statements,too-many-locals,too-many-branches
     path,
     config,
     start_command=None,
@@ -835,6 +951,7 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
     max_iterations=DEFAULT_MAX_ITERATIONS,
     dry_run=False,
     verbose=False,
+    renderer=None,
 ):
     """The main autonomous loop replacing n8n webhook->LLM->SSH->webhook cycle."""
     global _INTERRUPTED  # pylint: disable=global-statement
@@ -851,23 +968,42 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
         # Check interrupt flag
         if _INTERRUPTED:
             _INTERRUPTED = False
-            console.print("\n[bold yellow]--- CEO INTERRUPT ---[/bold yellow]")
+            if renderer:
+                renderer.print_interrupt("pause", "CEO interrupt - input requested.")
+            else:
+                console.print("\n[bold yellow]--- CEO INTERRUPT ---[/bold yellow]")
             notify("Apex Infinite", "CEO interrupt - input requested")
-            ceo_input = console.input("[bold]CEO instructions (or 'quit'): [/bold]")
+            ceo_input = console.input(
+                renderer.input_prompt("CEO instructions (or 'quit')")
+                if renderer
+                else "[bold]CEO instructions (or 'quit'): [/bold]"
+            )
             if ceo_input.strip().lower() == "quit":
-                console.print("[bold red]Quitting by CEO request.[/bold red]")
+                if renderer:
+                    renderer.print_interrupt("quit", "Quitting by CEO request.")
+                else:
+                    console.print("[bold red]Quitting by CEO request.[/bold red]")
                 break
             ceo_msg = ceo_input
 
         # Banner
-        console.print(f"\n[bold]{'=' * 60}[/bold]")
-        console.print(f"  [bold cyan]ITERATION {iteration}[/bold cyan]")
-        console.print(f"[bold]{'=' * 60}[/bold]")
+        if renderer:
+            renderer.print_iteration(iteration, "history summary")
+        else:
+            console.print(f"\n[bold]{'=' * 60}[/bold]")
+            console.print(f"  [bold cyan]ITERATION {iteration}[/bold cyan]")
+            console.print(f"[bold]{'=' * 60}[/bold]")
 
         # 1. Fetch + summarize history
         records = db_fetch_history(path, limit=15)
-        console.print(f"  Summarizing history... ({len(records)} prior records)")
-        summary = llm_summarize(client, model, records)
+        if renderer:
+            renderer.print_status(
+                f"Summarizing history from {len(records)} prior records.",
+                "History Summary",
+            )
+        else:
+            console.print(f"  Summarizing history... ({len(records)} prior records)")
+        summary = llm_summarize(client, model, records, renderer=renderer)
 
         # 2. Manager LLM decides next action
         if start_command and iteration == 1:
@@ -876,35 +1012,60 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
                 "reason": "User-specified start command",
             }
         else:
-            console.print("  Manager deciding next action...")
-            decision = llm_manager_decide(client, model, agent_response, ceo_msg, summary)
+            if renderer:
+                renderer.print_status("Manager deciding next action.", "Manager")
+            else:
+                console.print("  Manager deciding next action...")
+            decision = llm_manager_decide(
+                client, model, agent_response, ceo_msg, summary, renderer=renderer
+            )
 
         output_val = decision.get("output", "").strip()
         reason_val = decision.get("reason", "")
 
-        console.print(f"  [bold green]Manager Decision:[/bold green] {output_val}")
-        console.print(f"  [dim]Reason: {reason_val}[/dim]")
-
         # 3. Route on decision
         # Strip leading slash - LLM sometimes outputs "/plansession" instead of "plansession"
         output_lower = output_val.lower().lstrip("/")
+        if renderer:
+            renderer.print_manager_decision(
+                output_val, reason_val, output_lower in KNOWN_COMMANDS
+            )
+        else:
+            console.print(f"  [bold green]Manager Decision:[/bold green] {output_val}")
+            console.print(f"  [dim]Reason: {reason_val}[/dim]")
 
         if output_lower == "help":
-            console.print("\n[bold yellow]*** MANAGER NEEDS CEO HELP ***[/bold yellow]")
-            console.print(f"[yellow]Reason: {reason_val}[/yellow]")
+            if renderer:
+                renderer.print_help(reason_val)
+            else:
+                console.print(
+                    "\n[bold yellow]*** MANAGER NEEDS CEO HELP ***[/bold yellow]"
+                )
+                console.print(f"[yellow]Reason: {reason_val}[/yellow]")
             notify("Apex Infinite - HELP", reason_val)
             db_log(
-                path, agent_response, output_val, reason_val, help_or_done_msg=reason_val
+                path,
+                agent_response,
+                output_val,
+                reason_val,
+                help_or_done_msg=reason_val,
             )
-            ceo_input = console.input("[bold]CEO response (or 'quit'): [/bold]")
+            ceo_input = console.input(
+                renderer.input_prompt("CEO response (or 'quit')")
+                if renderer
+                else "[bold]CEO response (or 'quit'): [/bold]"
+            )
             if ceo_input.strip().lower() == "quit":
                 break
             ceo_msg = ceo_input
             continue
 
         if output_lower == "alldonebaby":
-            console.print("\n[bold green]*** PROJECT COMPLETE! ***[/bold green]")
-            console.print(f"[green]Reason: {reason_val}[/green]")
+            if renderer:
+                renderer.print_completion(reason_val, iteration)
+            else:
+                console.print("\n[bold green]*** PROJECT COMPLETE! ***[/bold green]")
+                console.print(f"[green]Reason: {reason_val}[/green]")
             notify("Apex Infinite - ALL DONE!", "Project complete!")
             db_log(
                 path,
@@ -913,14 +1074,20 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
                 reason_val,
                 help_or_done_msg="ALL DONE BABY!",
             )
-            console.print(f"\n[bold]Total iterations: {iteration}[/bold]")
+            if not renderer:
+                console.print(f"\n[bold]Total iterations: {iteration}[/bold]")
             break
 
         # 4. Build prompt and execute codex
         prompt = build_codex_prompt(output_lower, output_val)
-        console.print(f"  [dim]Prompt: {prompt[:100]}...[/dim]")
+        if renderer:
+            renderer.print_prompt_preview(prompt)
+        else:
+            console.print(f"  [dim]Prompt: {prompt[:100]}...[/dim]")
 
-        agent_response = execute_codex(path, prompt, agent_cfg, dry_run=dry_run, verbose=verbose)
+        agent_response = execute_codex(
+            path, prompt, agent_cfg, dry_run=dry_run, verbose=verbose, renderer=renderer
+        )
 
         # 5. Log to DB
         db_log(path, agent_response, output_val, reason_val)
@@ -929,9 +1096,12 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
         ceo_msg = ""
 
     else:
-        console.print(
-            f"\n[bold yellow]Reached max iterations ({max_iterations}). Stopping.[/bold yellow]"
-        )
+        if renderer:
+            renderer.print_max_iterations(max_iterations)
+        else:
+            console.print(
+                f"\n[bold yellow]Reached max iterations ({max_iterations}). Stopping.[/bold yellow]"
+            )
         notify("Apex Infinite", f"Reached max iterations ({max_iterations})")
 
 
@@ -967,6 +1137,12 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
     "--dry-run", is_flag=True, help="Show what would execute without running codex"
 )
 @click.option("--verbose", is_flag=True, help="Show full agent output")
+@click.option(
+    "--theme", default=None, help="UI theme: auto|crt-green|crt-amber|ibm-dos|plain"
+)
+@click.option("--plain", is_flag=True, help="Disable color and effects")
+@click.option("--ascii", "ascii_only", is_flag=True, help="Use ASCII-safe glyphs")
+@click.option("--compact", is_flag=True, help="Reduce vertical spacing")
 @click.version_option(version="2.0.0", prog_name="apex-infinite")
 def main(  # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals,too-many-branches,too-many-statements
     project_path,
@@ -979,8 +1155,13 @@ def main(  # pylint: disable=too-many-arguments,too-many-positional-arguments,to
     max_iterations,
     dry_run,
     verbose,
+    theme,
+    plain,
+    ascii_only,
+    compact,
 ):
     """Apex Spec System Infinite CLI - Autonomous Codex CLI session manager."""
+    global _ACTIVE_RENDERER  # pylint: disable=global-statement
 
     # Init database
     db_init()
@@ -1000,20 +1181,32 @@ def main(  # pylint: disable=too-many-arguments,too-many-positional-arguments,to
             sys.exit(1)
 
     config = load_config(config_path, provider_override=provider, model_override=model)
+    try:
+        ui_settings = resolve_ui_settings(
+            config,
+            UiCliOverrides(
+                theme=theme,
+                plain=plain,
+                ascii_only=ascii_only,
+                compact=compact,
+            ),
+            env=os.environ,
+            console=console,
+        )
+    except UiConfigError as exc:
+        console.print(f"[red]Invalid UI configuration: {exc}[/red]")
+        sys.exit(1)
+    renderer = ApexRenderer(ui_settings, console)
+    _ACTIVE_RENDERER = renderer
 
     # History mode
     if history:
-        db_show_history(project_path)
+        db_show_history(project_path, renderer=renderer, verbose=verbose)
         return
 
     # Interactive mode if no path given
     if not project_path:
-        console.print(
-            Panel(
-                "[bold]Apex Spec System Infinite CLI[/bold]",
-                border_style="cyan",
-            )
-        )
+        renderer.print_intro()
 
         # List ~/projects/ directories
         projects_dir = Path.home() / "projects"
@@ -1025,36 +1218,35 @@ def main(  # pylint: disable=too-many-arguments,too-many-positional-arguments,to
                     if d.is_dir() and not d.name.startswith(".")
                 ]
             )
-            console.print("\n[bold]Available projects:[/bold]")
-            for i, d in enumerate(dirs, 1):
-                console.print(f"  {i}. ~/{d.relative_to(Path.home())}/")
-            console.print()
+            renderer.print_project_list(dirs)
 
             selection = console.input(
-                "[bold]Select project [number or path]: [/bold]"
+                renderer.input_prompt("Select project [number or path]")
             ).strip()
             if selection.isdigit():
                 idx = int(selection) - 1
                 if 0 <= idx < len(dirs):
                     project_path = str(dirs[idx])
                 else:
-                    console.print("[red]Invalid selection.[/red]")
+                    renderer.print_error("Invalid selection.", "Project Selection")
                     sys.exit(1)
             else:
                 project_path = selection
         else:
-            project_path = console.input("[bold]Project path: [/bold]").strip()
+            project_path = console.input(renderer.input_prompt("Project path")).strip()
 
         if not start:
             start_input = console.input(
-                '[bold]Starting command (e.g. "plansession", Enter for auto): [/bold]'
+                renderer.input_prompt(
+                    'Starting command (e.g. "plansession", Enter for auto)'
+                )
             ).strip()
             if start_input:
                 start = start_input
 
         if not ceo:
             ceo_input = console.input(
-                "[bold]CEO instructions (optional, Enter to skip): [/bold]"
+                renderer.input_prompt("CEO instructions (optional, Enter to skip)")
             ).strip()
             if ceo_input:
                 ceo = ceo_input
@@ -1062,7 +1254,7 @@ def main(  # pylint: disable=too-many-arguments,too-many-positional-arguments,to
     # Expand and validate path
     project_path = os.path.expanduser(project_path)
     if not os.path.isdir(project_path):
-        console.print(f"[red]Directory not found: {project_path}[/red]")
+        renderer.print_error(f"Directory not found: {project_path}", "Project Path")
         sys.exit(1)
 
     # Normalize path (remove trailing slash for consistent DB keys)
@@ -1072,23 +1264,18 @@ def main(  # pylint: disable=too-many-arguments,too-many-positional-arguments,to
     provider_name = config["provider"]
     model_name = config["providers"][provider_name]["model"]
 
-    banner_text = (
-        f"[bold]Provider:[/bold] {provider_name} ({model_name})\n"
-        f"[bold]Project:[/bold] {project_path}\n"
-        f"[bold]Max iterations:[/bold] {max_iterations}"
-    )
-    if start:
-        banner_text += f"\n[bold]Start command:[/bold] {start}"
-    if ceo:
-        banner_text += f"\n[bold]CEO instructions:[/bold] {ceo}"
-    if dry_run:
-        banner_text += "\n[bold yellow]DRY RUN MODE[/bold yellow]"
-
-    console.print(
-        Panel(
-            banner_text,
-            title="[bold cyan]Apex Spec System Infinite CLI[/bold cyan]",
-            border_style="cyan",
+    renderer.print_startup(
+        StartupSnapshot(
+            project_path=project_path,
+            provider_name=provider_name,
+            model_name=model_name,
+            config_path=config_path,
+            max_iterations=max_iterations,
+            theme_name=ui_settings.theme_name,
+            requested_theme=ui_settings.requested_theme,
+            dry_run=dry_run,
+            start_command=start,
+            ceo_present=bool(ceo),
         )
     )
 
@@ -1101,6 +1288,7 @@ def main(  # pylint: disable=too-many-arguments,too-many-positional-arguments,to
         max_iterations=max_iterations,
         dry_run=dry_run,
         verbose=verbose,
+        renderer=renderer,
     )
 
 

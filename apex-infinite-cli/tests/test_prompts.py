@@ -3,6 +3,7 @@
 Verifies that system prompts reference Codex CLI (not Claude Code),
 and that build_codex_prompt() produces correct output for all known commands.
 """
+
 import re
 from unittest.mock import MagicMock, patch
 
@@ -38,18 +39,18 @@ class TestManagerSystemPrompt:
 
     def test_no_claude_code_references(self):
         for forbidden in FORBIDDEN_STRINGS:
-            assert forbidden not in MANAGER_SYSTEM_PROMPT, (
-                f"Found forbidden string '{forbidden}' in MANAGER_SYSTEM_PROMPT"
-            )
+            assert (
+                forbidden not in MANAGER_SYSTEM_PROMPT
+            ), f"Found forbidden string '{forbidden}' in MANAGER_SYSTEM_PROMPT"
 
     def test_no_claude_artifacts(self):
         assert "CLAUDE.md" not in MANAGER_SYSTEM_PROMPT
 
     def test_no_cc_abbreviation(self):
         matches = CC_PATTERN.findall(MANAGER_SYSTEM_PROMPT)
-        assert len(matches) == 0, (
-            f"Found {len(matches)} standalone 'CC' abbreviation(s) in MANAGER_SYSTEM_PROMPT"
-        )
+        assert (
+            len(matches) == 0
+        ), f"Found {len(matches)} standalone 'CC' abbreviation(s) in MANAGER_SYSTEM_PROMPT"
 
     def test_role_section_references_codex(self):
         assert "'Codex CLI'" in MANAGER_SYSTEM_PROMPT
@@ -69,10 +70,13 @@ class TestManagerSystemPrompt:
         parts = re.split(r"```.*?```", MANAGER_SYSTEM_PROMPT, flags=re.DOTALL)
         prose = " ".join(parts)
         # Check for /commandname patterns that reference workflow commands
-        slash_cmds = re.findall(r"/(?:plansession|implement|creview|validate|updateprd|audit|pipeline|infra|carryforward|documents|phasebuild)\b", prose)
-        assert len(slash_cmds) == 0, (
-            f"Found slash-command references in prose: {slash_cmds}"
+        slash_cmds = re.findall(
+            r"/(?:plansession|implement|creview|validate|updateprd|audit|pipeline|infra|carryforward|documents|phasebuild)\b",
+            prose,
         )
+        assert (
+            len(slash_cmds) == 0
+        ), f"Found slash-command references in prose: {slash_cmds}"
 
     def test_output_section_references_codex(self):
         assert "Codex CLI" in MANAGER_SYSTEM_PROMPT
@@ -123,8 +127,9 @@ class TestManagerSystemPrompt:
         assert "code-review.md Result: RESOLVED" in MANAGER_SYSTEM_PROMPT
 
     def test_phase_transition_order_is_current(self):
-        assert "audit -> pipeline -> infra -> carryforward -> documents -> phasebuild" in (
-            MANAGER_SYSTEM_PROMPT
+        assert (
+            "audit -> pipeline -> infra -> carryforward -> documents -> phasebuild"
+            in (MANAGER_SYSTEM_PROMPT)
         )
         assert "When: After pipeline, before carryforward" in MANAGER_SYSTEM_PROMPT
         assert "When: After infra, before documents" in MANAGER_SYSTEM_PROMPT
@@ -144,15 +149,15 @@ class TestSummarizerSystemPrompt:
 
     def test_no_claude_code_references(self):
         for forbidden in FORBIDDEN_STRINGS:
-            assert forbidden not in SUMMARIZER_SYSTEM_PROMPT, (
-                f"Found forbidden string '{forbidden}' in SUMMARIZER_SYSTEM_PROMPT"
-            )
+            assert (
+                forbidden not in SUMMARIZER_SYSTEM_PROMPT
+            ), f"Found forbidden string '{forbidden}' in SUMMARIZER_SYSTEM_PROMPT"
 
     def test_no_cc_abbreviation(self):
         matches = CC_PATTERN.findall(SUMMARIZER_SYSTEM_PROMPT)
-        assert len(matches) == 0, (
-            f"Found standalone 'CC' abbreviation(s) in SUMMARIZER_SYSTEM_PROMPT"
-        )
+        assert (
+            len(matches) == 0
+        ), f"Found standalone 'CC' abbreviation(s) in SUMMARIZER_SYSTEM_PROMPT"
 
     def test_codex_aware_language(self):
         assert "Codex CLI" in SUMMARIZER_SYSTEM_PROMPT
@@ -174,10 +179,14 @@ class TestUserMessageTemplate:
         mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.choices = [MagicMock()]
-        mock_response.choices[0].message.content = '{"output": "implement", "reason": "test"}'
+        mock_response.choices[0].message.content = (
+            '{"output": "implement", "reason": "test"}'
+        )
         mock_client.chat.completions.create.return_value = mock_response
 
-        llm_manager_decide(mock_client, "test-model", "agent response", "ceo msg", "summary")
+        llm_manager_decide(
+            mock_client, "test-model", "agent response", "ceo msg", "summary"
+        )
 
         # Inspect the messages passed to the LLM call
         call_args = mock_client.chat.completions.create.call_args
@@ -191,7 +200,9 @@ class TestUserMessageTemplate:
         mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.choices = [MagicMock()]
-        mock_response.choices[0].message.content = '{"output": "validate", "reason": "next"}'
+        mock_response.choices[0].message.content = (
+            '{"output": "validate", "reason": "next"}'
+        )
         mock_client.chat.completions.create.return_value = mock_response
 
         llm_manager_decide(mock_client, "test-model", "test agent output", "", "")
@@ -205,7 +216,9 @@ class TestUserMessageTemplate:
         mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.choices = [MagicMock()]
-        mock_response.choices[0].message.content = '{"output": "audit", "reason": "ceo said"}'
+        mock_response.choices[0].message.content = (
+            '{"output": "audit", "reason": "ceo said"}'
+        )
         mock_client.chat.completions.create.return_value = mock_response
 
         llm_manager_decide(mock_client, "test-model", "", "run audit now", "")
@@ -219,7 +232,9 @@ class TestUserMessageTemplate:
         mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.choices = [MagicMock()]
-        mock_response.choices[0].message.content = '{"output": "implement", "reason": "test"}'
+        mock_response.choices[0].message.content = (
+            '{"output": "implement", "reason": "test"}'
+        )
         mock_client.chat.completions.create.return_value = mock_response
 
         llm_manager_decide(mock_client, "test-model", "", "", "")
@@ -305,7 +320,9 @@ class TestJsonParsing:
         mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.choices = [MagicMock()]
-        mock_response.choices[0].message.content = '{"output": "implement", "reason": "ready"}'
+        mock_response.choices[0].message.content = (
+            '{"output": "implement", "reason": "ready"}'
+        )
         mock_client.chat.completions.create.return_value = mock_response
 
         result = llm_manager_decide(mock_client, "test-model", "done", "", "summary")
