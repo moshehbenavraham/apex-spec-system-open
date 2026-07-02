@@ -1,0 +1,11 @@
+# Optional Linux visual wrapper dependencies.
+# Keep this separate from requirements.txt so the base CLI remains headless-safe.
+-r requirements.txt
+
+# PySide6/Qt Quick/QML is the selected wrapper path in the upgrade plan.
+# Review LGPL/GPL obligations before release packaging.
+PySide6>=6.11.1
+
+# pyside6-deploy is Nuitka-based; keep packaging support in the optional lane.
+# Nuitka is an AGPL deployment helper, not a base CLI runtime dependency.
+Nuitka>=4.1.3

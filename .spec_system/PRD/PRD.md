@@ -108,10 +108,9 @@ This system delivers the product via phases. Each phase is implemented via multi
 
 | Phase | Name | Sessions | Status |
 |-------|------|----------|--------|
-| 00 | CLI Operator Console MVP | 5 | Not Started |
-| 01 | Linux Visual Wrapper | 2 | Not Started |
+| 00 | Apex Infinite CLI Upgrade | 8 | Not Started |
 
-## Phase 00: CLI Operator Console MVP
+## Phase 00: Apex Infinite CLI Upgrade
 
 ### Objectives
 
@@ -119,36 +118,23 @@ This system delivers the product via phases. Each phase is implemented via multi
 2. Deliver the first complete CRT-inspired terminal operator experience with robust plain-output fallbacks.
 3. Improve live subprocess visibility and history readability while preserving captured output semantics.
 4. Document and test the UI upgrade, then expose a raw event stream for future wrappers.
+5. Spike and productize the optional Linux visual wrapper without adding graphical dependencies to the base CLI.
+6. Verify the complete upgrade against compatibility, testing, documentation, release, and clean-room criteria.
 
-### Sessions (To Be Defined)
+### Sessions
 
-Sessions are defined via `phasebuild` as `session_NN_name.md` stubs under `.spec_system/PRD/phase_00/`.
+Session stubs are defined under `.spec_system/PRD/phase_00/`.
 
-Candidate session themes from source planning:
-
-1. UI architecture and theme tokens
-2. CRT-inspired operator console
-3. Live execution and better history
-4. Documentation, samples, and polish
-5. Engine boundary and event stream
-
-**Note**: This command does NOT create phase directories or session stubs. Run `phasebuild` after creating the PRD.
-
-## Phase 01: Linux Visual Wrapper
-
-### Objectives
-
-1. Prove a standalone Linux visual wrapper can consume the event stream without forking workflow behavior.
-2. Productize the accepted wrapper path as an optional companion mode while keeping the base CLI lightweight.
-
-### Sessions (To Be Defined)
-
-Sessions are defined via `phasebuild` after Phase 00 completes.
-
-Candidate session themes from source planning:
-
-1. Linux visual wrapper spike
-2. Linux visual wrapper productization
+| Session | Name | Source Theme |
+|---------|------|--------------|
+| 01 | Config And Renderer Boundary | UI architecture and theme tokens |
+| 02 | Rich Operator Console | CRT-inspired operator console |
+| 03 | Subprocess And History Visibility | Live execution and better history |
+| 04 | Event Stream Boundary | Engine boundary and event stream |
+| 05 | Docs Samples And Runbooks | Documentation, samples, and polish |
+| 06 | Linux Wrapper Spike | Linux visual wrapper spike |
+| 07 | Linux Visual Wrapper Productization | Linux visual wrapper productization |
+| 08 | Release Verification | Release verification |
 
 ## Technical Stack
 
@@ -189,7 +175,7 @@ Candidate session themes from source planning:
 
 ## Assumptions
 
-- The master PRD scope is Apex Infinite CLI development inside the Apex Spec System repository: the user requested `createprd apex-infinite-cli`, README identifies `apex-infinite-cli/` as the autonomous session manager, and docs contain a detailed CLI upgrade plan.
+- The master PRD scope is Apex Infinite CLI development inside the Apex Spec System repository: the user requested `createprd apex-infinite-cli`, README identifies `apex-infinite-cli/` as the autonomous session manager, and the Phase 00 PRD plus session stubs contain the folded CLI upgrade plan.
 - The repository should be treated as a single repo with a primary subproject path: the user named `apex-infinite-cli` as the focus, while local tooling has no workspace manager config.
 - Prompt routing should remain stable during UI work: `docs/apex-infinite-cli/prompt-contract.md` and the upgrade plan both require prompt changes to be made only with matching tests and docs.
 - `cool-retro-term` is inspiration only: the upgrade plan records GPL/license boundaries and forbids copying source, shader, asset, font, or profile data.
@@ -201,6 +187,6 @@ Candidate session themes from source planning:
 
 ## Open Decisions
 
-1. Decide after the wrapper spike whether Phase 01 productization should proceed with PySide6/QML or document a blocker and defer.
+1. Decide after the wrapper spike whether Session 07 productization should proceed with PySide6/QML or document a blocker and defer.
 2. Decide the first Linux wrapper release artifact format after dependency and packaging evidence is gathered.
 3. Decide whether a true terminal-emulator viewport becomes mandatory; if it does, evaluate the documented pywebview plus xterm.js backup path.

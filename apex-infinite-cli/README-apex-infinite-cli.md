@@ -61,6 +61,18 @@ cd apex-infinite-cli
 pip install -r requirements.txt
 ```
 
+For development, testing, and dependency audits:
+
+```bash
+pip install -r requirements.txt -r requirements-dev.txt
+```
+
+For the deferred Linux visual wrapper path only:
+
+```bash
+pip install -r requirements-wrapper.txt
+```
+
 ## Configuration
 
 Edit `config.yaml` to choose your LLM provider and configure the Codex CLI agent:
@@ -160,13 +172,14 @@ Interaction history is stored at `~/.apex-infinite/history.db` (SQLite with WAL 
 cd apex-infinite-cli
 pip install -r requirements.txt -r requirements-dev.txt
 pytest tests/ -v
+pip-audit
 ```
 
-The test suite has 57 tests across 5 classes:
+The test suite has 62 tests across 5 classes:
 
 | Class | Tests | Coverage |
 |-------|-------|----------|
-| TestManagerSystemPrompt | 13 | Content validation, forbidden strings, structure |
+| TestManagerSystemPrompt | 18 | Content validation, forbidden strings, structure |
 | TestSummarizerSystemPrompt | 5 | Prompt content and formatting |
 | TestUserMessageTemplate | 4 | Mock LLM integration, message assembly |
 | TestBuildCodexPrompt | 33 | Parametrized across all 14 known commands + edge cases |
@@ -192,3 +205,5 @@ The test suite has 57 tests across 5 classes:
 - Python 3.10+
 - Codex CLI (`codex`) installed and accessible
 - An LLM provider API key (Grok, OpenAI) or local Ollama instance
+- Optional Linux visual wrapper: PySide6/Qt Quick/QML and Nuitka from
+  `requirements-wrapper.txt`

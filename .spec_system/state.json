@@ -7,16 +7,10 @@
   "monorepo": false,
   "phases": {
     "0": {
-      "name": "CLI Operator Console MVP",
-      "description": "Deliver the Rich terminal operator console, compatibility-preserving history and subprocess display, documentation, and event stream boundary.",
+      "name": "Apex Infinite CLI Upgrade",
+      "description": "Deliver the Rich terminal operator console, compatibility-preserving history and subprocess display, event stream boundary, documentation, optional Linux visual wrapper, and release verification.",
       "status": "not_started",
-      "session_count": 0
-    },
-    "1": {
-      "name": "Linux Visual Wrapper",
-      "description": "Spike and productize an optional Linux visual wrapper over the Apex Infinite CLI event boundary.",
-      "status": "not_started",
-      "session_count": 0
+      "session_count": 8
     }
   },
   "completed_sessions": [],
