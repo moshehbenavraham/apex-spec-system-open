@@ -10,7 +10,7 @@ Zero-to-hero checklist for using and contributing to the Apex Spec System.
 - [ ] shellcheck installed (`apt install shellcheck` or `brew install shellcheck`) -- for contributing only
 - [ ] shfmt installed (`go install mvdan.cc/sh/v3/cmd/shfmt@latest` or `brew install shfmt`) -- for contributing only
 
-Verify with: `bash scripts/check-prereqs.sh --env`
+Verify with: `bash --version`, `git --version`, and `jq --version`.
 
 ## Using the Skill
 
@@ -51,10 +51,14 @@ cd apex-spec-system-open
 ### 2. Verify Setup
 
 ```bash
-bash scripts/analyze-project.sh --json | jq .
-bash scripts/check-prereqs.sh --json --env | jq .
+bats tests/
+bash scripts/sync-plugin-payload.sh --check
 shellcheck scripts/*.sh
 ```
+
+The script smoke tests require initialized spec state. If the state is outside
+the repository, set `SPEC_SYSTEM_DIR=/path/to/.spec_system` before running
+`scripts/analyze-project.sh` or `scripts/check-prereqs.sh`.
 
 ### 3. Understand the Layout
 

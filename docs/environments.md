@@ -19,9 +19,10 @@ there is no hosted application environment.
 
 ## Local Data
 
-The Apex Spec skill itself stores project state inside `.spec_system/` in each
-initialized project. Do not commit provider keys, local `.env` files, or
-operator-local history from companion tools.
+The Apex Spec skill itself stores project state inside `.spec_system/` for each
+initialized project, or in the directory named by `SPEC_SYSTEM_DIR` when state
+is kept outside the repository. Do not commit provider keys, local `.env` files,
+or operator-local history from companion tools.
 
 ## Deployment Notes
 

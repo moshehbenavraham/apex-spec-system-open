@@ -2,7 +2,7 @@
 
 ## A Claude Code Plugin Version Available Here: https://github.com/moshehbenavraham/apex-spec-system
 
-**Version: 2.1.19-codex**
+**Version: 2.1.20-codex**
 
 A specification-driven workflow system for AI-assisted development, packaged as
 an Agent Skill following the [Agent Skills standard](https://agentskills.io).
@@ -28,7 +28,7 @@ This structure turns large projects into a sequence of manageable wins. It keeps
 | git | Yes | Pre-installed or `apt install git` |
 | jq | Yes | `apt install jq` or `brew install jq` |
 
-Verify with: `bash scripts/check-prereqs.sh --env`
+Verify with: `bash --version`, `git --version`, and `jq --version`.
 
 ## Quick Start
 

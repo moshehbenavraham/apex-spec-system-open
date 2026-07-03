@@ -38,8 +38,8 @@ No build step -- the skill is plain files.
 
 | Command | Purpose |
 |---------|---------|
-| `bash scripts/analyze-project.sh --json` | Show project state as JSON |
-| `bash scripts/check-prereqs.sh --json --env` | Verify environment |
+| `bash scripts/analyze-project.sh --json` | Show project state as JSON; requires `.spec_system/` or `SPEC_SYSTEM_DIR` |
+| `bash scripts/check-prereqs.sh --json --env` | Verify environment; requires `.spec_system/` or `SPEC_SYSTEM_DIR` |
 | `bash scripts/sync-plugin-payload.sh` | Rebuild generated Codex plugin skill payload |
 | `bash scripts/sync-plugin-payload.sh --check` | Verify generated plugin payload is current |
 | `shellcheck scripts/*.sh` | Lint all scripts |
@@ -105,11 +105,13 @@ Before submitting changes:
 
 ```bash
 # Test on current platform
-bash scripts/analyze-project.sh --json | jq .
-bash scripts/check-prereqs.sh --json --env | jq .
+SPEC_SYSTEM_DIR=/path/to/.spec_system bash scripts/analyze-project.sh --json | jq .
+SPEC_SYSTEM_DIR=/path/to/.spec_system bash scripts/check-prereqs.sh --json --env | jq .
 ```
 
 Scripts should produce identical JSON output on macOS, Ubuntu/Debian, and WSL2.
+When spec state is stored outside the repository, point `SPEC_SYSTEM_DIR` at
+that external `.spec_system` directory before running these smoke tests.
 
 ### Command Dispatch Testing
 

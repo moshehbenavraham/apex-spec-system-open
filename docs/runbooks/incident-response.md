@@ -23,7 +23,7 @@ events, `.env`, or a committed file.
 2. Remove the secret from the file or output path.
 3. Rotate the provider key in the provider dashboard.
 4. Run `gitleaks detect --source . --verbose` when available.
-5. Check docs and `.spec_system/SECURITY-COMPLIANCE.md` for stale guidance.
+5. Check docs and the external security-compliance record for stale guidance.
 
 ### Dirty Or Generated Plugin Payload
 

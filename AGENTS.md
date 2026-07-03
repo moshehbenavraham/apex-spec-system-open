@@ -5,7 +5,7 @@ as an Agent Skill (agentskills.io) with a Codex plugin wrapper.
 
 Philosophy: 1 session = 1 spec = 1 clear objective = 2-4 hours (12-25 tasks).
 
-Current version: 2.1.19-codex
+Current version: 2.1.20-codex
 
 Note: CLAUDE.md and GEMINI.md are symlinks to this file. Edit AGENTS.md only.
 
@@ -93,8 +93,9 @@ plugins/apex-spec/.codex-plugin/plugin.json, then run
 ```bash
 bats tests/                                        # script + reference tests
 bash scripts/sync-plugin-payload.sh --check        # generated payload in sync
-bash scripts/analyze-project.sh --json | jq .      # script smoke tests
-bash scripts/check-prereqs.sh --json --env | jq .
+# Optional script smoke tests; require .spec_system/ or SPEC_SYSTEM_DIR.
+SPEC_SYSTEM_DIR=/path/to/.spec_system bash scripts/analyze-project.sh --json | jq .
+SPEC_SYSTEM_DIR=/path/to/.spec_system bash scripts/check-prereqs.sh --json --env | jq .
 ```
 
 See docs/development.md for local setup and testing, and docs/CONTRIBUTING.md for

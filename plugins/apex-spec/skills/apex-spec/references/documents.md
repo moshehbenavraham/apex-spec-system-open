@@ -167,7 +167,7 @@ For each missing required file:
 
 ## Project Status
 
-See [PRD](.spec_system/PRD/PRD.md).
+See the active PRD in the Apex Spec project state.
 ```
 
 #### docs/CONTRIBUTING.md Template
