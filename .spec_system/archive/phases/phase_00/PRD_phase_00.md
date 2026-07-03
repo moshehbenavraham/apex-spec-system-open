@@ -1,15 +1,16 @@
 # PRD Phase 00: Apex Infinite CLI Upgrade
 
-**Status**: In Progress
+**Status**: Complete
 **Sessions**: 8
 **Estimated Duration**: 8-16 days
-**Progress**: 7/8 sessions (88%)
+**Progress**: 8/8 sessions (100%)
 **Source plan status**: proposed
 
-This file (`.spec_system/PRD/phase_00/PRD_phase_00.md`) consolidates the former
-folded source plan from `docs/ongoing-projects/apex-infinite-cli-upgrade-plan.md`.
-The standalone plan can be removed without losing detail; this file and the
-session stubs are the active execution interface.
+This archived file (`.spec_system/archive/phases/phase_00/PRD_phase_00.md`)
+consolidates the former folded source plan from
+`docs/ongoing-projects/apex-infinite-cli-upgrade-plan.md`. The standalone plan
+can be removed without losing detail; this file and the archived session stubs
+record the completed Phase 00 execution interface.
 
 ---
 
@@ -38,7 +39,7 @@ validation.
 | 05 | Docs Samples And Runbooks | Complete | ~16 | 2-4h | 2026-07-03 |
 | 06 | Linux Wrapper Spike | Complete | ~18 | 2-4h | 2026-07-03 |
 | 07 | Linux Visual Wrapper Productization | Complete | ~18 | 2-4h | 2026-07-03 |
-| 08 | Release Verification | Not Started | ~16 | 2-4h | - |
+| 08 | Release Verification | Complete | ~16 | 2-4h | 2026-07-03 |
 
 Completed sessions:
 
@@ -49,6 +50,7 @@ Completed sessions:
 - 2026-07-03: Session 05, Docs Samples And Runbooks.
 - 2026-07-03: Session 06, Linux Wrapper Spike.
 - 2026-07-03: Session 07, Linux Visual Wrapper Productization.
+- 2026-07-03: Session 08, Release Verification.
 
 ---
 

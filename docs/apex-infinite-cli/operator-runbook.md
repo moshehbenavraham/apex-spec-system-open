@@ -134,8 +134,9 @@ python -m apex_infinite_visual.main --dry-run --max-iterations 1
 
 Use this only for the Linux visual wrapper source mode. The base CLI install
 remains `requirements.txt`; PySide6 and QML stay in the optional wrapper lane.
-Session 07 productizes source/dev operation; final AppImage or binary release
-verification is separate.
+Session 08 release verification keeps source/dev operation shippable after
+final gates; final AppImage or binary publication remains gated for future
+packaging, license, notice, checksum, and source/relink review.
 
 Source-mode settings can be selected before launch:
 

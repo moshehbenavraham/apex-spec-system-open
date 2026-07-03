@@ -1,5 +1,6 @@
 """Click option wiring tests for display settings."""
 
+import io
 import json
 
 import pytest
@@ -284,6 +285,23 @@ def test_event_stream_file_coexists_with_human_output_modes(
     rows = jsonl_rows(event_path.read_text(encoding="ascii"))
     assert rows[0]["event"] == "startup_begin"
     assert rows[-1]["event"] == "startup"
+
+
+def test_notify_does_not_emit_terminal_bell_to_redirected_stdout(monkeypatch):
+    stream = io.StringIO()
+    calls = []
+
+    monkeypatch.setattr(apex_infinite.sys, "stdout", stream)
+    monkeypatch.setattr(
+        apex_infinite.subprocess,
+        "run",
+        lambda *args, **kwargs: calls.append((args, kwargs)),
+    )
+
+    apex_infinite.notify("Apex Infinite", "Reached max iterations")
+
+    assert "\a" not in stream.getvalue()
+    assert calls
 
 
 def test_history_mode_uses_renderer_and_does_not_start_loop(monkeypatch, tmp_path):

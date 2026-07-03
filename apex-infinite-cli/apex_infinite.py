@@ -1222,9 +1222,11 @@ def execute_codex(  # pylint: disable=too-many-positional-arguments,too-many-bra
 
 def notify(title, message):
     """Terminal bell + desktop notification."""
-    # Terminal bell
-    sys.stdout.write("\a")
-    sys.stdout.flush()
+    # Terminal bell is useful interactively, but must not leak into redirected
+    # logs, plain output captures, or machine-readable wrappers.
+    if sys.stdout.isatty():
+        sys.stdout.write("\a")
+        sys.stdout.flush()
 
     # Linux desktop notification
     try:

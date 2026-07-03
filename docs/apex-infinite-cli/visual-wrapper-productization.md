@@ -2,8 +2,9 @@
 
 ## Status
 
-Session 07 productizes the optional Linux source visual mode. It does not
-publish an AppImage or other binary artifact.
+Session 08 release verification keeps the optional Linux source visual mode in
+a source-shippable state after final gates. It does not publish an AppImage or
+other binary artifact.
 
 The base terminal CLI remains the workflow engine. The wrapper launches that
 CLI with the guarded event-stream command and renders lifecycle state from
@@ -137,8 +138,8 @@ pass.
 
 ## Packaging Path
 
-Binary packaging is deferred to release verification. The intended Linux path
-is:
+Binary packaging remains deferred after Session 08. The intended future Linux
+path is:
 
 1. Build and review the source visual mode.
 2. Run `pyside6-deploy` or an explicitly reviewed Nuitka path in an isolated
@@ -189,10 +190,15 @@ git diff --check
 The local `EXAMPLE/` tree remains ignored reference material only. It is not a
 runtime dependency and not a source for implementation details.
 
-## Session 08 Handoff
+## Session 08 Release Position
 
-Session 08 owns final release verification. It should decide whether packaging
-uses `pyside6-deploy`, direct Nuitka invocation, or a different reviewed path,
-then verify generated bundle contents, AppImage behavior, notices, checksums,
-source/relink instructions, and clean-room boundaries before any artifact is
-published.
+Session 08 verified source-mode checks, optional dependency isolation,
+event-stream boundaries, clean-room scans, dependency audit evidence, and
+license-gate documentation. Source mode remains shippable after the final
+T021/T022 gates.
+
+No packaging path was executed or selected for a real artifact in this session.
+A future binary release must decide whether packaging uses `pyside6-deploy`,
+direct Nuitka invocation, or another reviewed path, then verify generated
+bundle contents, AppImage behavior, notices, checksums, source/relink
+instructions, and clean-room boundaries before publishing any artifact.

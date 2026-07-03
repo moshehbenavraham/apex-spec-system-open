@@ -1,7 +1,7 @@
 # Security & Compliance
 
 > Cumulative security posture, privacy, and license-compliance record.
-> **Line budget**: 1000 max | **Last updated**: Phase 00 planning (2026-07-02)
+> **Line budget**: 1000 max | **Last updated**: Session 08 release verification (2026-07-03)
 
 ---
 
@@ -9,16 +9,20 @@
 
 ### Overall: WATCH
 
-The project is a local autonomous CLI workflow runner. It has useful baseline
-controls, but it is not yet in a clean state because Phase 00 has not run and
-several planned controls are still unimplemented.
+The project is a local autonomous CLI workflow runner. Session 08 release
+verification improved the posture for machine output, dependency checks,
+SQLite/event raw-data boundaries, optional wrapper isolation, and clean-room
+evidence. The posture remains WATCH because local history retention, autonomous
+execution flags, provider-bound data transfer disclosure, and recurring
+dependency governance still need follow-up work.
 
 | Metric | Value |
 |--------|-------|
-| Open Findings | 6 |
+| Open Findings | 4 |
 | Critical/High | 0 |
-| Medium/Low | 6 |
-| Phases Audited | 0 |
+| Medium/Low | 4 |
+| Findings Resolved This Refresh | 2 |
+| Phases Audited | 1 |
 | Last Clean Phase | -- |
 
 ## Protected Assets
@@ -27,7 +31,7 @@ several planned controls are still unimplemented.
 - Target project source trees modified by autonomous subprocesses.
 - Local workflow history and operator instructions.
 - Manager and summarizer prompt contracts.
-- Machine-readable lifecycle payloads planned for future wrapper surfaces.
+- Machine-readable lifecycle payloads used by wrappers and automation.
 - Clean-room visual implementation and license boundaries.
 
 ## Implemented Controls
@@ -35,12 +39,16 @@ several planned controls are still unimplemented.
 | Area | Control | Status |
 |------|---------|--------|
 | Secrets | Provider keys are configured through environment-expanded values and `.env` is ignored by Git. | Partial |
-| Database | Local SQLite history uses parameterized queries and WAL mode. | Present |
+| Database | Local SQLite history uses parameterized queries, WAL mode, and the legacy `cc_response` column for compatibility. | Present |
+| Durable data | Session 08 tests and scans verify release smoke rows/events exclude ANSI escapes, Rich markup, frame glyphs, visual tokens, copied reference identifiers, and secret-like values. | Present |
+| Event stream | JSONL output has schema validation, guarded stdout machine mode, and tests preventing human-output collision. | Present |
 | Subprocess | Agent execution uses an argument list rather than shell invocation and has a 30 minute timeout. | Present |
 | Runaway guard | The loop has a default max-iteration limit and dry-run mode. | Present |
 | Operator stop | Single interrupt requests a pause; second interrupt exits. | Present |
-| Compatibility | The legacy history column is preserved to avoid breaking existing databases. | Present |
+| Output fallback | Plain, ASCII, compact, `NO_COLOR`, `TERM=dumb`, non-TTY, redirected output, and machine-output paths have smoke evidence. | Present |
+| Dependency audit | Session 08 ran `pip-audit` 2.10.1 across base, dev, and wrapper requirements with no known vulnerabilities found. | Present |
 | Base install | The terminal CLI runtime does not require graphical dependencies. | Present |
+| Clean room | Tracked source/docs scans found no copied reference source, QML, shaders, images, icons, fonts, profiles, resource manifests, build scripts, or terminal-widget material. | Present |
 
 ## Open Findings
 
@@ -52,12 +60,10 @@ several planned controls are still unimplemented.
 
 | ID | Severity | Finding | Required Action |
 |----|----------|---------|-----------------|
-| F001 | Medium | Local history stores raw agent output, manager decisions, reasons, project paths, timestamps, and operator instructions without redaction or retention limits. | Add redaction tests and document retention or purge behavior. |
-| F002 | Medium | The default agent execution flags grant broad autonomous approval for target-project changes. | Require operator review of the target path and execution flags before real runs; consider a safer documented default. |
+| F001 | Medium | Local history stores raw agent output, manager decisions, reasons, project paths, timestamps, and operator instructions without redaction or retention limits. | Add retention, purge, and redaction behavior or document the accepted local-data risk explicitly. |
+| F002 | Medium | The default agent execution flags grant broad autonomous approval for target-project changes. | Require operator review of target path and execution flags before real runs; consider a safer documented default. |
 | F003 | Medium | Recent history, latest agent output, summaries, and operator instructions can be sent to the configured LLM provider. | Document third-party data transfer expectations and warn operators not to include secrets or personal data. |
-| F004 | Low | Dependency files use lower-bound version ranges and no automated vulnerability audit is configured for the Python runtime dependencies. | Add dependency scanning or a lock/audit workflow. |
-| F005 | Low | Planned event-stream payloads are not implemented yet, so no tests currently prove that machine output excludes secrets, ANSI escapes, Rich markup, or frame glyphs. | Add event payload safety tests when the event stream is implemented. |
-| F006 | Low | Future visual-wrapper work depends on maintaining a clean-room boundary from GPL-family visual reference material. | Before wrapper release, audit that no code, shaders, images, icons, fonts, resource manifests, build scripts, or profile data were copied. |
+| F004 | Low | Dependency files use lower-bound version ranges; Session 08 has local audit evidence but no lockfile or recurring CI vulnerability gate for this CLI scope. | Add dependency locking or a scheduled/CI audit workflow. |
 
 ## GDPR Compliance Status
 
@@ -89,44 +95,55 @@ data.
 | Deletion/erasure path exists | Partial | Manual deletion of the local database works; no CLI purge command exists. |
 | No PII in application logs | Open | No intentional PII collection, but raw prompts and outputs are not scrubbed. |
 | Third-party transfers documented | Partial | Provider-bound prompt traffic is known; provider-specific legal posture is not recorded. |
-| Secrets excluded from durable records | Open | Config avoids direct secret storage, but raw agent output can still contain secrets. |
+| Secrets excluded from durable records | Partial | Release smokes and scans passed, but arbitrary raw agent output can still contain secrets. |
 
 ## Dependency Security
 
 Runtime dependencies currently include Click, OpenAI Python SDK, python-dotenv,
 Rich, PyYAML, and Python standard library modules including SQLite and
 subprocess support. Development dependencies include pytest, pytest-cov,
-pytest-mock, black, and pylint.
+pytest-mock, black, pylint, and pip-audit. Optional wrapper dependencies are in
+`requirements-wrapper.txt` and include PySide6 and Nuitka.
 
-No automated Python vulnerability audit, dependency lock, or security CI gate
-is currently recorded for this CLI scope.
+Session 08 evidence:
+
+- `pip-audit` 2.10.1 is available in the CLI virtual environment.
+- `pip-audit -r requirements.txt -r requirements-dev.txt -r requirements-wrapper.txt` reported no known vulnerabilities.
+- The base CLI dependency/import scan found no PySide6, Qt, QML, or Nuitka references in `requirements.txt`, `apex_infinite.py`, `apex_infinite_events.py`, or `apex_infinite_ui.py`.
+
+Recurring dependency audit automation and dependency locking remain open under
+F004.
 
 ## License Compliance
 
 | Area | Status | Notes |
 |------|--------|-------|
 | Base CLI dependencies | Acceptable | Runtime dependency set is terminal-only and does not include graphical wrapper dependencies. |
-| Visual inspiration boundary | Open | Use independent design tokens, layouts, settings, and effects. Do not copy implementation material or assets. |
-| Optional wrapper dependencies | Planned | Any Linux visual wrapper must keep graphical dependencies optional and document LGPLv3/commercial obligations where applicable. |
+| Visual inspiration boundary | Verified | Session 08 clean-room scans found no copied reference implementation material or assets in tracked source/docs. |
+| Optional wrapper source mode | Acceptable | PySide6/QML remains optional in `requirements-wrapper.txt`; source mode is separate from the base CLI. |
+| Binary/AppImage distribution | Gated | No binary artifact is published in Session 08. Future binary release must complete generated-bundle review, license/module review, notices, SHA256 checksums, and source/relink instructions for the concrete artifact. |
 | Excluded components | Required | Do not add PyQt, terminal-widget libraries, copied terminal-emulator code, copied shader code, copied images, copied icons, copied fonts, copied resource manifests, or copied profile data unless a later explicit decision changes scope. |
 
 ## Resolved Findings
 
-*No resolved findings yet.*
+| ID | Resolution | Evidence |
+|----|------------|----------|
+| F005 | Event-stream payloads are implemented and release-verified for guarded stdout, schema validity, and unsafe-token exclusion in smoke outputs. | Session 08 T013 and T015 passed event JSONL and SQLite raw-data checks. |
+| F006 | The visual-wrapper clean-room boundary was audited for tracked source/docs and binary publication remains gated. | Session 08 T016 and T020 clean-room scans and release posture records passed. |
 
 ## Phase History
 
 | Phase | Sessions | Security | GDPR | Findings Opened | Findings Closed |
 |-------|----------|----------|------|-----------------|-----------------|
-| 00 | 0 complete / pending phase sessions | WATCH | LIMITED | 6 | 0 |
+| 00 | Sessions 01-08 implemented or locally verified; creview complete, validate pending | WATCH | LIMITED | 6 | 2 |
 | 01 | Not started | Not audited | Not audited | 0 | 0 |
 
 ## Recommendations
 
-1. Add tests proving SQLite rows and future event payloads exclude API keys, ANSI escapes, Rich markup, and display-only glyphs.
-2. Add dependency vulnerability scanning before release verification.
-3. Document local history retention and provide a supported purge path.
-4. Require explicit operator review of provider, model, target path, and execution flags before non-dry-run autonomous execution.
-5. Keep the base CLI free of graphical dependencies and preserve the clean-room boundary for any visual wrapper.
+1. Add retention, purge, and redaction behavior for local history or explicitly document the accepted local-data risk.
+2. Require explicit operator review of provider, model, target path, and execution flags before non-dry-run autonomous execution.
+3. Document provider-bound data transfer expectations and warn operators not to place secrets or personal data in prompts or target-project outputs.
+4. Add dependency locking or recurring vulnerability scanning in CI.
+5. Keep the base CLI free of graphical dependencies and preserve the clean-room boundary for future visual-wrapper artifacts.
 
-*Updated by documents review. Next security refresh should occur after the first validated Phase 00 session or after any event-stream or wrapper implementation lands.*
+*Updated by Session 08 release verification. Next security refresh should occur during creview/validate if a release blocker appears, or when future binary packaging is scoped.*

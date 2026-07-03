@@ -303,8 +303,9 @@ for a deterministic JSONL sample.
 The optional Linux visual wrapper is separate from the base terminal CLI. It
 uses PySide6 with Qt Quick/QML as an optional dependency and consumes the JSONL
 event stream through the guarded `--event-stream - --machine-output` boundary.
-Session 07 productizes source/dev visual mode only; binary publishing remains
-gated on release verification.
+Session 08 release verification keeps source/dev visual mode shippable after
+final gates; binary publishing remains gated for future packaging, license,
+notice, checksum, and source/relink review.
 
 Install the optional dependencies, then run the fixture-backed smoke path:
 

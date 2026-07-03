@@ -108,7 +108,7 @@ This system delivers the product via phases. Each phase is implemented via multi
 
 | Phase | Name | Sessions | Status |
 |-------|------|----------|--------|
-| 00 | Apex Infinite CLI Upgrade | 8 | In Progress |
+| 00 | Apex Infinite CLI Upgrade | 8 | Complete |
 
 ## Phase 00: Apex Infinite CLI Upgrade
 
@@ -123,7 +123,7 @@ This system delivers the product via phases. Each phase is implemented via multi
 
 ### Sessions
 
-Session stubs are defined under `.spec_system/PRD/phase_00/`.
+Completed session stubs are archived under `.spec_system/archive/phases/phase_00/`.
 
 | Session | Name | Source Theme |
 |---------|------|--------------|
@@ -151,16 +151,16 @@ Session stubs are defined under `.spec_system/PRD/phase_00/`.
 
 ## Success Criteria
 
-- [ ] Existing prompt/routing behavior remains compatible and covered by tests.
-- [ ] CLI users can enable `auto`, `crt-green`, `crt-amber`, `ibm-dos`, and `plain` themes.
-- [ ] CLI users can disable styling with `--plain` and avoid non-ASCII glyphs with `--ascii`.
-- [ ] Plain output is selected automatically for constrained terminal environments unless explicitly overridden.
-- [ ] History display is readable without horizontal scrolling at 80 columns.
-- [ ] SQLite history rows remain raw and backward compatible with existing databases.
-- [ ] JSONL event stream emits raw lifecycle facts without Rich markup.
-- [ ] README and deep-dive docs describe UI flags, config, event stream, and troubleshooting.
-- [ ] No reference source, shader, image, icon, font, resource manifest, or literal profile data is copied into the CLI.
-- [ ] Optional Linux wrapper path has documented dependency, license, packaging, and interface boundaries.
+- [x] Existing prompt/routing behavior remains compatible and covered by tests.
+- [x] CLI users can enable `auto`, `crt-green`, `crt-amber`, `ibm-dos`, and `plain` themes.
+- [x] CLI users can disable styling with `--plain` and avoid non-ASCII glyphs with `--ascii`.
+- [x] Plain output is selected automatically for constrained terminal environments unless explicitly overridden.
+- [x] History display is readable without horizontal scrolling at 80 columns.
+- [x] SQLite history rows remain raw and backward compatible with existing databases.
+- [x] JSONL event stream emits raw lifecycle facts without Rich markup.
+- [x] README and deep-dive docs describe UI flags, config, event stream, and troubleshooting.
+- [x] No reference source, shader, image, icon, font, resource manifest, or literal profile data is copied into the CLI.
+- [x] Optional Linux wrapper path has documented dependency, license, packaging, and interface boundaries.
 
 ## Risks
 
