@@ -240,6 +240,90 @@ What to do:
 - read [Visual wrapper boundary](visual-wrapper-boundary.md) before adding
   wrapper behavior
 
+## Visual Wrapper Prototype Issues
+
+### `Visual wrapper unavailable: PySide6 is not installed`
+
+Cause:
+
+- the optional wrapper dependencies are not installed in the active Python
+  environment
+
+What to do:
+
+```bash
+cd apex-infinite-cli
+pip install -r requirements-wrapper.txt
+python -m apex_infinite_visual.main --dry-run --max-iterations 1
+```
+
+### Qt display backend is unavailable
+
+Cause:
+
+- no graphical session is available
+- the Qt platform plugin cannot connect to X11 or Wayland
+- the wrapper is running in CI or a headless shell
+
+What to do:
+
+```bash
+cd apex-infinite-cli
+QT_QPA_PLATFORM=offscreen python -m apex_infinite_visual.main \
+  --dry-run --max-iterations 1 --auto-close-ms 900
+```
+
+If offscreen mode is not enough for local operation, use the base terminal CLI
+until the display backend is fixed.
+
+### Wrapper shows malformed event state
+
+Cause:
+
+- the wrapper received partial JSONL
+- stdout contained non-JSON text
+- an event used an unsupported version or event name
+- an event payload failed the base event payload validator
+
+What to do:
+
+- launch the real CLI through wrapper `--launch-cli` or use
+  `python apex_infinite.py --event-stream - --machine-output`
+- read complete lines only
+- keep stderr separate from stdout JSONL
+- inspect the wrapper log for the rejected event reason
+
+### Wrapper shows subprocess failure state
+
+Cause:
+
+- the base CLI process wrote stderr
+- the base CLI process exited non-zero
+- the configured project path, config path, provider, or model is invalid
+
+What to do:
+
+- rerun the equivalent base CLI command directly with `--event-stream -`
+  and `--machine-output`
+- fix the base CLI startup error first
+- use fixture-backed wrapper dry-run when provider credentials are unavailable
+
+### Clean-room audit fails
+
+Cause:
+
+- copied reference QML, shaders, assets, fonts, icons, profiles, resource
+  manifests, build scripts, terminal-emulator code, qmltermwidget, or
+  QTermWidget material entered the tracked wrapper files
+
+What to do:
+
+- remove the copied material
+- keep only independently written QML, Python, docs, and tests
+- re-read [Visual wrapper boundary](visual-wrapper-boundary.md)
+- compare against [Visual wrapper spike](visual-wrapper-spike.md) for the
+  accepted prototype constraints
+
 ## Config Issues
 
 ### API key does not seem to load
@@ -295,5 +379,6 @@ Code changes are justified for:
 - [Event stream contract](event-stream.md)
 - [History DB reference](history-db.md)
 - [Prompt contract](prompt-contract.md)
+- [Visual wrapper spike](visual-wrapper-spike.md)
 - [Visual wrapper boundary](visual-wrapper-boundary.md)
 - [Transcript samples](transcripts/README.md)

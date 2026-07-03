@@ -67,11 +67,14 @@ For development, testing, and dependency audits:
 pip install -r requirements.txt -r requirements-dev.txt
 ```
 
-For the deferred Linux visual wrapper path only:
+For the optional Linux visual wrapper prototype only:
 
 ```bash
 pip install -r requirements-wrapper.txt
 ```
+
+The wrapper dependencies are intentionally separate from the base CLI install.
+The base terminal CLI does not import PySide6 or require a graphical display.
 
 ## Configuration
 
@@ -295,21 +298,49 @@ full event contract and
 [machine-output-events.jsonl](../docs/apex-infinite-cli/transcripts/machine-output-events.jsonl)
 for a deterministic JSONL sample.
 
-## Visual Wrapper Boundary
+## Visual Wrapper Prototype
 
-The optional Linux visual wrapper path is future work and is separate from the
-base terminal CLI. The selected direction is PySide6 with Qt Quick/QML as an
-optional wrapper dependency, with PyQt, qmltermwidget, QTermWidget, copied
-terminal emulators, copied QML, copied shaders, copied images, copied icons,
-copied fonts, copied resource manifests, copied build scripts, and copied
-profile data excluded.
+The optional Linux visual wrapper prototype is separate from the base terminal
+CLI. It uses PySide6 with Qt Quick/QML as an optional dependency and consumes
+the JSONL event stream through the guarded `--event-stream - --machine-output`
+boundary.
 
-Future wrappers consume the JSONL event stream or importable event API. They
-must not parse Rich panels, plain human output, terminal frames, or history
+Install the optional dependencies, then run the fixture-backed smoke path:
+
+```bash
+cd apex-infinite-cli
+pip install -r requirements-wrapper.txt
+python -m apex_infinite_visual.main --dry-run --max-iterations 1
+```
+
+For headless smoke checks:
+
+```bash
+QT_QPA_PLATFORM=offscreen python -m apex_infinite_visual.main \
+  --dry-run --max-iterations 1 --auto-close-ms 900
+```
+
+To launch the real CLI subprocess from the wrapper, opt in explicitly:
+
+```bash
+python -m apex_infinite_visual.main \
+  --launch-cli \
+  --path ~/projects/my-app/ \
+  --start-command implement \
+  --dry-run \
+  --max-iterations 1
+```
+
+PyQt, qmltermwidget, QTermWidget, copied terminal emulators, copied QML, copied
+shaders, copied images, copied icons, copied fonts, copied resource manifests,
+copied build scripts, and copied profile data remain excluded. The prototype
+does not parse Rich panels, plain human output, terminal frames, or history
 display rows.
 
-See [Visual wrapper boundary](../docs/apex-infinite-cli/visual-wrapper-boundary.md)
-for the clean-room no-copy rules and optional wrapper direction.
+See [Visual wrapper spike](../docs/apex-infinite-cli/visual-wrapper-spike.md)
+for the decision record and
+[Visual wrapper boundary](../docs/apex-infinite-cli/visual-wrapper-boundary.md)
+for the clean-room no-copy rules.
 
 ## Testing
 
@@ -330,6 +361,7 @@ Click option wiring, renderer semantics, and SQLite history safety.
 - [History DB reference](../docs/apex-infinite-cli/history-db.md)
 - [Prompt contract](../docs/apex-infinite-cli/prompt-contract.md)
 - [Troubleshooting guide](../docs/apex-infinite-cli/troubleshooting.md)
+- [Visual wrapper spike](../docs/apex-infinite-cli/visual-wrapper-spike.md)
 - [Visual wrapper boundary](../docs/apex-infinite-cli/visual-wrapper-boundary.md)
 - [Transcript samples](../docs/apex-infinite-cli/transcripts/README.md)
 

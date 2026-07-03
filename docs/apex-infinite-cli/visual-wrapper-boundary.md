@@ -102,7 +102,7 @@ Visual surfaces display this state. They do not fork or replace it.
 ## Selected Wrapper Direction
 
 The selected optional Linux wrapper direction is PySide6 with Qt Quick/QML.
-This direction is for future wrapper sessions, not the current base CLI.
+This direction is for the optional wrapper lane, not the base CLI.
 
 Expected wrapper shape:
 
@@ -118,6 +118,26 @@ Expected wrapper shape:
 
 Before release, document PySide6 LGPLv3/commercial obligations and confirm
 which Qt modules are used.
+
+## Confirmed Prototype Constraints
+
+The Session 06 spike created an isolated prototype under
+`apex-infinite-cli/apex_infinite_visual/` and recorded the decision in
+[Visual wrapper spike](visual-wrapper-spike.md).
+
+Confirmed constraints:
+
+- The prototype consumes JSONL events through `--event-stream - --machine-output`
+  or fixture events.
+- PySide6 imports are lazy and wrapper-only.
+- The base CLI runtime path and `requirements.txt` remain free of graphical
+  dependencies.
+- The wrapper exposes malformed JSONL, stderr, non-zero subprocess exit, and
+  wrapper exceptions as visible error state.
+- The QML surface is independently implemented and uses local low-risk glow,
+  scanline, flicker, curvature, theme, and reduced-effects controls.
+- Productization must complete license, generated-bundle, AppImage, and Qt
+  module review before publishing a binary.
 
 ## Exclusions
 
@@ -181,4 +201,5 @@ Before starting wrapper implementation:
 - [Event stream contract](event-stream.md)
 - [Operator runbook](operator-runbook.md)
 - [Troubleshooting guide](troubleshooting.md)
+- [Visual wrapper spike](visual-wrapper-spike.md)
 - [Transcript samples](transcripts/README.md)

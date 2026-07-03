@@ -124,6 +124,41 @@ combination so human output never mixes with JSONL on stdout. If a human should
 watch the run while automation observes it, write events to a file path instead
 of stdout.
 
+### Optional visual wrapper prototype
+
+```bash
+cd apex-infinite-cli
+pip install -r requirements-wrapper.txt
+python -m apex_infinite_visual.main --dry-run --max-iterations 1
+```
+
+Use this only for the Linux visual wrapper prototype. The base CLI install
+remains `requirements.txt`; PySide6 and QML stay in the optional wrapper lane.
+
+For a headless smoke check:
+
+```bash
+cd apex-infinite-cli
+QT_QPA_PLATFORM=offscreen python -m apex_infinite_visual.main \
+  --dry-run --max-iterations 1 --auto-close-ms 900
+```
+
+By default, wrapper dry-run uses fixture events so it does not require provider
+API keys or live Codex execution. To launch the real CLI subprocess, pass
+`--launch-cli`; the wrapper will build a guarded
+`--event-stream - --machine-output` command and keep stderr separate for
+failure display.
+
+Fallback behavior:
+
+- If PySide6 is missing, install `requirements-wrapper.txt`.
+- If a display backend is unavailable, run the offscreen smoke command or use
+  the base terminal CLI.
+- If events are malformed, the wrapper shows an error state and keeps the log
+  bounded instead of crashing.
+- If the subprocess writes stderr or exits non-zero, the wrapper maps that to a
+  visible error state.
+
 ### History inspection
 
 ```bash
@@ -224,6 +259,8 @@ For an existing project:
   verbose history display semantics.
 - [Machine-output JSONL sample](transcripts/machine-output-events.jsonl) shows
   the stdout JSONL shape for wrappers and automation.
+- [Visual wrapper spike](visual-wrapper-spike.md) records the wrapper prototype
+  decision, license notes, packaging risks, and backup path.
 
 ## Related Docs
 
@@ -231,5 +268,6 @@ For an existing project:
 - [Event stream contract](event-stream.md)
 - [Prompt contract](prompt-contract.md)
 - [Troubleshooting guide](troubleshooting.md)
+- [Visual wrapper spike](visual-wrapper-spike.md)
 - [Visual wrapper boundary](visual-wrapper-boundary.md)
 - [Transcript samples](transcripts/README.md)
