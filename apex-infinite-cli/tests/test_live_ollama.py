@@ -6,8 +6,7 @@ from pathlib import Path
 import pytest
 from dotenv import load_dotenv
 
-import apex_infinite
-
+import apex_infinite.cli as apex_infinite
 
 CLI_DIR = Path(__file__).resolve().parents[1]
 load_dotenv(CLI_DIR / ".env")

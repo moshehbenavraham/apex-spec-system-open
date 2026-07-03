@@ -39,6 +39,7 @@ class ApexCliLaunchOptions:  # pylint: disable=too-many-instance-attributes
 
     project_path: str | Path
     cli_script: str | Path | None = None
+    module_name: str = "apex_infinite"
     python_executable: str = sys.executable
     start_command: str | None = None
     ceo_message: str | None = None
@@ -79,14 +80,13 @@ class ApexCliProcess:
         """Start the CLI process with stdout reserved for JSONL events."""
         if self.process is not None and self.process.poll() is None:
             raise RuntimeError("Apex CLI process is already running")
-        cli_script = validate_cli_script(self.options.cli_script)
         project_path = validate_project_path(self.options.project_path)
         env = os.environ.copy()
         if self.options.extra_env:
             env.update(dict(self.options.extra_env))
         self.process = self.popen_factory(
             self.command,
-            cwd=str(cli_script.parent),
+            cwd=str(resolve_launch_cwd(self.options.cli_script)),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -143,8 +143,9 @@ def build_apex_cli_command(options: ApexCliLaunchOptions) -> list[str]:
     """Build the guarded CLI command consumed by the visual wrapper."""
     if not options.python_executable:
         raise ValueError("python_executable is required")
-    cli_script = validate_cli_script(options.cli_script)
     project_path = str(validate_project_path(options.project_path))
+    if not options.module_name:
+        raise ValueError("module_name is required")
     if options.max_iterations is not None and options.max_iterations < 1:
         raise ValueError("max_iterations must be positive")
     if (
@@ -153,15 +154,12 @@ def build_apex_cli_command(options: ApexCliLaunchOptions) -> list[str]:
     ):
         raise ValueError("process_timeout_seconds must be positive")
 
-    command = [
-        options.python_executable,
-        str(cli_script),
-        "--path",
-        project_path,
-        "--event-stream",
-        "-",
-        "--machine-output",
-    ]
+    command = [options.python_executable]
+    if options.cli_script is None:
+        command.extend(["-m", options.module_name])
+    else:
+        command.append(str(validate_cli_script(options.cli_script)))
+    command.extend(["--path", project_path, "--event-stream", "-", "--machine-output"])
     _append_option(command, "--start", options.start_command)
     _append_option(command, "--ceo", options.ceo_message)
     _append_option(command, "--config", options.config_path)
@@ -179,7 +177,7 @@ def build_apex_cli_command(options: ApexCliLaunchOptions) -> list[str]:
 def resolve_cli_script(path: str | Path | None = None) -> Path:
     """Resolve the base CLI script without importing it."""
     if path is None:
-        return Path(__file__).resolve().parents[1] / "apex_infinite.py"
+        return Path(__file__).resolve().parents[1] / "apex_infinite" / "cli.py"
     return Path(path).expanduser().resolve()
 
 
@@ -190,9 +188,16 @@ def validate_cli_script(path: str | Path | None = None) -> Path:
         raise ApexCliLaunchError("missing_cli", "base CLI script was not found")
     if not cli_script.is_file():
         raise ApexCliLaunchError("missing_cli", "base CLI path is not a file")
-    if cli_script.name != "apex_infinite.py":
+    if cli_script.name not in {"apex_infinite.py", "cli.py"}:
         raise ApexCliLaunchError("invalid_cli", "base CLI script name is invalid")
     return cli_script
+
+
+def resolve_launch_cwd(path: str | Path | None = None) -> Path:
+    """Resolve a stable cwd for wrapper subprocess launches."""
+    if path is None:
+        return Path.cwd()
+    return validate_cli_script(path).parent
 
 
 def validate_project_path(path: str | Path) -> Path:

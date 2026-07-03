@@ -37,7 +37,7 @@ not leak into SQLite history.
 | `apex-infinite-cli/tests/test_renderer.py` | Updated semantic renderer assertions and raw-history display-leak coverage. |
 | `apex-infinite-cli/tests/test_ui_config.py` | Added built-in token coverage for operator-console states. |
 | `apex-infinite-cli/tests/test_cli_options.py` | Added loop context wiring coverage and prompt-routing compatibility assertions. |
-| `apex-infinite-cli/README-apex-infinite-cli.md` | Documented the richer operator console, token keys, fallback guarantees, and display-only SQLite boundary. |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | Documented the richer operator console, token keys, fallback guarantees, and display-only SQLite boundary. |
 | `.spec_system/state.json` | Marked the session complete and cleared the active session. |
 | `.spec_system/PRD/phase_00/PRD_phase_00.md` | Marked Session 02 complete and advanced phase progress. |
 

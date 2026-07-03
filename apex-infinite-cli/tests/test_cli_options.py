@@ -6,7 +6,7 @@ import json
 import pytest
 from click.testing import CliRunner
 
-import apex_infinite
+import apex_infinite.cli as apex_infinite
 
 CONFIG_TEXT = """provider: ollama
 codex:

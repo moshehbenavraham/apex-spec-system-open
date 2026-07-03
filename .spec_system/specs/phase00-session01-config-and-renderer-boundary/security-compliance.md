@@ -10,7 +10,7 @@
 - `apex-infinite-cli/apex_infinite.py` - CLI wiring, renderer routing, subprocess, SQLite display paths
 - `apex-infinite-cli/apex_infinite_ui.py` - UI settings resolver and renderer helpers
 - `apex-infinite-cli/config.yaml` - display configuration defaults
-- `apex-infinite-cli/README-apex-infinite-cli.md` - user-facing display and history documentation
+- `apex-infinite-cli/README_apex-infinite-cli.md` - user-facing display and history documentation
 - `apex-infinite-cli/tests/conftest.py` - test import path helper
 - `apex-infinite-cli/tests/test_prompts.py` - prompt compatibility tests, Black formatting only
 - `apex-infinite-cli/tests/test_ui_config.py` - UI config resolver tests

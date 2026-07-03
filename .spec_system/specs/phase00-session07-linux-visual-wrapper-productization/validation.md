@@ -72,17 +72,17 @@ The review report covers all implementation, test, documentation, and session ar
 |------|-------|--------|
 | `apex-infinite-cli/apex_infinite_visual/settings.py` | Yes | PASS |
 | `apex-infinite-cli/tests/test_visual_wrapper_productization.py` | Yes | PASS |
-| `docs/apex-infinite-cli/visual-wrapper-productization.md` | Yes | PASS |
+| `apex-infinite-cli/docs/visual-wrapper-productization.md` | Yes | PASS |
 | `apex-infinite-cli/apex_infinite_visual/__init__.py` | Yes | PASS |
 | `apex-infinite-cli/apex_infinite_visual/events.py` | Yes | PASS |
 | `apex-infinite-cli/apex_infinite_visual/launcher.py` | Yes | PASS |
 | `apex-infinite-cli/apex_infinite_visual/main.py` | Yes | PASS |
 | `apex-infinite-cli/apex_infinite_visual/qml/Main.qml` | Yes | PASS |
 | `apex-infinite-cli/requirements-wrapper.txt` | Yes | PASS |
-| `apex-infinite-cli/README-apex-infinite-cli.md` | Yes | PASS |
-| `docs/apex-infinite-cli/operator-runbook.md` | Yes | PASS |
-| `docs/apex-infinite-cli/troubleshooting.md` | Yes | PASS |
-| `docs/apex-infinite-cli/visual-wrapper-boundary.md` | Yes | PASS |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | Yes | PASS |
+| `apex-infinite-cli/docs/operator-runbook.md` | Yes | PASS |
+| `apex-infinite-cli/docs/troubleshooting.md` | Yes | PASS |
+| `apex-infinite-cli/docs/visual-wrapper-boundary.md` | Yes | PASS |
 
 **Missing deliverables**: None
 

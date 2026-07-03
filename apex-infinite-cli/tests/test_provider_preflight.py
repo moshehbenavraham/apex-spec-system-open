@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-import apex_infinite
+import apex_infinite.cli as apex_infinite
 
 
 def make_config(model="qwen2.5:7b"):

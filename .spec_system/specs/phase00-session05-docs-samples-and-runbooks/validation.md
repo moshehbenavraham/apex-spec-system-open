@@ -31,14 +31,14 @@
 | Task completion | `rg -c '^- \[[ x]\] T[0-9]{3}' .../tasks.md`; `rg -c '^- \[x\] T[0-9]{3}' .../tasks.md` | PASS | 20 total tasks; 20 completed tasks; no incomplete task rows. |
 | Deliverables | Non-empty file scan over the 12 spec deliverables | PASS | 12/12 files found and non-empty. |
 | ASCII/LF | `file ...`; `LC_ALL=C grep -nP '[^\x00-\x7F]' ...`; `grep -n $'\r' ...` | PASS | `ASCII_OK` and `LF_OK`; `file` reports ASCII or JSON text. |
-| JSONL sample | `jq -c . docs/apex-infinite-cli/transcripts/machine-output-events.jsonl >/dev/null` | PASS | JSONL sample parsed successfully. |
-| Asset hygiene | `find docs/apex-infinite-cli apex-infinite-cli ...`; `git ls-files docs apex-infinite-cli/README-apex-infinite-cli.md | rg ... || true` | PASS | No tracked screenshots, QML, shaders, fonts, icons, resource manifests, build scripts, or copied reference assets found. |
+| JSONL sample | `jq -c . apex-infinite-cli/docs/transcripts/machine-output-events.jsonl >/dev/null` | PASS | JSONL sample parsed successfully. |
+| Asset hygiene | `find apex-infinite-cli ...`; `git ls-files apex-infinite-cli | rg ... || true` | PASS | No tracked screenshots, QML, shaders, fonts, icons, resource manifests, build scripts, or copied reference assets found. |
 | Tests | `cd apex-infinite-cli && ./.venv/bin/python -m pytest tests/ -v` | PASS | 173/173 pytest tests passed in 10.71s. |
 | Root tests | `bats tests/` | PASS | 61/61 Bats tests passed. |
 | Root workflow checks | `bash scripts/sync-plugin-payload.sh --check`; `bash scripts/analyze-project.sh --json | jq .`; `bash scripts/check-prereqs.sh --json --env | jq .`; `git diff --check` | PASS | Plugin payload current; analyzer and prereq JSON valid; prereqs overall `pass`; no whitespace errors. |
 | Database/schema | `git diff --name-only HEAD | rg -n '(^|/)(migrations?|schema|models?|seeds?)/|\.sql$|apex_infinite\.py$|apex_infinite_events\.py$|apex_infinite_ui\.py$|config\.yaml$|requirements|pyproject\.toml' || true` | N/A | No matching DB-layer, runtime code, config, or dependency files changed. |
-| Success criteria | Targeted `rg` over README and `docs/apex-infinite-cli/` for flags, themes, event stream, history, prompt contract, fallback, wrapper, and clean-room terms | PASS | Docs cover display flags, themes, samples, event-stream modes, history labels/truncation, prompt non-impact, fallback modes, clean-room boundary, and wrapper direction. |
-| Conventions | `awk ... apex-infinite-cli/README-apex-infinite-cli.md docs/CREDITS.md docs/apex-infinite-cli/*.md docs/apex-infinite-cli/transcripts/README.md && printf 'FENCE_LANG_OK\n'` | PASS | All opening fenced code blocks have language tags after validation fix. |
+| Success criteria | Targeted `rg` over README and `apex-infinite-cli/` for flags, themes, event stream, history, prompt contract, fallback, wrapper, and clean-room terms | PASS | Docs cover display flags, themes, samples, event-stream modes, history labels/truncation, prompt non-impact, fallback modes, clean-room boundary, and wrapper direction. |
+| Conventions | `awk ... apex-infinite-cli/README_apex-infinite-cli.md docs/CREDITS.md apex-infinite-cli/*.md apex-infinite-cli/docs/transcripts/README_transcripts.md && printf 'FENCE_LANG_OK\n'` | PASS | All opening fenced code blocks have language tags after validation fix. |
 | Security/GDPR | See `security-compliance.md`; secret-pattern, executable-code, dependency, asset, and personal-data scans | PASS | No findings; GDPR N/A. |
 | Behavioral quality | Changed-file inspection from `git diff --name-only HEAD` and untracked inventory | N/A | No application code changed; deliverables are documentation, samples, session artifacts, and state. |
 | UI product surface | Changed-file inspection from `git diff --name-only HEAD` and untracked inventory | N/A | No user-facing application UI components or routes changed. |
@@ -64,17 +64,17 @@
 
 | File | Found | Status |
 |------|-------|--------|
-| `docs/apex-infinite-cli/visual-wrapper-boundary.md` | Yes | PASS |
-| `docs/apex-infinite-cli/transcripts/README.md` | Yes | PASS |
-| `docs/apex-infinite-cli/transcripts/dry-run-plain.txt` | Yes | PASS |
-| `docs/apex-infinite-cli/transcripts/history-ledger.txt` | Yes | PASS |
-| `docs/apex-infinite-cli/transcripts/machine-output-events.jsonl` | Yes | PASS |
-| `apex-infinite-cli/README-apex-infinite-cli.md` | Yes | PASS |
-| `docs/apex-infinite-cli/operator-runbook.md` | Yes | PASS |
-| `docs/apex-infinite-cli/event-stream.md` | Yes | PASS |
-| `docs/apex-infinite-cli/history-db.md` | Yes | PASS |
-| `docs/apex-infinite-cli/prompt-contract.md` | Yes | PASS |
-| `docs/apex-infinite-cli/troubleshooting.md` | Yes | PASS |
+| `apex-infinite-cli/docs/visual-wrapper-boundary.md` | Yes | PASS |
+| `apex-infinite-cli/docs/transcripts/README_transcripts.md` | Yes | PASS |
+| `apex-infinite-cli/docs/transcripts/dry-run-plain.txt` | Yes | PASS |
+| `apex-infinite-cli/docs/transcripts/history-ledger.txt` | Yes | PASS |
+| `apex-infinite-cli/docs/transcripts/machine-output-events.jsonl` | Yes | PASS |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | Yes | PASS |
+| `apex-infinite-cli/docs/operator-runbook.md` | Yes | PASS |
+| `apex-infinite-cli/docs/event-stream.md` | Yes | PASS |
+| `apex-infinite-cli/docs/history-db.md` | Yes | PASS |
+| `apex-infinite-cli/docs/prompt-contract.md` | Yes | PASS |
+| `apex-infinite-cli/docs/troubleshooting.md` | Yes | PASS |
 | `docs/CREDITS.md` | Yes | PASS |
 
 **Missing deliverables**: None

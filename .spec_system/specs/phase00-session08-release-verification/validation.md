@@ -78,7 +78,7 @@
 
 Changed-file scan covered `.spec_system/SECURITY-COMPLIANCE.md`,
 `.spec_system/state.json`, all Session 08 artifacts, `apex-infinite-cli`
-changes, and `docs/apex-infinite-cli` changes.
+changes, and `apex-infinite-cli` changes.
 
 **Encoding issues**: None.
 
@@ -154,9 +154,9 @@ database conventions when relevant.
 **Files spot-checked**:
 - `apex-infinite-cli/apex_infinite.py`
 - `apex-infinite-cli/tests/test_cli_options.py`
-- `apex-infinite-cli/README-apex-infinite-cli.md`
-- `docs/apex-infinite-cli/operator-runbook.md`
-- `docs/apex-infinite-cli/visual-wrapper-productization.md`
+- `apex-infinite-cli/README_apex-infinite-cli.md`
+- `apex-infinite-cli/docs/operator-runbook.md`
+- `apex-infinite-cli/docs/visual-wrapper-productization.md`
 
 **Categories spot-checked**: trust boundaries, resource cleanup, mutation
 safety, failure paths, contract alignment, and product surface discipline.

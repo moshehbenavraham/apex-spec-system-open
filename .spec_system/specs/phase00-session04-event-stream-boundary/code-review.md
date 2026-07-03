@@ -21,11 +21,11 @@
 - `apex-infinite-cli/tests/test_event_stream.py` - untracked
 - `apex-infinite-cli/tests/test_renderer.py` - tracked-modified
 - `apex-infinite-cli/tests/test_subprocess_execution.py` - tracked-modified
-- `apex-infinite-cli/README-apex-infinite-cli.md` - tracked-modified
-- `docs/apex-infinite-cli/event-stream.md` - untracked
-- `docs/apex-infinite-cli/operator-runbook.md` - tracked-modified
-- `docs/apex-infinite-cli/prompt-contract.md` - tracked-modified
-- `docs/apex-infinite-cli/troubleshooting.md` - tracked-modified
+- `apex-infinite-cli/README_apex-infinite-cli.md` - tracked-modified
+- `apex-infinite-cli/docs/event-stream.md` - untracked
+- `apex-infinite-cli/docs/operator-runbook.md` - tracked-modified
+- `apex-infinite-cli/docs/prompt-contract.md` - tracked-modified
+- `apex-infinite-cli/docs/troubleshooting.md` - tracked-modified
 
 **Inventory commands**: `git status`, `git log --oneline "$BASE"..HEAD`, `git diff "$BASE"`, `git diff --cached "$BASE"`, `git ls-files --others --exclude-standard`
 

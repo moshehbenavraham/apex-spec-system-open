@@ -36,7 +36,7 @@ No open critical or high findings.
 
 - **[P00-S01] Local history has no retention or redaction controls**
   - Severity: Medium
-  - File: `apex-infinite-cli/apex_infinite.py`
+  - File: `apex-infinite-cli/src/apex_infinite/cli.py`
   - Description: Local SQLite history stores raw agent output, manager decisions, reasons, project paths, timestamps, and operator instructions without purge, retention, or redaction behavior.
   - Remediation: Add a purge/retention path and redaction behavior, or document the accepted local-data risk explicitly before broader release.
   - Status: Open
@@ -44,7 +44,7 @@ No open critical or high findings.
 
 - **[P00-S02] Autonomous execution flags need an explicit operator safety gate**
   - Severity: Medium
-  - File: `apex-infinite-cli/config.yaml`
+  - File: `apex-infinite-cli/src/apex_infinite/config.yaml`
   - Description: Default real-run configuration can grant broad autonomous approval for target-project changes.
   - Remediation: Require review of target path, provider, model, and execution flags before non-dry-run loops, or ship a safer documented default.
   - Status: Open
@@ -52,7 +52,7 @@ No open critical or high findings.
 
 - **[P00-S03] Provider-bound data transfer disclosure is incomplete**
   - Severity: Medium
-  - File: `apex-infinite-cli/README-apex-infinite-cli.md`
+  - File: `apex-infinite-cli/README.md`
   - Description: Recent history, latest agent output, summaries, and operator instructions can be sent to the configured LLM provider.
   - Remediation: Document provider-bound prompt traffic and warn operators not to include secrets or personal data in prompts or target-project outputs.
   - Status: Open
@@ -60,9 +60,9 @@ No open critical or high findings.
 
 - **[P00-S04] Dependency audit is local-only**
   - Severity: Low
-  - File: `apex-infinite-cli/requirements*.txt`
-  - Description: Session 08 passed local `pip-audit`, but dependency files use lower-bound ranges and there is no lockfile or recurring CI/scheduled vulnerability gate for this CLI scope.
-  - Remediation: Add dependency locking or scheduled/CI vulnerability scanning for base, dev, and wrapper requirements.
+  - File: `apex-infinite-cli/pyproject.toml`
+  - Description: Session 08 passed local `pip-audit`, but package dependencies use lower-bound ranges and there is no lockfile or recurring CI/scheduled vulnerability gate for this CLI scope.
+  - Remediation: Add dependency locking or scheduled/CI vulnerability scanning for base, dev, and visual extra dependencies.
   - Status: Open
   - Opened: P00 (2026-07-03)
 
@@ -110,13 +110,13 @@ No known vulnerable dependencies from the Phase 00 local audit.
 
 | Package | Version | Severity | CVE | Status |
 |---------|---------|----------|-----|--------|
-| - | - | - | - | No known vulnerabilities from `pip-audit -r requirements.txt -r requirements-dev.txt -r requirements-wrapper.txt` on 2026-07-03. |
+| - | - | - | - | No known vulnerabilities from local `pip-audit` evidence on 2026-07-03. |
 
 Notes:
 
 - Base runtime dependencies remain terminal-only: Click, OpenAI Python SDK, python-dotenv, Rich, PyYAML, and Python standard library SQLite/subprocess modules.
 - Development dependencies include pytest, pytest-cov, pytest-mock, black, pylint, and pip-audit.
-- Optional wrapper dependencies remain isolated in `requirements-wrapper.txt` and include PySide6 and Nuitka.
+- Optional wrapper dependencies remain isolated in the `visual` extra and include PySide6 and Nuitka.
 - Recurring dependency audit automation and dependency locking remain open under [P00-S04].
 
 ---
@@ -127,7 +127,7 @@ Notes:
 |------|--------|-------|
 | Base CLI dependencies | PASS | Runtime dependency set is terminal-only and does not include graphical wrapper dependencies. |
 | Visual inspiration boundary | PASS | Phase 00 scans found no tracked reference implementation material or assets in source/docs. |
-| Optional wrapper source mode | PASS | PySide6/QML remains optional in `requirements-wrapper.txt`; source mode is separate from the base CLI. |
+| Optional wrapper source mode | PASS | PySide6/QML remains optional in the `visual` extra; source mode is separate from the base CLI. |
 | Binary/AppImage distribution | GATED | No binary artifact is published. Future binary release must complete generated-bundle review, license/module review, notices, SHA256 checksums, and source/relink instructions. |
 | Excluded components | REQUIRED | Do not add PyQt, terminal-widget libraries, copied terminal-emulator code, copied shader code, copied images, copied icons, copied fonts, copied resource manifests, or copied profile data unless scope changes explicitly. |
 

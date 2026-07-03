@@ -73,8 +73,8 @@ defer with a precise blocker.
 - Current Click flags and machine-output guardrails in
   `apex-infinite-cli/apex_infinite.py`.
 - PySide6/Qt Quick/QML basics for an optional Linux-only wrapper.
-- Existing docs in `docs/apex-infinite-cli/event-stream.md` and
-  `docs/apex-infinite-cli/visual-wrapper-boundary.md`.
+- Existing docs in `apex-infinite-cli/docs/event-stream.md` and
+  `apex-infinite-cli/docs/visual-wrapper-boundary.md`.
 - Clean-room visual rules from `CONVENTIONS.md`,
   `SECURITY-COMPLIANCE.md`, and the Phase 00 PRD.
 
@@ -172,16 +172,16 @@ assets, profile values, or terminal-widget behavior.
 | `apex-infinite-cli/apex_infinite_visual/main.py` | PySide6 entrypoint, import guard, bridge model, and wrapper startup flow | ~280 |
 | `apex-infinite-cli/apex_infinite_visual/qml/Main.qml` | Independent QML prototype surface with log viewport, status panels, controls, and effects | ~280 |
 | `apex-infinite-cli/tests/test_visual_wrapper_spike.py` | Unit tests for event adapter, launcher args, import guard, and fixture event flow | ~240 |
-| `docs/apex-infinite-cli/visual-wrapper-spike.md` | Spike evidence, dependency/license assessment, packaging risks, and decision record | ~220 |
+| `apex-infinite-cli/docs/visual-wrapper-spike.md` | Spike evidence, dependency/license assessment, packaging risks, and decision record | ~220 |
 
 ### Files To Modify
 
 | File | Changes | Est. Lines |
 |------|---------|------------|
-| `apex-infinite-cli/README-apex-infinite-cli.md` | Add optional wrapper prototype run notes and link to spike evidence | ~35 |
-| `docs/apex-infinite-cli/visual-wrapper-boundary.md` | Link the spike evidence and record confirmed prototype boundary decisions | ~35 |
-| `docs/apex-infinite-cli/operator-runbook.md` | Add operator-facing notes for optional wrapper spike usage and fallbacks | ~35 |
-| `docs/apex-infinite-cli/troubleshooting.md` | Add wrapper spike failure modes for missing PySide6, display backend, malformed JSONL, and subprocess failures | ~35 |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | Add optional wrapper prototype run notes and link to spike evidence | ~35 |
+| `apex-infinite-cli/docs/visual-wrapper-boundary.md` | Link the spike evidence and record confirmed prototype boundary decisions | ~35 |
+| `apex-infinite-cli/docs/operator-runbook.md` | Add operator-facing notes for optional wrapper spike usage and fallbacks | ~35 |
+| `apex-infinite-cli/docs/troubleshooting.md` | Add wrapper spike failure modes for missing PySide6, display backend, malformed JSONL, and subprocess failures | ~35 |
 
 ---
 

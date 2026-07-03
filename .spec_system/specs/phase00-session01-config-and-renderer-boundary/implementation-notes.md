@@ -230,19 +230,19 @@
   environment constraints.
 
 **Files Changed**:
-- `apex-infinite-cli/README-apex-infinite-cli.md` - documented UI settings,
+- `apex-infinite-cli/README_apex-infinite-cli.md` - documented UI settings,
   display flags, precedence, fallback behavior, custom theme schema, and raw
   history boundaries.
 - `.spec_system/specs/phase00-session01-config-and-renderer-boundary/implementation-notes.md` - recorded T015 evidence.
 - `.spec_system/specs/phase00-session01-config-and-renderer-boundary/tasks.md` - marked T015 complete.
 
 **Verification**:
-- Command/check: `LC_ALL=C rg -n "Display Settings|--theme|Rendered labels|CLI flags -> environment constraints" apex-infinite-cli/README-apex-infinite-cli.md`
+- Command/check: `LC_ALL=C rg -n "Display Settings|--theme|Rendered labels|CLI flags -> environment constraints" apex-infinite-cli/README_apex-infinite-cli.md`
   - Result: PASS - README contains the required UI documentation sections and
     guarantees.
   - Evidence: matches found for display settings, precedence, `--theme`, and
     rendered-label raw-history language.
-- Command/check: `LC_ALL=C rg -n "[^\\x00-\\x7F]" apex-infinite-cli/README-apex-infinite-cli.md || true`
+- Command/check: `LC_ALL=C rg -n "[^\\x00-\\x7F]" apex-infinite-cli/README_apex-infinite-cli.md || true`
   - Result: PASS - no non-ASCII README characters were found.
   - Evidence: command produced no matches.
 - UI product-surface check: N/A - documentation-only task.

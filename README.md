@@ -2,7 +2,7 @@
 
 ## A Claude Code Plugin Version Available Here: https://github.com/moshehbenavraham/apex-spec-system
 
-**Version: 2.1.17-codex**
+**Version: 2.1.18-codex**
 
 A specification-driven workflow system for AI-assisted development, packaged as
 an Agent Skill following the [Agent Skills standard](https://agentskills.io).
@@ -265,8 +265,8 @@ workspaces, Go modules, Lerna.
 
 - [Architecture](docs/ARCHITECTURE.md) - Skill structure and design decisions
 - [Development Guide](docs/development.md) - Local setup, testing, contributing
-- [Apex Infinite CLI](apex-infinite-cli/README_apex-infinite-cli.md) - Autonomous session manager overview and usage
-- [Apex Infinite CLI Deep-Dive](docs/apex-infinite-cli/operator-runbook.md) - Runbook, DB, prompt, and troubleshooting docs
+- [Apex Infinite CLI](apex-infinite-cli/README.md) - Autonomous session manager overview and usage
+- [Apex Infinite CLI Deep-Dive](apex-infinite-cli/docs/operator-runbook.md) - Runbook, DB, prompt, and troubleshooting docs
 - [Onboarding](docs/onboarding.md) - Zero-to-hero checklist
 - [Environments](docs/environments.md) - Local, CI, installed skill, CLI, and wrapper runtime contexts
 - [Deployment](docs/deployment.md) - Installation, CI/CD, release process
@@ -274,7 +274,7 @@ workspaces, Go modules, Lerna.
 - [Usage Guidance](references/guidance.md) - When to use, workflow modes, team patterns
 - [Production Walkthrough](references/walkthrough.md) - Real-world examples
 - [Workflow Quick-Reference](references/workflow-overview.md) - 14-command staged workflow overview
-- [Contributing](CONTRIBUTING.md) - Branch conventions, commit style, PR process
+- [Contributing](docs/CONTRIBUTING.md) - Branch conventions, commit style, PR process
 - [ADRs](docs/adr/) - Architecture decision records
 
 ## Video Tutorial

@@ -75,8 +75,8 @@ def import_qt_modules():  # pylint: disable=import-outside-toplevel
         )
     except ImportError as exc:
         raise VisualWrapperUnavailable(
-            "PySide6 is not installed. Install requirements-wrapper.txt to run "
-            "the optional visual wrapper."
+            "PySide6 is not installed. Install the visual extra to run the "
+            "optional visual wrapper."
         ) from exc
     return {
         "Property": Property,
@@ -860,7 +860,7 @@ def _stderr_summary(stderr: str) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """CLI entrypoint for `python -m apex_infinite_visual.main`."""
+    """CLI entrypoint for `apex-infinite-visual`."""
     try:
         return run_app(parse_args(argv))
     except VisualWrapperUnavailable as exc:

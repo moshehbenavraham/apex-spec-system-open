@@ -71,7 +71,7 @@ material directly.
   `apex-infinite-cli/config.yaml`.
 - Current event names and payload safety rules in
   `apex-infinite-cli/apex_infinite_events.py` and
-  `docs/apex-infinite-cli/event-stream.md`.
+  `apex-infinite-cli/docs/event-stream.md`.
 - Phase 00 PRD, Session 05 stub, `CONVENTIONS.md`, `CONSIDERATIONS.md`, and
   `SECURITY-COMPLIANCE.md` documentation and clean-room requirements.
 - Local reference evidence under ignored `EXAMPLE/cool-retro-term/` may be
@@ -114,7 +114,7 @@ material directly.
   width, `NO_COLOR`, `TERM=dumb`, redirected output, remote shells, and
   event-stream misuse.
 - Deterministic ASCII-only transcripts or JSONL samples are added under
-  `docs/apex-infinite-cli/transcripts/`.
+  `apex-infinite-cli/docs/transcripts/`.
 - Clean-room visual documentation identifies `EXAMPLE/` as ignored,
   reference-only, GPL-family study material and documents the no-copying rule.
 - Wrapper direction docs identify PySide6/Qt Quick/QML as the selected optional
@@ -155,7 +155,7 @@ docs. Use the current CLI code, config, tests, Session 04 validation evidence,
 and Phase 00 PRD as source of truth. Update docs to remove drift and duplicate
 ambiguity instead of adding parallel explanations.
 
-Create deterministic samples under `docs/apex-infinite-cli/transcripts/`.
+Create deterministic samples under `apex-infinite-cli/docs/transcripts/`.
 Samples should be small, ASCII-only, and hand-verifiable against the documented
 contract. They must not include real provider keys, real operator secrets,
 binary screenshots, ANSI escapes, Rich markup, box glyphs, copied reference
@@ -195,22 +195,22 @@ are expected unless docs reveal a failing contract.
 
 | File | Purpose | Est. Lines |
 |------|---------|------------|
-| `docs/apex-infinite-cli/visual-wrapper-boundary.md` | Clean-room visual boundary, ignored reference tree, optional wrapper direction, dependency/license notes, and exclusions | ~180 |
-| `docs/apex-infinite-cli/transcripts/README.md` | Index and usage notes for deterministic transcript and JSONL samples | ~80 |
-| `docs/apex-infinite-cli/transcripts/dry-run-plain.txt` | ASCII-only plain/compact dry-run sample showing operator fallback output | ~90 |
-| `docs/apex-infinite-cli/transcripts/history-ledger.txt` | ASCII-only history display sample showing compact and verbose semantics | ~90 |
-| `docs/apex-infinite-cli/transcripts/machine-output-events.jsonl` | Deterministic JSONL event sample for machine-output consumers | ~12 |
+| `apex-infinite-cli/docs/visual-wrapper-boundary.md` | Clean-room visual boundary, ignored reference tree, optional wrapper direction, dependency/license notes, and exclusions | ~180 |
+| `apex-infinite-cli/docs/transcripts/README_transcripts.md` | Index and usage notes for deterministic transcript and JSONL samples | ~80 |
+| `apex-infinite-cli/docs/transcripts/dry-run-plain.txt` | ASCII-only plain/compact dry-run sample showing operator fallback output | ~90 |
+| `apex-infinite-cli/docs/transcripts/history-ledger.txt` | ASCII-only history display sample showing compact and verbose semantics | ~90 |
+| `apex-infinite-cli/docs/transcripts/machine-output-events.jsonl` | Deterministic JSONL event sample for machine-output consumers | ~12 |
 
 ### Files To Modify
 
 | File | Changes | Est. Lines |
 |------|---------|------------|
-| `apex-infinite-cli/README-apex-infinite-cli.md` | Complete UI flag/config/theme examples, event-stream examples, transcript links, deep-dive docs, and wrapper boundary links | ~140 |
-| `docs/apex-infinite-cli/operator-runbook.md` | Add theme selection, fallback-mode, CI/log, remote-shell, event-stream, and sample-use guidance | ~140 |
-| `docs/apex-infinite-cli/event-stream.md` | Cross-link JSONL sample, wrapper guidance, stdout isolation, and no-Rich-parsing boundary | ~80 |
-| `docs/apex-infinite-cli/history-db.md` | Document display-time status labels, truncation, verbose history behavior, raw storage, and sample links | ~80 |
-| `docs/apex-infinite-cli/prompt-contract.md` | Confirm UI/event docs do not change prompt routing and document wrapper/event observation boundary | ~60 |
-| `docs/apex-infinite-cli/troubleshooting.md` | Add fallback rendering, terminal width, non-UTF terminal, remote shell, redirected output, and event-stream misuse fixes | ~120 |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | Complete UI flag/config/theme examples, event-stream examples, transcript links, deep-dive docs, and wrapper boundary links | ~140 |
+| `apex-infinite-cli/docs/operator-runbook.md` | Add theme selection, fallback-mode, CI/log, remote-shell, event-stream, and sample-use guidance | ~140 |
+| `apex-infinite-cli/docs/event-stream.md` | Cross-link JSONL sample, wrapper guidance, stdout isolation, and no-Rich-parsing boundary | ~80 |
+| `apex-infinite-cli/docs/history-db.md` | Document display-time status labels, truncation, verbose history behavior, raw storage, and sample links | ~80 |
+| `apex-infinite-cli/docs/prompt-contract.md` | Confirm UI/event docs do not change prompt routing and document wrapper/event observation boundary | ~60 |
+| `apex-infinite-cli/docs/troubleshooting.md` | Add fallback rendering, terminal width, non-UTF terminal, remote shell, redirected output, and event-stream misuse fixes | ~120 |
 | `docs/CREDITS.md` | Replace conflicting direct-code wording with clean-room conceptual-inspiration wording | ~20 |
 
 ---
@@ -312,7 +312,7 @@ are expected unless docs reveal a failing contract.
   editing docs.
 - Accidentally implying screenshots or visual assets are tracked deliverables:
   mitigate by using only text transcripts and JSONL samples under
-  `docs/apex-infinite-cli/transcripts/`.
+  `apex-infinite-cli/docs/transcripts/`.
 - Clean-room wording becoming too vague for future sessions: mitigate by naming
   explicit forbidden material categories and the event-stream consumption
   boundary.

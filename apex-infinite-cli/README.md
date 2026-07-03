@@ -1,8 +1,8 @@
 # Apex Infinite CLI
 
-Autonomous OpenAI Codex CLI session manager -- a standalone Python CLI that runs the full Apex Spec System workflow in an infinite loop without human intervention.
+Autonomous OpenAI Codex CLI session manager -- a standalone Python package that runs the full Apex Spec System workflow in an infinite loop without human intervention.
 
-Originally powered by an n8n workflow with Airtable, Slack, and SSH nodes, this CLI replaces all of that with SQLite, subprocess, and terminal output in a single ~1000-line Python file.
+Originally powered by an n8n workflow with Airtable, Slack, and SSH nodes, this CLI replaces all of that with SQLite, subprocess, terminal output, and an optional visual wrapper.
 
 ## How It Works
 
@@ -58,27 +58,49 @@ Any output not matching a known command is sent as custom instructions directly 
 
 ```bash
 cd apex-infinite-cli
-pip install -r requirements.txt
+python -m pip install -e .
 ```
 
 For development, testing, and dependency audits:
 
 ```bash
-pip install -r requirements.txt -r requirements-dev.txt
+python -m pip install -e ".[dev]"
 ```
 
 For the optional Linux visual wrapper source mode only:
 
 ```bash
-pip install -r requirements-wrapper.txt
+python -m pip install -e ".[visual]"
 ```
+
+`pyproject.toml` is the canonical package, dependency, test, lint, and coverage
+configuration. The `requirements*.txt` files are compatibility shims for older
+local workflows.
 
 The wrapper dependencies are intentionally separate from the base CLI install.
 The base terminal CLI does not import PySide6 or require a graphical display.
 
+## Package Layout
+
+```text
+apex-infinite-cli/
+|-- pyproject.toml              # package metadata, dependencies, tool config
+|-- src/
+|   |-- apex_infinite/          # base CLI, events, renderer, default config
+|   \-- apex_infinite_visual/   # optional PySide6 visual wrapper
+|-- tests/                      # pytest suite
+|-- docs/                       # operator and interface docs
+|-- scripts/                    # local helper scripts
+\-- n8n-workflow/               # original workflow reference archive
+```
+
 ## Configuration
 
-Edit `config.yaml` to choose your LLM provider and configure the Codex CLI agent:
+The packaged default config lives at `src/apex_infinite/config.yaml`. For local
+overrides, create `./config.yaml` in the current working directory or pass
+`--config /path/to/config.yaml`.
+
+Edit the config to choose your LLM provider and configure the Codex CLI agent:
 
 ```yaml
 provider: grok  # ollama | grok | openai
@@ -198,51 +220,51 @@ Low-effect separators are ASCII-safe and are suppressed in `plain` and
 separator characters, and theme tokens remain display-only and are not written
 to SQLite history.
 
-See [Operator runbook](../docs/apex-infinite-cli/operator-runbook.md) for
+See [Operator runbook](docs/operator-runbook.md) for
 mode-selection guidance and
-[dry-run-plain.txt](../docs/apex-infinite-cli/transcripts/dry-run-plain.txt)
+[dry-run-plain.txt](docs/transcripts/dry-run-plain.txt)
 for a deterministic fallback transcript.
 
 ## Usage
 
 ```bash
 # Interactive mode -- prompts for project selection
-python apex_infinite.py
+apex-infinite
 
 # Direct mode
-python apex_infinite.py --path ~/projects/my-app/ --start plansession
+apex-infinite --path ~/projects/my-app/ --start plansession
 
 # With CEO instructions
-python apex_infinite.py --path ~/projects/my-app/ --start plansession --ceo "focus on auth first"
+apex-infinite --path ~/projects/my-app/ --start plansession --ceo "focus on auth first"
 
 # Dry run -- see LLM decisions without executing codex
-python apex_infinite.py --path ~/projects/my-app/ --start plansession --dry-run
+apex-infinite --path ~/projects/my-app/ --start plansession --dry-run
 
 # View history
-python apex_infinite.py --history
-python apex_infinite.py --history --path ~/projects/my-app/
-python apex_infinite.py --history --verbose
+apex-infinite --history
+apex-infinite --history --path ~/projects/my-app/
+apex-infinite --history --verbose
 
 # Override provider/model
-python apex_infinite.py --path ~/projects/my-app/ --provider ollama --model "qwen2.5:72b"
+apex-infinite --path ~/projects/my-app/ --provider ollama --model "qwen2.5:72b"
 
 # Check provider connectivity and model availability
-python apex_infinite.py --provider ollama --check-provider
-python apex_infinite.py --provider ollama --check-provider --check-provider-chat
+apex-infinite --provider ollama --check-provider
+apex-infinite --provider ollama --check-provider --check-provider-chat
 ./scripts/check-ollama.sh --chat
 
 # Limit iterations
-python apex_infinite.py --path ~/projects/my-app/ --start plansession --max-iterations 5
+apex-infinite --path ~/projects/my-app/ --start plansession --max-iterations 5
 
 # Choose display modes
-python apex_infinite.py --path ~/projects/my-app/ --theme crt-amber
-python apex_infinite.py --path ~/projects/my-app/ --plain --ascii --compact
+apex-infinite --path ~/projects/my-app/ --theme crt-amber
+apex-infinite --path ~/projects/my-app/ --plain --ascii --compact
 
 # Write machine-readable events to a file while keeping human output
-python apex_infinite.py --path ~/projects/my-app/ --event-stream /tmp/apex-events.jsonl
+apex-infinite --path ~/projects/my-app/ --event-stream /tmp/apex-events.jsonl
 
 # Reserve stdout for JSONL events
-python apex_infinite.py --path ~/projects/my-app/ --event-stream - --machine-output
+apex-infinite --path ~/projects/my-app/ --event-stream - --machine-output
 ```
 
 ## Options
@@ -253,7 +275,7 @@ python apex_infinite.py --path ~/projects/my-app/ --event-stream - --machine-out
 --ceo TEXT                Initial CEO instructions
 --provider TEXT           LLM provider override: ollama|grok|openai
 --model TEXT              Model override
---config TEXT             Config file path (default: ./config.yaml)
+--config TEXT             Config file path (default: ./config.yaml, then packaged config)
 --history                 Show interaction history
 --max-iterations INTEGER  Safety limit (default: 50)
 --dry-run                 Show what would execute without running codex
@@ -304,7 +326,7 @@ data in operator instructions or target-project outputs. The local history
 database currently has no CLI purge, retention, or redaction command; remove or
 protect `~/.apex-infinite/history.db` manually when needed.
 
-See [history-ledger.txt](../docs/apex-infinite-cli/transcripts/history-ledger.txt)
+See [history-ledger.txt](docs/transcripts/history-ledger.txt)
 for compact and verbose history examples.
 
 ## Event Stream
@@ -321,9 +343,9 @@ completion, max-iteration, and stop events. Payloads contain bounded raw facts
 and exclude provider API keys, Rich markup, ANSI escapes, frame glyphs, theme
 token values, and renderer snapshots.
 
-See [Event stream contract](../docs/apex-infinite-cli/event-stream.md) for the
+See [Event stream contract](docs/event-stream.md) for the
 full event contract and
-[machine-output-events.jsonl](../docs/apex-infinite-cli/transcripts/machine-output-events.jsonl)
+[machine-output-events.jsonl](docs/transcripts/machine-output-events.jsonl)
 for a deterministic JSONL sample.
 
 ## Visual Wrapper Source Mode
@@ -339,8 +361,8 @@ Install the optional dependencies, then run the fixture-backed smoke path:
 
 ```bash
 cd apex-infinite-cli
-pip install -r requirements-wrapper.txt
-python -m apex_infinite_visual.main --dry-run --max-iterations 1
+python -m pip install -e ".[visual]"
+apex-infinite-visual --dry-run --max-iterations 1
 ```
 
 The wrapper exposes green CRT, amber CRT, IBM DOS, and plain presets, effect
@@ -348,7 +370,7 @@ intensity, font family, font scale, reduced effects, and plain fallback
 controls. The same settings can be passed on the command line:
 
 ```bash
-python -m apex_infinite_visual.main \
+apex-infinite-visual \
   --theme crt-amber \
   --effect-intensity 55 \
   --font-family "monospace" \
@@ -359,14 +381,14 @@ python -m apex_infinite_visual.main \
 For headless smoke checks:
 
 ```bash
-QT_QPA_PLATFORM=offscreen python -m apex_infinite_visual.main \
+QT_QPA_PLATFORM=offscreen apex-infinite-visual \
   --dry-run --max-iterations 1 --auto-close-ms 900
 ```
 
 To launch the real CLI subprocess from the wrapper, opt in explicitly:
 
 ```bash
-python -m apex_infinite_visual.main \
+apex-infinite-visual \
   --launch-cli \
   --path ~/projects/my-app/ \
   --start-command implement \
@@ -380,21 +402,20 @@ copied build scripts, and copied profile data remain excluded. The wrapper
 does not parse Rich panels, plain human output, terminal frames, or history
 display rows.
 
-See [Visual wrapper productization](../docs/apex-infinite-cli/visual-wrapper-productization.md)
+See [Visual wrapper productization](docs/visual-wrapper-productization.md)
 for source-mode setup, packaging gates, license notes, checksums, and clean-room
-verification. See [Visual wrapper spike](../docs/apex-infinite-cli/visual-wrapper-spike.md)
+verification. See [Visual wrapper spike](docs/visual-wrapper-spike.md)
 for the original decision record and
-[Visual wrapper boundary](../docs/apex-infinite-cli/visual-wrapper-boundary.md)
+[Visual wrapper boundary](docs/visual-wrapper-boundary.md)
 for the clean-room no-copy rules.
 
 ## Testing
 
 ```bash
 cd apex-infinite-cli
-pip install -r requirements.txt -r requirements-dev.txt
+python -m pip install -e ".[dev]"
 pytest tests/ -v
 pip-audit
-cd ..
 python -m mypy
 ```
 
@@ -403,15 +424,15 @@ Click option wiring, renderer semantics, and SQLite history safety.
 
 ## Deep-Dive Docs
 
-- [Operator runbook](../docs/apex-infinite-cli/operator-runbook.md)
-- [Event stream contract](../docs/apex-infinite-cli/event-stream.md)
-- [History DB reference](../docs/apex-infinite-cli/history-db.md)
-- [Prompt contract](../docs/apex-infinite-cli/prompt-contract.md)
-- [Troubleshooting guide](../docs/apex-infinite-cli/troubleshooting.md)
-- [Visual wrapper productization](../docs/apex-infinite-cli/visual-wrapper-productization.md)
-- [Visual wrapper spike](../docs/apex-infinite-cli/visual-wrapper-spike.md)
-- [Visual wrapper boundary](../docs/apex-infinite-cli/visual-wrapper-boundary.md)
-- [Transcript samples](../docs/apex-infinite-cli/transcripts/README_transcripts.md)
+- [Operator runbook](docs/operator-runbook.md)
+- [Event stream contract](docs/event-stream.md)
+- [History DB reference](docs/history-db.md)
+- [Prompt contract](docs/prompt-contract.md)
+- [Troubleshooting guide](docs/troubleshooting.md)
+- [Visual wrapper productization](docs/visual-wrapper-productization.md)
+- [Visual wrapper spike](docs/visual-wrapper-spike.md)
+- [Visual wrapper boundary](docs/visual-wrapper-boundary.md)
+- [Transcript samples](docs/transcripts/README_transcripts.md)
 
 ## Notes
 
@@ -428,4 +449,4 @@ Click option wiring, renderer semantics, and SQLite history safety.
 - Codex CLI (`codex`) installed and accessible
 - An LLM provider API key (Grok, OpenAI) or local Ollama instance
 - Optional Linux visual wrapper: PySide6/Qt Quick/QML and Nuitka from
-  `requirements-wrapper.txt`
+  the `visual` optional dependency extra

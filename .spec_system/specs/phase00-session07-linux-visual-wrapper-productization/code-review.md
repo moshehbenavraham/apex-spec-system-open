@@ -13,7 +13,7 @@
 - `.spec_system/specs/phase00-session07-linux-visual-wrapper-productization/spec.md` - untracked
 - `.spec_system/specs/phase00-session07-linux-visual-wrapper-productization/tasks.md` - untracked
 - `.spec_system/specs/phase00-session07-linux-visual-wrapper-productization/implementation-notes.md` - untracked
-- `apex-infinite-cli/README-apex-infinite-cli.md` - tracked-modified
+- `apex-infinite-cli/README_apex-infinite-cli.md` - tracked-modified
 - `apex-infinite-cli/apex_infinite_visual/__init__.py` - tracked-modified
 - `apex-infinite-cli/apex_infinite_visual/events.py` - tracked-modified
 - `apex-infinite-cli/apex_infinite_visual/launcher.py` - tracked-modified
@@ -23,10 +23,10 @@
 - `apex-infinite-cli/requirements-wrapper.txt` - tracked-modified
 - `apex-infinite-cli/tests/test_visual_wrapper_spike.py` - tracked-modified
 - `apex-infinite-cli/tests/test_visual_wrapper_productization.py` - untracked
-- `docs/apex-infinite-cli/operator-runbook.md` - tracked-modified
-- `docs/apex-infinite-cli/troubleshooting.md` - tracked-modified
-- `docs/apex-infinite-cli/visual-wrapper-boundary.md` - tracked-modified
-- `docs/apex-infinite-cli/visual-wrapper-productization.md` - untracked
+- `apex-infinite-cli/docs/operator-runbook.md` - tracked-modified
+- `apex-infinite-cli/docs/troubleshooting.md` - tracked-modified
+- `apex-infinite-cli/docs/visual-wrapper-boundary.md` - tracked-modified
+- `apex-infinite-cli/docs/visual-wrapper-productization.md` - untracked
 
 **Inventory commands**: `git status`, `git log --oneline "$BASE"..HEAD`,
 `git diff "$BASE"`, `git diff --cached "$BASE"`,

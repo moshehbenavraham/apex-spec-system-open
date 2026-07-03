@@ -4,6 +4,17 @@ All notable changes to the Apex Spec System are documented in this file.
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Changed
+- Made `apex-infinite-cli/` self-contained as an installable Python package
+  with its own `pyproject.toml`, `src/` package layout, console scripts, test
+  configuration, and optional visual wrapper extra.
+- Removed the root `pyproject.toml`; Python tooling now belongs to the CLI
+  package instead of the Apex Spec System skill root.
+- Updated CI and release health checks to install and exercise
+  `apex-infinite` from the CLI package directory.
+
 ## [2.1.2-codex] - 2026-06-22
 
 ### Removed
@@ -40,7 +51,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - MANAGER_SYSTEM_PROMPT and SUMMARIZER_SYSTEM_PROMPT rewritten for Codex CLI
 - Variable names: cc_response -> agent_response, build_claude_prompt -> build_codex_prompt
 - CLI version bumped to 2.0.0, help text updated
-- README-apex-infinite-cli.md updated for Codex CLI usage
+- README_apex-infinite-cli.md updated for Codex CLI usage
 - COMMAND_ALIASES cleared (Codex skill uses canonical command names)
 
 ### Removed
@@ -60,7 +71,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [2.0.8-codex] - 2026-03-09
 
 ### Added
-- CHANGELOG.md covering Phases 00-02
+- `docs/CHANGELOG.md` covering Phases 00-02
 - Enhanced release workflow with pre-release verification checks
   (ASCII encoding, version sync, file inventory, script executability)
 - Codex CLI installation instructions in release notes
@@ -103,7 +114,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Updated Phase 03 status to Complete
 
 ### Session 01: Release Workflow and Tagging
-- Created CHANGELOG.md with phase-by-phase history
+- Created changelog with phase-by-phase history
 - Enhanced release.yml with 4 verification steps (ASCII, version sync, file inventory, executability)
 - Rewrote release body template for Codex CLI audience
 - Tagged v2.0.8-codex and published GitHub Release
@@ -120,7 +131,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - All CI/CD bundles marked configured (Quality, Build, Security, Integration, Operations)
 
 ### Session 01: Documentation and References
-- Finalized public-facing documentation (README.md, CONTRIBUTING.md)
+- Finalized public-facing documentation (README.md, docs/CONTRIBUTING.md)
 - Architecture documentation (docs/ARCHITECTURE.md)
 - Development guide (docs/development.md)
 - Onboarding checklist (docs/onboarding.md)

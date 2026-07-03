@@ -9,8 +9,8 @@ there is no hosted application environment.
 | Local development | Repository checkout | Edit skill files, scripts, docs, and the Apex Infinite CLI | `bats tests/`, `bash scripts/sync-plugin-payload.sh --check`, CLI pytest |
 | GitHub Actions | `.github/workflows/` | Validate shell scripts, reference integrity, plugin payload sync, release inventory, and secrets patterns | Push, pull request, scheduled security, and tag workflows |
 | Installed skill | Agent skills directory or Codex plugin install | Consume `SKILL.md`, `references/`, `scripts/`, and `agents/openai.yaml` | `ls ~/.agents/skills/apex-spec/SKILL.md` or plugin install verification |
-| Apex Infinite CLI | `apex-infinite-cli/` | Run autonomous Codex workflow loops against initialized projects | `python apex_infinite.py --help`, `pytest tests/ -v`, `scripts/check-ollama.sh` |
-| Optional visual wrapper | `apex-infinite-cli/apex_infinite_visual/` | Source-mode Linux companion UI over the JSONL event boundary | `QT_QPA_PLATFORM=offscreen python -m apex_infinite_visual.main --dry-run --max-iterations 1 --auto-close-ms 900` |
+| Apex Infinite CLI | `apex-infinite-cli/` | Run autonomous Codex workflow loops against initialized projects | `apex-infinite --help`, `pytest tests/ -v`, `scripts/check-ollama.sh` |
+| Optional visual wrapper | `apex-infinite-cli/src/apex_infinite_visual/` | Source-mode Linux companion UI over the JSONL event boundary | `QT_QPA_PLATFORM=offscreen apex-infinite-visual --dry-run --max-iterations 1 --auto-close-ms 900` |
 
 ## Environment Variables
 
@@ -36,7 +36,7 @@ local CLI provider settings. Do not commit `.env` files or provider keys.
 The CLI stores interaction history in `~/.apex-infinite/history.db` with SQLite
 WAL mode. The database can contain project paths, operator instructions,
 manager decisions, and agent output. See
-[History DB reference](apex-infinite-cli/history-db.md) and
+[History DB reference](../apex-infinite-cli/docs/history-db.md) and
 [Security & Compliance](../.spec_system/SECURITY-COMPLIANCE.md).
 
 ## Deployment Notes
@@ -45,4 +45,4 @@ The base skill has no server, database, or cloud runtime. Release distribution
 is described in [Deployment](deployment.md). The optional Linux visual wrapper
 is source-shippable only; binary/AppImage publishing remains gated by the
 license, notice, checksum, source/relink, and generated-bundle review described
-in [Visual wrapper productization](apex-infinite-cli/visual-wrapper-productization.md).
+in [Visual wrapper productization](../apex-infinite-cli/docs/visual-wrapper-productization.md).

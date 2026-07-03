@@ -69,7 +69,7 @@ shellcheck scripts/*.sh
 ### 4. Make Changes
 
 See [development.md](development.md) for the full development guide and
-[CONTRIBUTING.md](../CONTRIBUTING.md) for branch conventions and PR process.
+[CONTRIBUTING.md](CONTRIBUTING.md) for branch conventions and PR process.
 
 ## Common Issues
 

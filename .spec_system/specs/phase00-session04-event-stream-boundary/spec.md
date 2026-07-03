@@ -190,7 +190,7 @@ add narrower state names only when tests and docs define the contract.
 |------|---------|------------|
 | `apex-infinite-cli/apex_infinite_events.py` | Importable event emitter API, JSONL writer, stdout/file sink validation, payload safety checks, and no-op emitter | ~220 |
 | `apex-infinite-cli/tests/test_event_stream.py` | Event API, CLI flag validation, dry-run event order, stdout isolation, flushing, and raw-payload safety tests | ~280 |
-| `docs/apex-infinite-cli/event-stream.md` | Wrapper-facing event stream contract, event names, payload principles, CLI examples, and safety notes | ~180 |
+| `apex-infinite-cli/docs/event-stream.md` | Wrapper-facing event stream contract, event names, payload principles, CLI examples, and safety notes | ~180 |
 
 ### Files To Modify
 
@@ -201,10 +201,10 @@ add narrower state names only when tests and docs define the contract.
 | `apex-infinite-cli/tests/test_cli_options.py` | Cover event flag validation, machine-output guardrails, and loop wiring with fake emitters | ~120 |
 | `apex-infinite-cli/tests/test_subprocess_execution.py` | Cover Codex start, finish, dry-run, timeout, missing-binary, non-zero, and generic-error event emissions | ~120 |
 | `apex-infinite-cli/tests/test_renderer.py` | Cover no-human-output adapter behavior and stdout-safe rendering suppression | ~80 |
-| `apex-infinite-cli/README-apex-infinite-cli.md` | Document event-stream usage, `--machine-output`, stdout guardrails, and raw event safety | ~100 |
-| `docs/apex-infinite-cli/operator-runbook.md` | Add operator guidance for event files, machine-output mode, wrapper consumption, and failure handling | ~80 |
-| `docs/apex-infinite-cli/prompt-contract.md` | Clarify event and machine-output behavior do not change manager parsing or Codex prompt generation | ~60 |
-| `docs/apex-infinite-cli/troubleshooting.md` | Add event-stream misuse, write failure, stdout collision, and machine-output troubleshooting | ~70 |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | Document event-stream usage, `--machine-output`, stdout guardrails, and raw event safety | ~100 |
+| `apex-infinite-cli/docs/operator-runbook.md` | Add operator guidance for event files, machine-output mode, wrapper consumption, and failure handling | ~80 |
+| `apex-infinite-cli/docs/prompt-contract.md` | Clarify event and machine-output behavior do not change manager parsing or Codex prompt generation | ~60 |
+| `apex-infinite-cli/docs/troubleshooting.md` | Add event-stream misuse, write failure, stdout collision, and machine-output troubleshooting | ~70 |
 
 ---
 

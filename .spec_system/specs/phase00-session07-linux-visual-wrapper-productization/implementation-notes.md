@@ -50,7 +50,7 @@
 - Command/check: `rg -n 'PySide6|Nuitka|Qt Quick|AppImage' apex-infinite-cli/requirements.txt`
   - Result: PASS - base requirements boundary remains clean.
   - Evidence: command printed `base requirements boundary clean`.
-- Command/check: `rg -n 'visual-wrapper-productization|Visual wrapper productization' apex-infinite-cli/README-apex-infinite-cli.md docs/apex-infinite-cli/operator-runbook.md docs/apex-infinite-cli/visual-wrapper-boundary.md docs/apex-infinite-cli/troubleshooting.md`
+- Command/check: `rg -n 'visual-wrapper-productization|Visual wrapper productization' apex-infinite-cli/README_apex-infinite-cli.md apex-infinite-cli/docs/operator-runbook.md apex-infinite-cli/docs/visual-wrapper-boundary.md apex-infinite-cli/docs/troubleshooting.md`
   - Result: PASS - productization links are present in user docs.
   - Evidence: matches found in README, runbook, boundary, and troubleshooting docs.
 - UI product-surface check: PASS - QML smoke and diagnostic term checks from earlier tasks found no blocking product-surface issues.
@@ -187,13 +187,13 @@
   clean-room audit failures.
 
 **Files Changed**:
-- `docs/apex-infinite-cli/troubleshooting.md` - added productized wrapper failure and packaging recovery guidance.
+- `apex-infinite-cli/docs/troubleshooting.md` - added productized wrapper failure and packaging recovery guidance.
 
 **Verification**:
-- Command/check: `rg -n "PySide6 is not installed|display backend|malformed event|subprocess failure|timeout state|AppImage or packaging review fails|Clean-room audit fails|CLI missing|non-zero|stderr" docs/apex-infinite-cli/troubleshooting.md`
+- Command/check: `rg -n "PySide6 is not installed|display backend|malformed event|subprocess failure|timeout state|AppImage or packaging review fails|Clean-room audit fails|CLI missing|non-zero|stderr" apex-infinite-cli/docs/troubleshooting.md`
   - Result: PASS - troubleshooting entries cover all requested failure and recovery modes.
   - Evidence: matches found for missing dependency, display backend, malformed events, subprocess stderr/non-zero, timeout, AppImage packaging, clean-room audit, and CLI missing.
-- Command/check: `LC_ALL=C grep -RInP '[^\\x00-\\x7F]' docs/apex-infinite-cli/troubleshooting.md || true`
+- Command/check: `LC_ALL=C grep -RInP '[^\\x00-\\x7F]' apex-infinite-cli/docs/troubleshooting.md || true`
   - Result: PASS - no non-ASCII output during the focused doc scan.
   - Evidence: prior doc scan produced no non-ASCII matches for edited docs.
 - UI product-surface check: N/A - documentation only.
@@ -214,15 +214,15 @@
   links, failure state handoffs, and Session 07 release boundaries.
 
 **Files Changed**:
-- `apex-infinite-cli/README-apex-infinite-cli.md` - added source visual mode usage, settings flags, release status, and productization guide link.
-- `docs/apex-infinite-cli/operator-runbook.md` - added source visual mode settings, failure state guidance, and productization guide link.
-- `docs/apex-infinite-cli/visual-wrapper-boundary.md` - added Session 07 productization boundary and release gates.
+- `apex-infinite-cli/README_apex-infinite-cli.md` - added source visual mode usage, settings flags, release status, and productization guide link.
+- `apex-infinite-cli/docs/operator-runbook.md` - added source visual mode settings, failure state guidance, and productization guide link.
+- `apex-infinite-cli/docs/visual-wrapper-boundary.md` - added Session 07 productization boundary and release gates.
 
 **Verification**:
-- Command/check: `rg -n "Visual Wrapper Source Mode|visual-wrapper-productization|source/dev|source visual mode|Session 07|plain fallback|CLI missing|Timed out|SHA256|release verification" apex-infinite-cli/README-apex-infinite-cli.md docs/apex-infinite-cli/operator-runbook.md docs/apex-infinite-cli/visual-wrapper-boundary.md`
+- Command/check: `rg -n "Visual Wrapper Source Mode|visual-wrapper-productization|source/dev|source visual mode|Session 07|plain fallback|CLI missing|Timed out|SHA256|release verification" apex-infinite-cli/README_apex-infinite-cli.md apex-infinite-cli/docs/operator-runbook.md apex-infinite-cli/docs/visual-wrapper-boundary.md`
   - Result: PASS - source-mode usage, settings behavior, productization links, release status, and boundary gates are present.
   - Evidence: matches found across README, operator runbook, and boundary docs.
-- Command/check: `LC_ALL=C grep -RInP '[^\\x00-\\x7F]' apex-infinite-cli/README-apex-infinite-cli.md docs/apex-infinite-cli/operator-runbook.md docs/apex-infinite-cli/visual-wrapper-boundary.md || true`
+- Command/check: `LC_ALL=C grep -RInP '[^\\x00-\\x7F]' apex-infinite-cli/README_apex-infinite-cli.md apex-infinite-cli/docs/operator-runbook.md apex-infinite-cli/docs/visual-wrapper-boundary.md || true`
   - Result: PASS - no non-ASCII output during the focused doc scan.
   - Evidence: prior doc scan produced no non-ASCII matches for edited docs.
 - UI product-surface check: N/A - documentation only.
@@ -243,13 +243,13 @@
   and Session 08 handoff.
 
 **Files Changed**:
-- `docs/apex-infinite-cli/visual-wrapper-productization.md` - added source visual mode productization guide.
+- `apex-infinite-cli/docs/visual-wrapper-productization.md` - added source visual mode productization guide.
 
 **Verification**:
-- Command/check: `rg -n "Source Setup|Run Commands|Smoke And Verification|Packaging Path|License And Release Gates|Clean-Room Verification|Session 08 Handoff" docs/apex-infinite-cli/visual-wrapper-productization.md`
+- Command/check: `rg -n "Source Setup|Run Commands|Smoke And Verification|Packaging Path|License And Release Gates|Clean-Room Verification|Session 08 Handoff" apex-infinite-cli/docs/visual-wrapper-productization.md`
   - Result: PASS - guide contains all required productization sections.
   - Evidence: section headings are present in the new document.
-- Command/check: `LC_ALL=C grep -RInP '[^\\x00-\\x7F]' docs/apex-infinite-cli/visual-wrapper-productization.md || true`
+- Command/check: `LC_ALL=C grep -RInP '[^\\x00-\\x7F]' apex-infinite-cli/docs/visual-wrapper-productization.md || true`
   - Result: PASS - no non-ASCII output.
   - Evidence: command produced no grep matches.
 - UI product-surface check: N/A - documentation only.
@@ -271,13 +271,13 @@
 
 **Files Changed**:
 - `apex-infinite-cli/requirements-wrapper.txt` - clarified optional runtime and packaging review boundaries.
-- `docs/apex-infinite-cli/visual-wrapper-productization.md` - documented optional dependency and packaging boundaries.
+- `apex-infinite-cli/docs/visual-wrapper-productization.md` - documented optional dependency and packaging boundaries.
 
 **Verification**:
-- Command/check: `rg -n "PySide6|pyside6-deploy|Nuitka|AppImage|SHA256|source/relink" apex-infinite-cli/requirements-wrapper.txt docs/apex-infinite-cli/visual-wrapper-productization.md`
+- Command/check: `rg -n "PySide6|pyside6-deploy|Nuitka|AppImage|SHA256|source/relink" apex-infinite-cli/requirements-wrapper.txt apex-infinite-cli/docs/visual-wrapper-productization.md`
   - Result: PASS - dependency and packaging boundary terms are present in the optional dependency file and productization guide.
   - Evidence: matches include PySide6, pyside6-deploy, Nuitka, AppImage, SHA256, and source/relink obligations.
-- Command/check: `LC_ALL=C grep -RInP '[^\\x00-\\x7F]' docs/apex-infinite-cli/visual-wrapper-productization.md apex-infinite-cli/requirements-wrapper.txt || true`
+- Command/check: `LC_ALL=C grep -RInP '[^\\x00-\\x7F]' apex-infinite-cli/docs/visual-wrapper-productization.md apex-infinite-cli/requirements-wrapper.txt || true`
   - Result: PASS - no non-ASCII output.
   - Evidence: command produced no grep matches.
 - UI product-surface check: N/A - documentation and dependency comments only.
@@ -551,7 +551,7 @@
 - `.spec_system/specs/phase00-session07-linux-visual-wrapper-productization/implementation-notes.md` - recorded boundary audit evidence.
 
 **Verification**:
-- Command/check: inspected `docs/apex-infinite-cli/visual-wrapper-boundary.md`
+- Command/check: inspected `apex-infinite-cli/docs/visual-wrapper-boundary.md`
   - Result: PASS - document forbids copied QML, shaders, assets, fonts, profile data, resource manifests, build scripts, and terminal-emulator code.
   - Evidence: selected path remains PySide6/Qt Quick/QML as an optional Linux wrapper consuming JSONL events.
 - Command/check: inspected `.spec_system/SECURITY-COMPLIANCE.md`
@@ -589,7 +589,7 @@
 - Command/check: inspected `apex-infinite-cli/apex_infinite_visual/events.py`, `launcher.py`, `main.py`, and `qml/Main.qml`
   - Result: PASS - current prototype uses JSONL events, guarded `--event-stream - --machine-output`, lazy PySide6 imports, fixture smoke flow, and QML controls.
   - Evidence: productization gaps listed in notes are bounded to settings, failure mapping, launch validation, timeout handling, and controls.
-- Command/check: inspected `apex-infinite-cli/apex_infinite_events.py` and `docs/apex-infinite-cli/event-stream.md`
+- Command/check: inspected `apex-infinite-cli/apex_infinite_events.py` and `apex-infinite-cli/docs/event-stream.md`
   - Result: PASS - wrapper event parsing aligns with schema version 1, event registry, JSON-safe payload validation, and stdout guardrails.
   - Evidence: event registry includes startup, loop, Codex, DB, stop, compatibility, and error names consumed by the adapter.
 - UI product-surface check: PASS - inspected `Main.qml`; normal surface contains product-facing run, status, visual, and event-log labels.
@@ -633,7 +633,7 @@
 - Command/check: inspected `.spec_system/specs/phase00-session06-linux-wrapper-spike/validation.md`
   - Result: PASS - Session 06 validation result is PASS with wrapper smoke, tests, lint, compile, and QML lint evidence.
   - Evidence: validation summary reports 189/189 tests passed and optional wrapper smoke passed.
-- Command/check: inspected `docs/apex-infinite-cli/visual-wrapper-spike.md` and `apex-infinite-cli/requirements-wrapper.txt`
+- Command/check: inspected `apex-infinite-cli/docs/visual-wrapper-spike.md` and `apex-infinite-cli/requirements-wrapper.txt`
   - Result: PASS - PySide6/QML path accepted; optional dependencies remain separate from base CLI requirements.
   - Evidence: spike recommendation allows Session 07 productization and `requirements-wrapper.txt` contains PySide6/Nuitka only in the optional lane.
 - UI product-surface check: N/A - setup audit only.

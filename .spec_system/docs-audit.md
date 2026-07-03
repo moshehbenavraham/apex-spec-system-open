@@ -16,14 +16,14 @@
 | Transcript fixtures | 3 | 3 | PASS |
 | API docs | 0 | 0 | N/A |
 
-Root files are `README.md`, `CONTRIBUTING.md`, and `LICENSE`. Standard docs are
-`docs/ARCHITECTURE.md`, `docs/CODEOWNERS`, `docs/onboarding.md`,
-`docs/development.md`, `docs/environments.md`, `docs/deployment.md`, and
-`docs/runbooks/incident-response.md`.
+Root files are `README.md` and `LICENSE`. Standard docs are
+`docs/ARCHITECTURE.md`, `docs/CODEOWNERS`, `docs/CONTRIBUTING.md`,
+`docs/onboarding.md`, `docs/development.md`, `docs/environments.md`,
+`docs/deployment.md`, and `docs/runbooks/incident-response.md`.
 
 API docs are not required for an HTTP API because the repository has no HTTP
 service. The implemented machine interface is documented in
-`docs/apex-infinite-cli/event-stream.md`.
+`apex-infinite-cli/docs/event-stream.md`.
 
 ## Audit Scope
 
@@ -48,8 +48,8 @@ reports, release verification records, and targeted repository inspections.
 
 | Old Path | New Path | Reason |
 |----------|----------|--------|
-| `apex-infinite-cli/README-apex-infinite-cli.md` | `apex-infinite-cli/README_apex-infinite-cli.md` | Non-root README files must use `README_<dirname>.md` naming |
-| `docs/apex-infinite-cli/transcripts/README.md` | `docs/apex-infinite-cli/transcripts/README_transcripts.md` | Non-root README files must use `README_<dirname>.md` naming |
+| Legacy hyphenated CLI README filename | `apex-infinite-cli/README_apex-infinite-cli.md` | Non-root README files must use `README_<dirname>.md` naming |
+| Legacy transcript README filename | `apex-infinite-cli/docs/transcripts/README_transcripts.md` | Non-root README files must use `README_<dirname>.md` naming |
 
 ## Files Updated
 
@@ -63,18 +63,18 @@ reports, release verification records, and targeted repository inspections.
 | `docs/CONSIDERATIONS.md` | Replaced stale duplicated state with a pointer to `.spec_system/CONSIDERATIONS.md` |
 | `docs/SECURITY-COMPLIANCE.md` | Replaced stale duplicated state with a pointer to `.spec_system/SECURITY-COMPLIANCE.md` |
 | `docs/docs-audit.md` | Replaced stale prior audit with a pointer to this canonical report |
-| `docs/apex-infinite-cli/*.md` | Updated transcript and CLI README links after README renames |
+| `apex-infinite-cli/*.md` | Updated transcript and CLI README links after README renames |
 
 ## Verified Current
 
 | File Or Area | Evidence | Result |
 |--------------|----------|--------|
-| `CONTRIBUTING.md` | Direct read; branch, PR, commit, script, and ASCII rules remain current for the repo | Current |
+| `docs/CONTRIBUTING.md` | Direct read; branch, PR, commit, script, and ASCII rules remain current for the repo | Current |
 | `LICENSE` | `rg --files` confirmed root license exists | Current |
 | `docs/CODEOWNERS` | Direct read confirms root, references, scripts, CLI, CI, and docs ownership entries | Current |
 | ADRs | `find docs/adr` found template plus two ADRs | Current |
-| CLI event stream docs | Phase 00 Session 04 and 08 implementation notes plus `docs/apex-infinite-cli/event-stream.md` | Current |
-| CLI history docs | Phase 00 Session 03 notes plus `docs/apex-infinite-cli/history-db.md` and transcript samples | Current |
+| CLI event stream docs | Phase 00 Session 04 and 08 implementation notes plus `apex-infinite-cli/docs/event-stream.md` | Current |
+| CLI history docs | Phase 00 Session 03 notes plus `apex-infinite-cli/docs/history-db.md` and transcript samples | Current |
 | Visual-wrapper docs | Phase 00 Sessions 06-08 notes plus wrapper source, productization, boundary, and troubleshooting docs | Current |
 | CI workflow docs | `.github/workflows/quality.yml`, `test.yml`, `integration.yml`, `security.yml`, and `release.yml` inspected | Updated where stale |
 

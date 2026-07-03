@@ -164,7 +164,7 @@ data, or build scripts from the local reference tree.
 | `apex-infinite-cli/tests/test_renderer.py` | Extend existing renderer and raw-history safety coverage for new console states | ~120 |
 | `apex-infinite-cli/tests/test_ui_config.py` | Add preset and fallback assertions for the operator-console token behavior | ~60 |
 | `apex-infinite-cli/tests/test_cli_options.py` | Add CLI smoke coverage for dry-run startup and renderer context wiring | ~60 |
-| `apex-infinite-cli/README-apex-infinite-cli.md` | Add a minimal note for the richer operator console and current fallback guarantees | ~40 |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | Add a minimal note for the richer operator console and current fallback guarantees | ~40 |
 
 ---
 

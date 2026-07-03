@@ -117,11 +117,11 @@ Completed sessions:
   `apex-infinite-cli/tests/test_prompts.py`.
 - Missing test coverage: Click option parsing, UI config defaults, renderer
   helpers, history rendering, environment color behavior, subprocess display.
-- Existing docs live in `apex-infinite-cli/README-apex-infinite-cli.md`,
-  `docs/apex-infinite-cli/operator-runbook.md`,
-  `docs/apex-infinite-cli/history-db.md`,
-  `docs/apex-infinite-cli/prompt-contract.md`, and
-  `docs/apex-infinite-cli/troubleshooting.md`.
+- Existing docs live in `apex-infinite-cli/README_apex-infinite-cli.md`,
+  `apex-infinite-cli/docs/operator-runbook.md`,
+  `apex-infinite-cli/docs/history-db.md`,
+  `apex-infinite-cli/docs/prompt-contract.md`, and
+  `apex-infinite-cli/docs/troubleshooting.md`.
 - History DB compatibility requires preserving `~/.apex-infinite/history.db`
   and the legacy `cc_response` column without migration or rename.
 
@@ -577,14 +577,14 @@ contract, and clean-room visual boundary after behavior exists.
 
 **Scope**:
 
-- Update `apex-infinite-cli/README-apex-infinite-cli.md` with UI flags, config
+- Update `apex-infinite-cli/README_apex-infinite-cli.md` with UI flags, config
   examples, theme descriptions, event-stream usage, and examples.
 - Update the operator runbook with theme guidance and plain-output guidance for
   CI, logs, remote shells, constrained terminals, `NO_COLOR`, redirected
   output, and `TERM=dumb`.
-- Update `docs/apex-infinite-cli/history-db.md` for status labels, truncation
+- Update `apex-infinite-cli/docs/history-db.md` for status labels, truncation
   rules, or verbose history behavior.
-- Update `docs/apex-infinite-cli/prompt-contract.md` with matching
+- Update `apex-infinite-cli/docs/prompt-contract.md` with matching
   prompt-contract changes, or state that UI/event-stream changes do not alter
   `MANAGER_SYSTEM_PROMPT`, `SUMMARIZER_SYSTEM_PROMPT`, or
   `build_codex_prompt()`.

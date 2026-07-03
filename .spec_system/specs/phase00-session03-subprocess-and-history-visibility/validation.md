@@ -80,14 +80,14 @@ Every row names the exact command or targeted inspection used.
 | `.spec_system/specs/phase00-session03-subprocess-and-history-visibility/implementation-notes.md` | ASCII | LF | PASS |
 | `.spec_system/specs/phase00-session03-subprocess-and-history-visibility/spec.md` | ASCII | LF | PASS |
 | `.spec_system/specs/phase00-session03-subprocess-and-history-visibility/tasks.md` | ASCII | LF | PASS |
-| `apex-infinite-cli/README-apex-infinite-cli.md` | ASCII | LF | PASS |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | ASCII | LF | PASS |
 | `apex-infinite-cli/apex_infinite.py` | ASCII | LF | PASS |
 | `apex-infinite-cli/apex_infinite_ui.py` | ASCII | LF | PASS |
 | `apex-infinite-cli/tests/test_cli_options.py` | ASCII | LF | PASS |
 | `apex-infinite-cli/tests/test_history_rendering.py` | ASCII | LF | PASS |
 | `apex-infinite-cli/tests/test_subprocess_execution.py` | ASCII | LF | PASS |
-| `docs/apex-infinite-cli/history-db.md` | ASCII | LF | PASS |
-| `docs/apex-infinite-cli/operator-runbook.md` | ASCII | LF | PASS |
+| `apex-infinite-cli/docs/history-db.md` | ASCII | LF | PASS |
+| `apex-infinite-cli/docs/operator-runbook.md` | ASCII | LF | PASS |
 
 **Encoding issues**: None
 
@@ -108,7 +108,7 @@ Every row names the exact command or targeted inspection used.
 ## 6. Database/Schema Alignment
 ### Status: PASS
 
-**Evidence**: `git diff -- apex-infinite-cli/apex_infinite.py | rg -n "CREATE TABLE|ALTER TABLE|DROP TABLE|cc_response|INSERT INTO history|SELECT \* FROM history|PRAGMA|schema" || true` produced no schema-diff matches. `rg -n "CREATE TABLE|ALTER TABLE|DROP TABLE|cc_response|INSERT INTO history|SELECT \* FROM history|PRAGMA" apex-infinite-cli/apex_infinite.py apex-infinite-cli/tests/test_history_rendering.py apex-infinite-cli/tests/test_renderer.py docs/apex-infinite-cli/history-db.md` showed the existing `history` table, `cc_response` column, WAL setting, and parameterized history reads/writes. `tests/test_history_rendering.py:195-230` verifies render-time labels and truncation text are not persisted.
+**Evidence**: `git diff -- apex-infinite-cli/apex_infinite.py | rg -n "CREATE TABLE|ALTER TABLE|DROP TABLE|cc_response|INSERT INTO history|SELECT \* FROM history|PRAGMA|schema" || true` produced no schema-diff matches. `rg -n "CREATE TABLE|ALTER TABLE|DROP TABLE|cc_response|INSERT INTO history|SELECT \* FROM history|PRAGMA" apex-infinite-cli/apex_infinite.py apex-infinite-cli/tests/test_history_rendering.py apex-infinite-cli/tests/test_renderer.py apex-infinite-cli/docs/history-db.md` showed the existing `history` table, `cc_response` column, WAL setting, and parameterized history reads/writes. `tests/test_history_rendering.py:195-230` verifies render-time labels and truncation text are not persisted.
 
 **Issues found**: None
 

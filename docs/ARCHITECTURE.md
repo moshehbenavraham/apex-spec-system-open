@@ -16,9 +16,11 @@ apex-spec-system-open/
 |-- SKILL.md                  # Root orchestrator (entry point)
 |-- AGENTS.md                 # Custom instructions for AI agents
 |-- CLAUDE.md                 # Claude Code custom instructions
-|-- CHANGELOG.md              # Version history
 |-- agents/
 |   \-- openai.yaml           # Codex CLI UI metadata
+|-- docs/
+|   \-- CHANGELOG.md          # Version history
+|   \-- CONTRIBUTING.md       # Branch, commit, and PR process
 |-- references/               # Command and supporting reference files
 |   |-- initspec.md           # Initialize spec system
 |   |-- createprd.md          # Generate PRD
@@ -36,12 +38,9 @@ apex-spec-system-open/
 |   |-- check-prereqs.sh      # Environment verification
 |   \-- common.sh             # Shared functions
 |-- apex-infinite-cli/        # Autonomous session manager
-|   |-- apex_infinite.py      # CLI entry point and workflow loop
-|   |-- apex_infinite_ui.py   # Rich/plain renderer boundary
-|   |-- apex_infinite_events.py # JSONL lifecycle event boundary
-|   |-- apex_infinite_visual/ # Optional Linux visual wrapper source mode
-|   |-- config.yaml           # Provider, Codex, and UI config
-|   |-- requirements*.txt     # Base, dev, and optional wrapper dependencies
+|   |-- pyproject.toml        # Package, dependency, and tool config
+|   |-- src/apex_infinite/    # CLI entry point, events, UI, config
+|   |-- src/apex_infinite_visual/ # Optional Linux visual wrapper source mode
 |   |-- tests/                # pytest suite for CLI, renderer, events, wrapper
 |   \-- n8n-workflow/         # Original n8n workflow (reference archive)
 \-- docs/                     # Project documentation
@@ -134,21 +133,20 @@ Long-term goal: cross-compatible single format that works on both platforms.
 ## Apex Infinite CLI
 
 The `apex-infinite-cli/` directory contains an autonomous session manager -- a
-standalone Python CLI that runs the full Apex Spec System workflow in a loop
+standalone Python package that runs the full Apex Spec System workflow in a loop
 without human intervention.
 
 ### Components
 
 | Component | Purpose |
 |-----------|---------|
-| `apex_infinite.py` | Click entry point, config loading, manager loop, Codex subprocess execution, SQLite history, notifications |
-| `apex_infinite_ui.py` | Rich/plain renderer boundary, display settings, themes, width-aware output helpers |
-| `apex_infinite_events.py` | Importable event emitter and line-buffered JSONL lifecycle event writer |
-| `apex_infinite_visual/` | Optional PySide6/Qt Quick Linux visual wrapper over the event stream |
-| `config.yaml` | LLM provider selection, Codex execution flags, and UI defaults |
-| `requirements.txt` | Base terminal CLI dependencies |
-| `requirements-dev.txt` | pytest, black, pylint, mypy, pip-audit, and test tooling |
-| `requirements-wrapper.txt` | Optional wrapper dependencies isolated from the base install |
+| `pyproject.toml` | Package metadata, dependencies, console scripts, and Python tool config |
+| `src/apex_infinite/cli.py` | Click entry point, config loading, manager loop, Codex subprocess execution, SQLite history, notifications |
+| `src/apex_infinite/ui.py` | Rich/plain renderer boundary, display settings, themes, width-aware output helpers |
+| `src/apex_infinite/events.py` | Importable event emitter and line-buffered JSONL lifecycle event writer |
+| `src/apex_infinite/config.yaml` | Packaged default provider, Codex, and UI config |
+| `src/apex_infinite_visual/` | Optional PySide6/Qt Quick Linux visual wrapper over the event stream |
+| `requirements*.txt` | Compatibility shims that install `pyproject.toml` dependencies and extras |
 | `tests/` | pytest coverage for prompt routing, CLI flags, renderer, history, subprocess, events, and wrapper behavior |
 | `n8n-workflow/` | Original n8n workflow JSON (reference archive) |
 
@@ -175,16 +173,16 @@ without human intervention.
 | pip-audit | Local Python dependency vulnerability audit |
 | PySide6 / Qt Quick / QML | Optional Linux visual wrapper source mode |
 
-See [apex-infinite-cli/README_apex-infinite-cli.md](../apex-infinite-cli/README_apex-infinite-cli.md) for usage details.
+See [apex-infinite-cli/README.md](../apex-infinite-cli/README.md) for usage details.
 
 Deep-dive docs:
 
-- [Operator runbook](apex-infinite-cli/operator-runbook.md)
-- [Event stream contract](apex-infinite-cli/event-stream.md)
-- [History DB reference](apex-infinite-cli/history-db.md)
-- [Prompt contract](apex-infinite-cli/prompt-contract.md)
-- [Troubleshooting guide](apex-infinite-cli/troubleshooting.md)
-- [Visual wrapper boundary](apex-infinite-cli/visual-wrapper-boundary.md)
+- [Operator runbook](../apex-infinite-cli/docs/operator-runbook.md)
+- [Event stream contract](../apex-infinite-cli/docs/event-stream.md)
+- [History DB reference](../apex-infinite-cli/docs/history-db.md)
+- [Prompt contract](../apex-infinite-cli/docs/prompt-contract.md)
+- [Troubleshooting guide](../apex-infinite-cli/docs/troubleshooting.md)
+- [Visual wrapper boundary](../apex-infinite-cli/docs/visual-wrapper-boundary.md)
 
 ## Key Decisions
 

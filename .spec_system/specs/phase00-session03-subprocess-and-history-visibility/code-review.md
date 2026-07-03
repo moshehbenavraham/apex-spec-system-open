@@ -13,14 +13,14 @@
 - `.spec_system/specs/phase00-session03-subprocess-and-history-visibility/spec.md` - untracked
 - `.spec_system/specs/phase00-session03-subprocess-and-history-visibility/tasks.md` - untracked
 - `.spec_system/specs/phase00-session03-subprocess-and-history-visibility/code-review.md` - untracked report output
-- `apex-infinite-cli/README-apex-infinite-cli.md` - tracked-modified
+- `apex-infinite-cli/README_apex-infinite-cli.md` - tracked-modified
 - `apex-infinite-cli/apex_infinite.py` - tracked-modified
 - `apex-infinite-cli/apex_infinite_ui.py` - tracked-modified
 - `apex-infinite-cli/tests/test_cli_options.py` - tracked-modified
 - `apex-infinite-cli/tests/test_history_rendering.py` - untracked
 - `apex-infinite-cli/tests/test_subprocess_execution.py` - untracked
-- `docs/apex-infinite-cli/history-db.md` - tracked-modified
-- `docs/apex-infinite-cli/operator-runbook.md` - tracked-modified
+- `apex-infinite-cli/docs/history-db.md` - tracked-modified
+- `apex-infinite-cli/docs/operator-runbook.md` - tracked-modified
 
 **Inventory commands**: `git status`, `git diff HEAD`, `git diff --cached`,
 `git ls-files --others --exclude-standard`
@@ -38,7 +38,7 @@ No findings.
 ### Medium
 
 - `.spec_system/specs/phase00-session03-subprocess-and-history-visibility/spec.md:5` and `.spec_system/specs/phase00-session03-subprocess-and-history-visibility/tasks.md:60` - Session metadata still described the session as not started and handed off to `implement` even though all 20 tasks were complete and the workflow had reached `creview`. This could send the next agent to the wrong workflow command. | Fix: updated the spec status to `Implemented` and changed the spec/tasks handoff to `creview`. | Status: FIXED
-- `docs/apex-infinite-cli/history-db.md:77`, `docs/apex-infinite-cli/operator-runbook.md:65`, and `apex-infinite-cli/README-apex-infinite-cli.md:193` - The session changed user-facing history rendering to a compact ledger with `--history --verbose` expansion, but history docs still omitted those displayed semantics. `CONVENTIONS.md` requires history DB docs to move with displayed history semantics. | Fix: documented the render-time ledger, verbose history detail, and SQLite no-migration boundary in the README, history DB reference, and operator runbook. | Status: FIXED
+- `apex-infinite-cli/docs/history-db.md:77`, `apex-infinite-cli/docs/operator-runbook.md:65`, and `apex-infinite-cli/README_apex-infinite-cli.md:193` - The session changed user-facing history rendering to a compact ledger with `--history --verbose` expansion, but history docs still omitted those displayed semantics. `CONVENTIONS.md` requires history DB docs to move with displayed history semantics. | Fix: documented the render-time ledger, verbose history detail, and SQLite no-migration boundary in the README, history DB reference, and operator runbook. | Status: FIXED
 
 ### Low
 

@@ -12,18 +12,18 @@
 - `.spec_system/specs/phase00-session05-docs-samples-and-runbooks/tasks.md` - task checklist
 - `.spec_system/specs/phase00-session05-docs-samples-and-runbooks/implementation-notes.md` - implementation evidence
 - `.spec_system/specs/phase00-session05-docs-samples-and-runbooks/code-review.md` - review artifact
-- `apex-infinite-cli/README-apex-infinite-cli.md` - CLI README documentation
+- `apex-infinite-cli/README_apex-infinite-cli.md` - CLI README documentation
 - `docs/CREDITS.md` - credits and clean-room wording
-- `docs/apex-infinite-cli/event-stream.md` - event stream documentation
-- `docs/apex-infinite-cli/history-db.md` - history DB documentation
-- `docs/apex-infinite-cli/operator-runbook.md` - operator runbook
-- `docs/apex-infinite-cli/prompt-contract.md` - prompt contract documentation
-- `docs/apex-infinite-cli/troubleshooting.md` - troubleshooting documentation
-- `docs/apex-infinite-cli/visual-wrapper-boundary.md` - visual wrapper clean-room boundary
-- `docs/apex-infinite-cli/transcripts/README.md` - transcript index
-- `docs/apex-infinite-cli/transcripts/dry-run-plain.txt` - plain dry-run transcript
-- `docs/apex-infinite-cli/transcripts/history-ledger.txt` - history transcript
-- `docs/apex-infinite-cli/transcripts/machine-output-events.jsonl` - JSONL event sample
+- `apex-infinite-cli/docs/event-stream.md` - event stream documentation
+- `apex-infinite-cli/docs/history-db.md` - history DB documentation
+- `apex-infinite-cli/docs/operator-runbook.md` - operator runbook
+- `apex-infinite-cli/docs/prompt-contract.md` - prompt contract documentation
+- `apex-infinite-cli/docs/troubleshooting.md` - troubleshooting documentation
+- `apex-infinite-cli/docs/visual-wrapper-boundary.md` - visual wrapper clean-room boundary
+- `apex-infinite-cli/docs/transcripts/README_transcripts.md` - transcript index
+- `apex-infinite-cli/docs/transcripts/dry-run-plain.txt` - plain dry-run transcript
+- `apex-infinite-cli/docs/transcripts/history-ledger.txt` - history transcript
+- `apex-infinite-cli/docs/transcripts/machine-output-events.jsonl` - JSONL event sample
 
 **Review method**: Static analysis of changed documentation, samples, and session artifacts.
 

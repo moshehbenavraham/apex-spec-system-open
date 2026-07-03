@@ -1,0 +1,8 @@
+include CHANGELOG.md
+include LICENSE
+include README.md
+include requirements*.txt
+recursive-include docs *.md *.txt *.jsonl
+recursive-include n8n-workflow *.json
+recursive-include scripts *.sh
+recursive-include tests *.py

@@ -25,13 +25,13 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from apex_infinite_events import (
+from apex_infinite.events import (
     EventStreamError,
     NoOpEventEmitter,
     open_event_stream,
     summarize_text,
 )
-from apex_infinite_ui import (
+from apex_infinite.ui import (
     ApexRenderer,
     CodexCommandSnapshot,
     DbLogSnapshot,
@@ -502,8 +502,8 @@ Steps:
    - Phase-Focused: Prioritize changes from just-completed phase
    - Full Audit: Initial setup, milestones, or explicit request
 3. Audit standard files:
-   - Root: README.md, CONTRIBUTING.md, LICENSE
-   - docs/: ARCHITECTURE.md, CODEOWNERS, onboarding.md, development.md, environments.md, deployment.md, adr/, runbooks/, api/
+   - Root: README.md, LICENSE
+   - docs/: CONTRIBUTING.md, ARCHITECTURE.md, CODEOWNERS, onboarding.md, development.md, environments.md, deployment.md, adr/, runbooks/, api/
    - Per-package: README_<dirname>.md (not README.md)
 4. Create missing files from templates (.spec_system/doc-templates/ first)
 5. Update existing docs to current state
@@ -631,8 +631,9 @@ def load_config(config_path, provider_override=None, model_override=None):
     if provider_name not in config["providers"]:
         raise CliStartupError(f"Unknown provider: {provider_name}")
 
-    # Load .env from same directory as config file
-    load_dotenv(path.parent / ".env")
+    # Load .env from cwd first; config-local values take precedence.
+    load_dotenv(Path.cwd() / ".env")
+    load_dotenv(path.parent / ".env", override=True)
 
     # Expand env vars in provider string fields.
     provider_cfg = config["providers"][provider_name]
@@ -645,6 +646,21 @@ def load_config(config_path, provider_override=None, model_override=None):
         provider_cfg["model"] = model_override
 
     return config
+
+
+def resolve_default_config_path():
+    """Find the default config for source-tree and installed package runs."""
+    source_root = Path(__file__).resolve().parents[2]
+    candidates = [
+        Path.cwd() / "config.yaml",
+        Path(__file__).resolve().parent / "config.yaml",
+    ]
+    if (source_root / "pyproject.toml").exists():
+        candidates.insert(1, source_root / "config.yaml")
+    for candidate in candidates:
+        if candidate.exists():
+            return str(candidate)
+    return None
 
 
 def _provider_env_defaults(provider_name):
@@ -1989,7 +2005,7 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-arg
     "--config",
     "config_path",
     default=None,
-    help="Config file path (default: ./config.yaml)",
+    help="Config file path (default: ./config.yaml, then packaged config)",
 )
 @click.option("--history", is_flag=True, help="Show interaction history")
 @click.option(
@@ -2149,15 +2165,9 @@ def _run_main(  # pylint: disable=too-many-arguments,too-many-positional-argumen
     # Init database
     db_init()
 
-    # Resolve config path
     if config_path is None:
-        # Look next to the script first, then cwd
-        script_dir = Path(__file__).parent
-        if (script_dir / "config.yaml").exists():
-            config_path = str(script_dir / "config.yaml")
-        elif Path("config.yaml").exists():
-            config_path = "config.yaml"
-        else:
+        config_path = resolve_default_config_path()
+        if config_path is None:
             _exit_with_startup_error(
                 "No config.yaml found. Use --config to specify path.",
                 event_emitter=event_emitter,

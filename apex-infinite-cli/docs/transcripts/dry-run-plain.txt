@@ -2,7 +2,7 @@ Apex Infinite CLI deterministic transcript
 Mode: --plain --ascii --compact --dry-run --max-iterations 1
 Purpose: show fallback output without ANSI escapes, Rich markup, or box glyphs
 
-$ python apex_infinite.py --path /home/user/projects/my-app/ --start implement --dry-run --plain --ascii --compact --max-iterations 1
+$ apex-infinite --path /home/user/projects/my-app/ --start implement --dry-run --plain --ascii --compact --max-iterations 1
 
 BOOT Apex Infinite Operator Console
 Project: /home/user/projects/my-app/

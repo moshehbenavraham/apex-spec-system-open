@@ -5,8 +5,8 @@ from types import SimpleNamespace
 import pytest
 from rich.console import Console
 
-import apex_infinite
-from apex_infinite_ui import ApexRenderer, UiCliOverrides, resolve_ui_settings
+import apex_infinite.cli as apex_infinite
+from apex_infinite.ui import ApexRenderer, UiCliOverrides, resolve_ui_settings
 
 SUPPORTED_WIDTHS = (80, 100, 120)
 

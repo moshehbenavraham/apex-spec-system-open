@@ -152,7 +152,7 @@ boundaries.
 |------|---------|------------|
 | `apex-infinite-cli/apex_infinite.py` | Import UI helpers, add Click flags, instantiate renderer, and route existing output through renderer helpers | ~220 |
 | `apex-infinite-cli/config.yaml` | Add default `ui` section with documented built-in values | ~25 |
-| `apex-infinite-cli/README-apex-infinite-cli.md` | Document new UI config keys, flags, precedence, and fallback behavior | ~80 |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | Document new UI config keys, flags, precedence, and fallback behavior | ~80 |
 | `apex-infinite-cli/tests/conftest.py` | Add shared fixtures only if needed for temp DB, config files, or recorded consoles | ~60 |
 
 ---

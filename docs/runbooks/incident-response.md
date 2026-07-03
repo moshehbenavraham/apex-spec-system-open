@@ -72,16 +72,16 @@ malformed events, subprocess failure, or timeout state.
 
 **Resolution**:
 
-1. Install optional dependencies with `pip install -r requirements-wrapper.txt`.
+1. Install optional dependencies with `python -m pip install -e ".[visual]"`.
 2. Run the headless smoke check:
 
    ```bash
-   QT_QPA_PLATFORM=offscreen python -m apex_infinite_visual.main --dry-run --max-iterations 1 --auto-close-ms 900
+   QT_QPA_PLATFORM=offscreen apex-infinite-visual --dry-run --max-iterations 1 --auto-close-ms 900
    ```
 
 3. Run the equivalent base CLI command directly with `--event-stream -` and
    `--machine-output`.
-4. Follow [Troubleshooting](../apex-infinite-cli/troubleshooting.md) for the
+4. Follow [Troubleshooting](../../apex-infinite-cli/docs/troubleshooting.md) for the
    exact wrapper failure label.
 
 ### Release Workflow Fails
@@ -95,6 +95,6 @@ inventory, script executability, or CLI health.
    `plugins/apex-spec/.codex-plugin/plugin.json`.
 2. Run `bash scripts/sync-plugin-payload.sh --check`.
 3. Run `bats tests/`.
-4. Run `python apex-infinite-cli/apex_infinite.py --help` after installing
-   `apex-infinite-cli/requirements.txt`.
+4. Run `apex-infinite --help` after installing the package from
+   `apex-infinite-cli/`.
 5. Re-run the tag workflow only after local verification passes.

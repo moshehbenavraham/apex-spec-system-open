@@ -14,18 +14,18 @@
 - `.spec_system/specs/phase00-session05-docs-samples-and-runbooks/tasks.md` - untracked
 - `.spec_system/specs/phase00-session05-docs-samples-and-runbooks/implementation-notes.md` - untracked
 - `.spec_system/specs/phase00-session05-docs-samples-and-runbooks/code-review.md` - untracked review artifact created by `creview`
-- `apex-infinite-cli/README-apex-infinite-cli.md` - tracked-modified
+- `apex-infinite-cli/README_apex-infinite-cli.md` - tracked-modified
 - `docs/CREDITS.md` - tracked-modified
-- `docs/apex-infinite-cli/event-stream.md` - tracked-modified
-- `docs/apex-infinite-cli/history-db.md` - tracked-modified
-- `docs/apex-infinite-cli/operator-runbook.md` - tracked-modified
-- `docs/apex-infinite-cli/prompt-contract.md` - tracked-modified
-- `docs/apex-infinite-cli/troubleshooting.md` - tracked-modified
-- `docs/apex-infinite-cli/visual-wrapper-boundary.md` - untracked
-- `docs/apex-infinite-cli/transcripts/README.md` - untracked
-- `docs/apex-infinite-cli/transcripts/dry-run-plain.txt` - untracked
-- `docs/apex-infinite-cli/transcripts/history-ledger.txt` - untracked
-- `docs/apex-infinite-cli/transcripts/machine-output-events.jsonl` - untracked
+- `apex-infinite-cli/docs/event-stream.md` - tracked-modified
+- `apex-infinite-cli/docs/history-db.md` - tracked-modified
+- `apex-infinite-cli/docs/operator-runbook.md` - tracked-modified
+- `apex-infinite-cli/docs/prompt-contract.md` - tracked-modified
+- `apex-infinite-cli/docs/troubleshooting.md` - tracked-modified
+- `apex-infinite-cli/docs/visual-wrapper-boundary.md` - untracked
+- `apex-infinite-cli/docs/transcripts/README_transcripts.md` - untracked
+- `apex-infinite-cli/docs/transcripts/dry-run-plain.txt` - untracked
+- `apex-infinite-cli/docs/transcripts/history-ledger.txt` - untracked
+- `apex-infinite-cli/docs/transcripts/machine-output-events.jsonl` - untracked
 
 **Inventory commands**: `git status`, `git log --oneline "$BASE"..HEAD`,
 `git diff "$BASE"`, `git diff --cached "$BASE"`,
@@ -47,11 +47,11 @@ No findings.
 
 ### Medium
 
-- `docs/apex-infinite-cli/transcripts/machine-output-events.jsonl:8` and `docs/apex-infinite-cli/transcripts/dry-run-plain.txt:34` - The deterministic dry-run samples drifted from the current start-command dry-run contract. The JSONL sample omitted emitted lifecycle events (`history_summarize_started`, `history_summarize_finished`, `manager_decision_started`, `prompt_built`, `response_summarized`, `db_log_started`, and `max_iterations_reached`) and used stale payload fields (`reason_length`, `exec_flags`, and prompt length `44`) that do not match the current emitter. | Fix: expanded the JSONL sample to the full 19-event dry-run sequence, corrected payload fields and prompt length, and aligned the plain transcript with the `--start implement` reason. | Status: FIXED
+- `apex-infinite-cli/docs/transcripts/machine-output-events.jsonl:8` and `apex-infinite-cli/docs/transcripts/dry-run-plain.txt:34` - The deterministic dry-run samples drifted from the current start-command dry-run contract. The JSONL sample omitted emitted lifecycle events (`history_summarize_started`, `history_summarize_finished`, `manager_decision_started`, `prompt_built`, `response_summarized`, `db_log_started`, and `max_iterations_reached`) and used stale payload fields (`reason_length`, `exec_flags`, and prompt length `44`) that do not match the current emitter. | Fix: expanded the JSONL sample to the full 19-event dry-run sequence, corrected payload fields and prompt length, and aligned the plain transcript with the `--start implement` reason. | Status: FIXED
 
 ### Low
 
-- `docs/apex-infinite-cli/transcripts/history-ledger.txt:19` and `docs/apex-infinite-cli/history-db.md:95` - The history sample implied current completed rows display `status=complete`, but current completion writes `ALL DONE BABY!` into `help_or_done_msg`, and the renderer prioritizes that stored state before deriving `complete` from `alldonebaby`. | Fix: updated the transcript and history DB docs to show stored-state precedence and clarify when `complete` appears. | Status: FIXED
+- `apex-infinite-cli/docs/transcripts/history-ledger.txt:19` and `apex-infinite-cli/docs/history-db.md:95` - The history sample implied current completed rows display `status=complete`, but current completion writes `ALL DONE BABY!` into `help_or_done_msg`, and the renderer prioritizes that stored state before deriving `complete` from `alldonebaby`. | Fix: updated the transcript and history DB docs to show stored-state precedence and clarify when `complete` appears. | Status: FIXED
 
 ## Assumptions and Deliberate Non-Fixes
 
@@ -77,7 +77,7 @@ None. The fixes update documentation samples only.
 - Packaging sync: `bash scripts/sync-plugin-payload.sh --check` - PASS - plugin payload is current.
 - Script smoke: `bash scripts/analyze-project.sh --json | jq .` - PASS - current session resolves to `phase00-session05-docs-samples-and-runbooks`.
 - Script smoke: `bash scripts/check-prereqs.sh --json --env | jq .` - PASS - overall status `pass`.
-- JSONL sample: `jq -c . docs/apex-infinite-cli/transcripts/machine-output-events.jsonl` - PASS - all 19 lines parse as JSON.
+- JSONL sample: `jq -c . apex-infinite-cli/docs/transcripts/machine-output-events.jsonl` - PASS - all 19 lines parse as JSON.
 - ASCII/LF: changed tracked and untracked file scan - PASS - printed `ASCII_OK`, `LF_OK`, and `JSONL_OK`.
 - Asset hygiene: tracked docs and CLI example scan for screenshots, QML, shaders, fonts, icons, resource manifests, and copied reference assets - PASS - no matches.
 - Whitespace: `git diff --check` - PASS - no output.

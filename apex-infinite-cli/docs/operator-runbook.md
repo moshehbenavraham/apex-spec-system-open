@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This runbook is for humans operating `apex_infinite.py` against a real project.
+This runbook is for humans operating `apex-infinite` against a real project.
 It assumes the CLI, config, and Codex skill are already installed.
 
 ## Prerequisites
@@ -17,9 +17,9 @@ It assumes the CLI, config, and Codex skill are already installed.
 
 Before the first run:
 
-1. Confirm `apex-infinite-cli/config.yaml` points at the intended provider and model.
+1. Confirm `src/apex_infinite/config.yaml` or your `--config` file points at the intended provider and model.
 2. Confirm the `codex.exec_flags` value matches the autonomy level you want.
-3. Run `python apex_infinite.py --check-provider` or
+3. Run `apex-infinite --check-provider` or
    `scripts/check-ollama.sh --chat` for local Ollama.
 4. Verify the target project already has the Apex Spec skill available if the
    run depends on `apex-spec` workflow commands.
@@ -35,7 +35,7 @@ Before the first run:
 
 ```bash
 cd apex-infinite-cli
-python apex_infinite.py
+apex-infinite
 ```
 
 Use this when you want the CLI to list directories under `~/projects/` and
@@ -45,7 +45,7 @@ prompt for the project, start command, and optional CEO instruction.
 
 ```bash
 cd apex-infinite-cli
-python apex_infinite.py --path ~/projects/my-app/ --start plansession
+apex-infinite --path ~/projects/my-app/ --start plansession
 ```
 
 Use this when the target path and first command are already known.
@@ -54,8 +54,8 @@ Use this when the target path and first command are already known.
 
 ```bash
 cd apex-infinite-cli
-python apex_infinite.py --check-provider
-python apex_infinite.py --check-provider --check-provider-chat
+apex-infinite --check-provider
+apex-infinite --check-provider --check-provider-chat
 scripts/check-ollama.sh --chat
 ```
 
@@ -67,7 +67,7 @@ Use `--skip-provider-check` only for intentional offline wiring checks.
 
 ```bash
 cd apex-infinite-cli
-python apex_infinite.py --path ~/projects/my-app/ --start plansession --dry-run
+apex-infinite --path ~/projects/my-app/ --start plansession --dry-run
 ```
 
 Use this before changing providers, models, or Codex flags. It exercises the
@@ -77,9 +77,9 @@ manager loop and prints the exact `codex exec` command without launching Codex.
 
 ```bash
 cd apex-infinite-cli
-python apex_infinite.py --path ~/projects/my-app/ --theme crt-green
-python apex_infinite.py --path ~/projects/my-app/ --theme crt-amber
-python apex_infinite.py --path ~/projects/my-app/ --theme ibm-dos
+apex-infinite --path ~/projects/my-app/ --theme crt-green
+apex-infinite --path ~/projects/my-app/ --theme crt-amber
+apex-infinite --path ~/projects/my-app/ --theme ibm-dos
 ```
 
 Use this when the terminal supports color and normal Rich rendering. `auto`
@@ -91,9 +91,9 @@ constraint such as `NO_COLOR`.
 
 ```bash
 cd apex-infinite-cli
-python apex_infinite.py --path ~/projects/my-app/ --plain
-python apex_infinite.py --path ~/projects/my-app/ --plain --ascii
-python apex_infinite.py --path ~/projects/my-app/ --plain --ascii --compact
+apex-infinite --path ~/projects/my-app/ --plain
+apex-infinite --path ~/projects/my-app/ --plain --ascii
+apex-infinite --path ~/projects/my-app/ --plain --ascii --compact
 ```
 
 Use `--plain` for CI, logs, redirected output, remote shells, unreadable color
@@ -116,7 +116,7 @@ Environment behavior:
 
 ```bash
 cd apex-infinite-cli
-python apex_infinite.py --path ~/projects/my-app/ --event-stream /tmp/apex-events.jsonl
+apex-infinite --path ~/projects/my-app/ --event-stream /tmp/apex-events.jsonl
 ```
 
 Use this when another process should observe lifecycle facts while a human
@@ -127,7 +127,7 @@ after every event.
 
 ```bash
 cd apex-infinite-cli
-python apex_infinite.py --path ~/projects/my-app/ --event-stream - --machine-output
+apex-infinite --path ~/projects/my-app/ --event-stream - --machine-output
 ```
 
 Use this for wrappers or automation that read stdout. In this mode stdout is
@@ -143,12 +143,13 @@ of stdout.
 
 ```bash
 cd apex-infinite-cli
-pip install -r requirements-wrapper.txt
-python -m apex_infinite_visual.main --dry-run --max-iterations 1
+python -m pip install -e ".[visual]"
+apex-infinite-visual --dry-run --max-iterations 1
 ```
 
 Use this only for the Linux visual wrapper source mode. The base CLI install
-remains `requirements.txt`; PySide6 and QML stay in the optional wrapper lane.
+remains the default `pyproject.toml` dependency set; PySide6 and QML stay in
+the optional `visual` extra.
 Session 08 release verification keeps source/dev operation shippable after
 final gates; final AppImage or binary publication remains gated for future
 packaging, license, notice, checksum, and source/relink review.
@@ -157,7 +158,7 @@ Source-mode settings can be selected before launch:
 
 ```bash
 cd apex-infinite-cli
-python -m apex_infinite_visual.main \
+apex-infinite-visual \
   --theme crt-amber \
   --effect-intensity 55 \
   --font-family "monospace" \
@@ -172,7 +173,7 @@ For a headless smoke check:
 
 ```bash
 cd apex-infinite-cli
-QT_QPA_PLATFORM=offscreen python -m apex_infinite_visual.main \
+QT_QPA_PLATFORM=offscreen apex-infinite-visual \
   --dry-run --max-iterations 1 --auto-close-ms 900
 ```
 
@@ -184,23 +185,23 @@ failure display.
 
 Fallback behavior:
 
-- If PySide6 is missing, install `requirements-wrapper.txt`.
+- If PySide6 is missing, install `.[visual]`.
 - If a display backend is unavailable, run the offscreen smoke command or use
   the base terminal CLI.
 - If events are malformed, the wrapper shows an error state and keeps the log
   bounded instead of crashing.
 - If the subprocess writes stderr or exits non-zero, the wrapper maps that to a
   visible error state.
-- If the subprocess times out or the base CLI script is missing, the wrapper
-  maps that to `Timed out` or `CLI missing`.
+- If the subprocess times out or the base CLI module cannot be launched, the
+  wrapper maps that to `Timed out` or `CLI missing`.
 
 ### History inspection
 
 ```bash
 cd apex-infinite-cli
-python apex_infinite.py --history
-python apex_infinite.py --history --path ~/projects/my-app/
-python apex_infinite.py --history --verbose
+apex-infinite --history
+apex-infinite --history --path ~/projects/my-app/
+apex-infinite --history --verbose
 ```
 
 Use this to inspect the last 50 logged records globally or for a single

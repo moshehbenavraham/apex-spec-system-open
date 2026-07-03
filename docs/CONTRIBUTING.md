@@ -83,5 +83,5 @@ When bumping the version, update both files:
 
 ## Project Structure
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full skill structure
+See [docs/ARCHITECTURE.md](ARCHITECTURE.md) for the full skill structure
 and design rationale.

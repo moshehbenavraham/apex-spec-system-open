@@ -183,7 +183,7 @@ Specifically, these do not alter manager or Codex routing:
 - history status labels and truncation
 - `--event-stream PATH`
 - `--event-stream - --machine-output`
-- deterministic transcript files under `docs/apex-infinite-cli/transcripts/`
+- deterministic transcript files under `apex-infinite-cli/docs/transcripts/`
 - the optional visual wrapper boundary
 
 Future visual wrappers must consume JSONL events or the importable event API.
@@ -217,9 +217,9 @@ The prompt contract is verified by these test groups:
 
 If you change any of these behaviors, update all of the following together:
 
-1. `apex_infinite.py`
-2. `apex-infinite-cli/tests/test_prompts.py`
-3. `apex-infinite-cli/README_apex-infinite-cli.md`
+1. `src/apex_infinite/cli.py`
+2. `tests/test_prompts.py`
+3. `README.md`
 4. This document
 
 ## Related Docs

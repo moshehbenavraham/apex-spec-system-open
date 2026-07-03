@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import pytest
 from rich.console import Console
 
-from apex_infinite_ui import (
+from apex_infinite.ui import (
     UiCliOverrides,
     UiConfigError,
     build_theme_registry,

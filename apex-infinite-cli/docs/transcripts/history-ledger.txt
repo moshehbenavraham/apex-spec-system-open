@@ -2,7 +2,7 @@ Apex Infinite CLI deterministic transcript
 Mode: --history, then --history --verbose
 Purpose: show render-time history ledger semantics without changing SQLite rows
 
-$ python apex_infinite.py --history --path /home/user/projects/my-app/ --plain --ascii
+$ apex-infinite --history --path /home/user/projects/my-app/ --plain --ascii
 
 HISTORY History
 Rows: 4
@@ -26,7 +26,7 @@ Path: /home/user/projects/my-app/
 Reason: (blank)
 Response: Legacy row with sparse fields.
 
-$ python apex_infinite.py --history --path /home/user/projects/my-app/ --verbose --plain --ascii
+$ apex-infinite --history --path /home/user/projects/my-app/ --verbose --plain --ascii
 
 HISTORY History
 Rows: 1

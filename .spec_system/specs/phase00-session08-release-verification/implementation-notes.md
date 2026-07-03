@@ -89,13 +89,13 @@
 - Command/check: `git ls-files | grep '^EXAMPLE/' || true`
   - Result: PASS - command produced no output.
   - Evidence: No ignored reference tree files are tracked.
-- Command/check: `git ls-files apex-infinite-cli docs/apex-infinite-cli .github/workflows | rg -n 'cool-retro-term|EXAMPLE/|allNoise512|crt256|\\.qsb$|\\.png$|\\.icns$|\\.frag$|\\.vert$|resources\\.qrc$|cool-retro-term\\.pro$|app\\.pro$|snapcraft\\.yaml$|build-appimage\\.sh$|fontmanager|fontlistmodel|qmltermwidget|QTermWidget|TerminalWindow|ApplicationSettings|BurnInEffect|ShaderTerminal|PreprocessedTerminal|TerminalFrame|TerminalTabs|TerminalContainer|SettingsGeneralTab|SettingsEffectsTab|SettingsAdvancedTab|SettingsTerminalTab' || true`
+- Command/check: `git ls-files apex-infinite-cli apex-infinite-cli .github/workflows | rg -n 'cool-retro-term|EXAMPLE/|allNoise512|crt256|\\.qsb$|\\.png$|\\.icns$|\\.frag$|\\.vert$|resources\\.qrc$|cool-retro-term\\.pro$|app\\.pro$|snapcraft\\.yaml$|build-appimage\\.sh$|fontmanager|fontlistmodel|qmltermwidget|QTermWidget|TerminalWindow|ApplicationSettings|BurnInEffect|ShaderTerminal|PreprocessedTerminal|TerminalFrame|TerminalTabs|TerminalContainer|SettingsGeneralTab|SettingsEffectsTab|SettingsAdvancedTab|SettingsTerminalTab' || true`
   - Result: PASS - command produced no output.
   - Evidence: No tracked release-scoped paths match copied reference names or forbidden reference file names.
-- Command/check: `git ls-files apex-infinite-cli docs/apex-infinite-cli .github/workflows | while IFS= read -r f; do case "$f" in *.png|*.jpg|*.jpeg|*.gif|*.icns|*.qsb|*.frag|*.vert|*.qrc|*.pro|*.desktop) printf 'BINARY_OR_REFERENCE_EXT %s\n' "$f";; esac; done`
+- Command/check: `git ls-files apex-infinite-cli apex-infinite-cli .github/workflows | while IFS= read -r f; do case "$f" in *.png|*.jpg|*.jpeg|*.gif|*.icns|*.qsb|*.frag|*.vert|*.qrc|*.pro|*.desktop) printf 'BINARY_OR_REFERENCE_EXT %s\n' "$f";; esac; done`
   - Result: PASS - command produced no output.
   - Evidence: No release-scoped tracked binary/reference extensions found.
-- Command/check: `rg -n 'PyQt|pywebview|xterm\\.js|qmltermwidget|QTermWidget|terminal-emulator code|copied terminal' apex-infinite-cli/apex_infinite.py apex-infinite-cli/apex_infinite_events.py apex-infinite-cli/apex_infinite_ui.py apex-infinite-cli/apex_infinite_visual apex-infinite-cli/requirements*.txt docs/apex-infinite-cli | sed -n '1,220p'`
+- Command/check: `rg -n 'PyQt|pywebview|xterm\\.js|qmltermwidget|QTermWidget|terminal-emulator code|copied terminal' apex-infinite-cli/apex_infinite.py apex-infinite-cli/apex_infinite_events.py apex-infinite-cli/apex_infinite_ui.py apex-infinite-cli/apex_infinite_visual apex-infinite-cli/requirements*.txt apex-infinite-cli | sed -n '1,220p'`
   - Result: PASS - hits are in documentation of exclusions and backup paths only.
   - Evidence: No implementation import or dependency path uses excluded terminal-widget or copied-terminal material.
 - UI product-surface check: N/A - no user-facing UI changed.
@@ -124,13 +124,13 @@
 - `.spec_system/specs/phase00-session08-release-verification/tasks.md` - marked T017 complete and updated progress.
 
 **Verification**:
-- Command/check: `rg -n -- '--plain|--ascii|--compact|--theme' apex-infinite-cli/README-apex-infinite-cli.md docs/apex-infinite-cli`
+- Command/check: `rg -n -- '--plain|--ascii|--compact|--theme' apex-infinite-cli/README_apex-infinite-cli.md apex-infinite-cli`
   - Result: PASS - README, runbook, transcripts, productization, prompt-contract, and troubleshooting docs cover UI flags and fallback controls.
   - Evidence: Matches include CLI options, runbook examples, constrained-output guidance, and transcript modes.
-- Command/check: `rg -n -- '--event-stream|--machine-output|history|SQLite|transcript|troubleshooting|requirements-wrapper|PySide6|license|LGPL|prompt-contract|fallback' apex-infinite-cli/README-apex-infinite-cli.md docs/apex-infinite-cli`
+- Command/check: `rg -n -- '--event-stream|--machine-output|history|SQLite|transcript|troubleshooting|requirements-wrapper|PySide6|license|LGPL|prompt-contract|fallback' apex-infinite-cli/README_apex-infinite-cli.md apex-infinite-cli`
   - Result: PASS - event stream, history, wrapper, dependency, license, transcript, and troubleshooting coverage exists.
   - Evidence: Matches include guarded stdout JSONL, SQLite raw-storage docs, optional wrapper lane, PySide6/QML obligations, and troubleshooting sections.
-- Command/check: `test -s docs/apex-infinite-cli/transcripts/dry-run-plain.txt && test -s docs/apex-infinite-cli/transcripts/history-ledger.txt && test -s docs/apex-infinite-cli/transcripts/machine-output-events.jsonl`
+- Command/check: `test -s apex-infinite-cli/docs/transcripts/dry-run-plain.txt && test -s apex-infinite-cli/docs/transcripts/history-ledger.txt && test -s apex-infinite-cli/docs/transcripts/machine-output-events.jsonl`
   - Result: PASS - all three release transcript samples are present and non-empty.
   - Evidence: Deterministic plain, history, and machine-output examples exist.
 - Command/check: stale final-status scan for `Session 07 productizes source/dev`, `binary publishing remains gated`, `Session 08 owns final release verification`, `Phase 00 has not run`, `Planned event-stream payloads are not implemented yet`, and `No automated Python vulnerability audit`
@@ -229,9 +229,9 @@
 - `.spec_system/specs/phase00-session08-release-verification/compatibility-fixes.md` - added final compatibility posture review.
 - `.spec_system/specs/phase00-session08-release-verification/clean-room-audit.md` - updated source-shippable and binary-gated release position.
 - `.spec_system/SECURITY-COMPLIANCE.md` - refreshed cumulative security posture.
-- `apex-infinite-cli/README-apex-infinite-cli.md` - updated wrapper source/binary status.
-- `docs/apex-infinite-cli/operator-runbook.md` - updated wrapper source/binary status.
-- `docs/apex-infinite-cli/visual-wrapper-productization.md` - updated release position and packaging handoff.
+- `apex-infinite-cli/README_apex-infinite-cli.md` - updated wrapper source/binary status.
+- `apex-infinite-cli/docs/operator-runbook.md` - updated wrapper source/binary status.
+- `apex-infinite-cli/docs/visual-wrapper-productization.md` - updated release position and packaging handoff.
 - `.spec_system/specs/phase00-session08-release-verification/implementation-notes.md` - added T020 evidence.
 - `.spec_system/specs/phase00-session08-release-verification/tasks.md` - marked T020 complete and updated progress.
 
@@ -558,7 +558,7 @@
 - `.spec_system/specs/phase00-session08-release-verification/tasks.md` - marked T008 complete and updated progress.
 
 **Verification**:
-- Command/check: `rg -n "PySide6|QML|qt|AppImage|SHA256|source/relink|license|LGPL|commercial|requirements-wrapper|dry-run|auto-close|timeout|malformed|stderr|Process failed|Timed out|CLI missing|plain fallback|effect|font|reduced|theme|fixture|event-stream|machine-output" apex-infinite-cli/apex_infinite_visual apex-infinite-cli/requirements-wrapper.txt apex-infinite-cli/tests/test_visual_wrapper_spike.py apex-infinite-cli/tests/test_visual_wrapper_productization.py docs/apex-infinite-cli/visual-wrapper-*.md | sed -n '1,260p'`
+- Command/check: `rg -n "PySide6|QML|qt|AppImage|SHA256|source/relink|license|LGPL|commercial|requirements-wrapper|dry-run|auto-close|timeout|malformed|stderr|Process failed|Timed out|CLI missing|plain fallback|effect|font|reduced|theme|fixture|event-stream|machine-output" apex-infinite-cli/apex_infinite_visual apex-infinite-cli/requirements-wrapper.txt apex-infinite-cli/tests/test_visual_wrapper_spike.py apex-infinite-cli/tests/test_visual_wrapper_productization.py apex-infinite-cli/visual-wrapper-*.md | sed -n '1,260p'`
   - Result: PASS - source wrapper, tests, optional dependency, license, and binary gate evidence are present.
   - Evidence: Hits include PySide6/QML, guarded event-stream command, source smoke, failure states, settings controls, LGPL/commercial, AppImage, SHA256, and source/relink.
 - Command/check: Targeted reads of `tests/test_visual_wrapper_productization.py`, `apex_infinite_visual/main.py`, and `apex_infinite_visual/launcher.py`.
@@ -686,7 +686,7 @@
 - Command/check: `grep -n '^/EXAMPLE/' .gitignore && test -d EXAMPLE/cool-retro-term && printf 'example tree present and ignored by rule\n' || true`
   - Result: PASS - `.gitignore` contains `/EXAMPLE/` and the local reference tree exists under that ignored path.
   - Evidence: Output reported line 8 and `example tree present and ignored by rule`.
-- Command/check: `rg -n "Forbidden Copying|EXAMPLE|reference-only|PySide6|LGPL|AppImage|SHA256|source/relink|requirements-wrapper|base CLI|graphical|QTermWidget|qmltermwidget|copied|shader|GPL" docs/apex-infinite-cli/visual-wrapper-boundary.md docs/apex-infinite-cli/visual-wrapper-productization.md docs/apex-infinite-cli/visual-wrapper-spike.md .spec_system/SECURITY-COMPLIANCE.md .gitignore | sed -n '1,220p'`
+- Command/check: `rg -n "Forbidden Copying|EXAMPLE|reference-only|PySide6|LGPL|AppImage|SHA256|source/relink|requirements-wrapper|base CLI|graphical|QTermWidget|qmltermwidget|copied|shader|GPL" apex-infinite-cli/docs/visual-wrapper-boundary.md apex-infinite-cli/docs/visual-wrapper-productization.md apex-infinite-cli/docs/visual-wrapper-spike.md .spec_system/SECURITY-COMPLIANCE.md .gitignore | sed -n '1,220p'`
   - Result: PASS - boundary, license, optional dependency, packaging, and no-copy terms are documented.
   - Evidence: Hits include forbidden copying, base CLI graphical exclusions, PySide6 LGPL/commercial gates, AppImage, SHA256, source/relink, and `requirements-wrapper`.
 - Command/check: `rg -n "PySide6|QtQuick|Qt Quick|qml|apex_infinite_visual|Nuitka" apex-infinite-cli/requirements.txt apex-infinite-cli/apex_infinite.py apex-infinite-cli/apex_infinite_events.py apex-infinite-cli/apex_infinite_ui.py || true`
@@ -716,7 +716,7 @@
 - `.spec_system/specs/phase00-session08-release-verification/tasks.md` - marked T003 complete and updated progress.
 
 **Verification**:
-- Command/check: `rg -n "theme|plain|ascii|compact|event-stream|machine-output|history|prompt|wrapper|PySide6|LGPL|AppImage|SHA256|NO_COLOR|TERM=dumb|license|dependency|troubleshoot|transcript" apex-infinite-cli/README-apex-infinite-cli.md docs/apex-infinite-cli .spec_system/PRD .github/workflows apex-infinite-cli/requirements*.txt | sed -n '1,260p'`
+- Command/check: `rg -n "theme|plain|ascii|compact|event-stream|machine-output|history|prompt|wrapper|PySide6|LGPL|AppImage|SHA256|NO_COLOR|TERM=dumb|license|dependency|troubleshoot|transcript" apex-infinite-cli/README_apex-infinite-cli.md apex-infinite-cli .spec_system/PRD .github/workflows apex-infinite-cli/requirements*.txt | sed -n '1,260p'`
   - Result: PASS - required release topics were found across README, docs, transcripts, PRD, workflows, and requirements.
   - Evidence: Hits include UI modes, event stream guardrails, history, prompt contract, PySide6, AppImage, SHA256, LGPL, and troubleshooting.
 - Command/check: `rg -n "name:|pytest|bats|black|pylint|sync-plugin|pip-audit|shellcheck|pyside6|qmllint|AppImage|release|upload" .github/workflows`

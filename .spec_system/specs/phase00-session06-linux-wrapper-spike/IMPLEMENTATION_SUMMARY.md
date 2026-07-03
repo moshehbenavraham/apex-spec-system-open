@@ -29,16 +29,16 @@ Session 07 productization.
 | `apex-infinite-cli/apex_infinite_visual/main.py` | PySide6 entrypoint, bridge model, fixture flow, and run controls | 596 |
 | `apex-infinite-cli/apex_infinite_visual/qml/Main.qml` | Independent QML prototype surface and visual controls | 490 |
 | `apex-infinite-cli/tests/test_visual_wrapper_spike.py` | Focused tests for parser, launcher, import guard, and fixture flow | 402 |
-| `docs/apex-infinite-cli/visual-wrapper-spike.md` | Spike evidence, license assessment, packaging risks, and decision record | 257 |
+| `apex-infinite-cli/docs/visual-wrapper-spike.md` | Spike evidence, license assessment, packaging risks, and decision record | 257 |
 
 ### Files Modified
 
 | File | Changes |
 |------|---------|
-| `apex-infinite-cli/README-apex-infinite-cli.md` | Added optional wrapper prototype install and run notes. |
-| `docs/apex-infinite-cli/operator-runbook.md` | Added wrapper operating mode, fallback behavior, and spike links. |
-| `docs/apex-infinite-cli/visual-wrapper-boundary.md` | Recorded confirmed prototype constraints and evidence links. |
-| `docs/apex-infinite-cli/troubleshooting.md` | Added missing dependency, display backend, malformed JSONL, subprocess, and clean-room troubleshooting entries. |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | Added optional wrapper prototype install and run notes. |
+| `apex-infinite-cli/docs/operator-runbook.md` | Added wrapper operating mode, fallback behavior, and spike links. |
+| `apex-infinite-cli/docs/visual-wrapper-boundary.md` | Recorded confirmed prototype constraints and evidence links. |
+| `apex-infinite-cli/docs/troubleshooting.md` | Added missing dependency, display backend, malformed JSONL, subprocess, and clean-room troubleshooting entries. |
 
 ---
 

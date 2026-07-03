@@ -9,16 +9,16 @@
 **Files reviewed** (session deliverables only):
 - `apex-infinite-cli/apex_infinite_events.py` - event emitter API, JSONL writer, payload validation
 - `apex-infinite-cli/tests/test_event_stream.py` - event API, payload safety, loop event tests
-- `docs/apex-infinite-cli/event-stream.md` - wrapper-facing event contract
+- `apex-infinite-cli/docs/event-stream.md` - wrapper-facing event contract
 - `apex-infinite-cli/apex_infinite.py` - CLI flags, event lifecycle wiring, subprocess and DB events
 - `apex-infinite-cli/apex_infinite_ui.py` - no-human-output renderer adapter
 - `apex-infinite-cli/tests/test_cli_options.py` - event flag and stdout isolation tests
 - `apex-infinite-cli/tests/test_subprocess_execution.py` - subprocess event tests
 - `apex-infinite-cli/tests/test_renderer.py` - no-human-output renderer tests
-- `apex-infinite-cli/README-apex-infinite-cli.md` - event stream user docs
-- `docs/apex-infinite-cli/operator-runbook.md` - operator event stream guidance
-- `docs/apex-infinite-cli/prompt-contract.md` - prompt and event boundary docs
-- `docs/apex-infinite-cli/troubleshooting.md` - event stream troubleshooting docs
+- `apex-infinite-cli/README_apex-infinite-cli.md` - event stream user docs
+- `apex-infinite-cli/docs/operator-runbook.md` - operator event stream guidance
+- `apex-infinite-cli/docs/prompt-contract.md` - prompt and event boundary docs
+- `apex-infinite-cli/docs/troubleshooting.md` - event stream troubleshooting docs
 
 **Review method**: Static analysis of session deliverables, dependency diff
 inspection, focused security pattern search, and validation test evidence.

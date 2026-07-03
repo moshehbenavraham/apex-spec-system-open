@@ -15,14 +15,14 @@ Stdout JSONL is available only in explicit machine-output mode.
 Write events to a file while keeping normal human output:
 
 ```bash
-python apex_infinite.py --path ~/projects/my-app/ --event-stream /tmp/apex-events.jsonl
+apex-infinite --path ~/projects/my-app/ --event-stream /tmp/apex-events.jsonl
 ```
 
 Reserve stdout for JSONL and suppress human rendering, terminal bell, and
 desktop notifications:
 
 ```bash
-python apex_infinite.py --path ~/projects/my-app/ --event-stream - --machine-output
+apex-infinite --path ~/projects/my-app/ --event-stream - --machine-output
 ```
 
 Guardrails:
@@ -159,7 +159,7 @@ stream itself is no longer writable, no human fallback is printed to stdout.
 
 ## Wrapper Guidance
 
-Wrappers should consume the JSONL stream or import `apex_infinite_events`
+Wrappers should consume the JSONL stream or import `apex_infinite.events`
 directly. They should not parse terminal output, Rich markup, history display
 rows, or frame-like text. The event stream is append-only during a run and is
 flushed after every event so wrapper state can update incrementally.

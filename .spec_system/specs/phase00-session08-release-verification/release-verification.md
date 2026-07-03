@@ -123,12 +123,12 @@
 |--------------|-------|------------------|--------|
 | Product requirements | `.spec_system/PRD/PRD.md`, `.spec_system/PRD/PRD_UX.md`, `.spec_system/PRD/phase_00/session_08_release_verification.md` | Completion criteria, UX constraints, clean-room reference scope, wrapper release state | Mapped |
 | Prior validation reports | `.spec_system/specs/phase00-session01-*` through `.spec_system/specs/phase00-session07-*/validation.md` | Sessions 01-07 validated PASS before release verification | Mapped |
-| CLI README and runbook | `apex-infinite-cli/README-apex-infinite-cli.md`, `docs/apex-infinite-cli/operator-runbook.md` | Install lanes, UI flags, dry-run, history, event stream, wrapper source mode | Mapped |
-| Event and history docs | `docs/apex-infinite-cli/event-stream.md`, `docs/apex-infinite-cli/history-db.md` | JSONL guardrails, event schema, raw event payloads, SQLite raw-storage boundary | Mapped |
-| Prompt contract docs | `docs/apex-infinite-cli/prompt-contract.md` | Known commands, prompt generation, UI/event non-impact on routing | Mapped |
-| Transcripts | `docs/apex-infinite-cli/transcripts/*.txt`, `docs/apex-infinite-cli/transcripts/*.jsonl` | Deterministic plain, history, and machine-output examples without real secrets | Mapped |
-| Wrapper docs | `docs/apex-infinite-cli/visual-wrapper-boundary.md`, `docs/apex-infinite-cli/visual-wrapper-spike.md`, `docs/apex-infinite-cli/visual-wrapper-productization.md` | Optional dependency lane, clean-room rules, license gates, binary deferral | Mapped |
-| Troubleshooting docs | `docs/apex-infinite-cli/troubleshooting.md` | Event misuse, constrained output, wrapper failure, packaging failure guidance | Mapped |
+| CLI README and runbook | `apex-infinite-cli/README_apex-infinite-cli.md`, `apex-infinite-cli/docs/operator-runbook.md` | Install lanes, UI flags, dry-run, history, event stream, wrapper source mode | Mapped |
+| Event and history docs | `apex-infinite-cli/docs/event-stream.md`, `apex-infinite-cli/docs/history-db.md` | JSONL guardrails, event schema, raw event payloads, SQLite raw-storage boundary | Mapped |
+| Prompt contract docs | `apex-infinite-cli/docs/prompt-contract.md` | Known commands, prompt generation, UI/event non-impact on routing | Mapped |
+| Transcripts | `apex-infinite-cli/docs/transcripts/*.txt`, `apex-infinite-cli/docs/transcripts/*.jsonl` | Deterministic plain, history, and machine-output examples without real secrets | Mapped |
+| Wrapper docs | `apex-infinite-cli/docs/visual-wrapper-boundary.md`, `apex-infinite-cli/docs/visual-wrapper-spike.md`, `apex-infinite-cli/docs/visual-wrapper-productization.md` | Optional dependency lane, clean-room rules, license gates, binary deferral | Mapped |
+| Troubleshooting docs | `apex-infinite-cli/docs/troubleshooting.md` | Event misuse, constrained output, wrapper failure, packaging failure guidance | Mapped |
 | Requirements | `apex-infinite-cli/requirements.txt`, `requirements-dev.txt`, `requirements-wrapper.txt` | Base dependency isolation, dev tooling, optional PySide6/QML and packaging lane | Mapped |
 | Workflows | `.github/workflows/quality.yml`, `test.yml`, `integration.yml`, `security.yml`, `release.yml` | ASCII/LF, Bats, sync check, script tests, security scan, release file/version checks | Mapped |
 
@@ -138,13 +138,13 @@
 
 | Documentation Area | Files Inspected | Result | Evidence |
 |--------------------|-----------------|--------|----------|
-| UI flags and fallback behavior | `README-apex-infinite-cli.md`, `operator-runbook.md`, `troubleshooting.md` | PASS | `--theme`, `--plain`, `--ascii`, `--compact`, `NO_COLOR`, `TERM=dumb`, non-TTY, and redirected-output guidance is present. |
+| UI flags and fallback behavior | `README_apex-infinite-cli.md`, `operator-runbook.md`, `troubleshooting.md` | PASS | `--theme`, `--plain`, `--ascii`, `--compact`, `NO_COLOR`, `TERM=dumb`, non-TTY, and redirected-output guidance is present. |
 | Prompt-contract impact | `prompt-contract.md` | PASS | UI settings, history display, event-stream samples, and machine-output mode are documented as non-routing concerns. |
-| Event stream and machine output | `README-apex-infinite-cli.md`, `event-stream.md`, `operator-runbook.md`, `troubleshooting.md`, transcripts | PASS | Guarded `--event-stream - --machine-output`, file JSONL, schema, event names, wrapper consumption, and troubleshooting are documented. |
-| History DB and raw storage | `README-apex-infinite-cli.md`, `history-db.md`, `operator-runbook.md`, transcripts | PASS | SQLite schema, `cc_response` compatibility, render-time labels, verbose history, and raw-storage boundaries are documented. |
-| Transcript coverage | `docs/apex-infinite-cli/transcripts/` | PASS | Plain dry-run, history ledger, and machine-output JSONL samples exist and are non-empty. |
+| Event stream and machine output | `README_apex-infinite-cli.md`, `event-stream.md`, `operator-runbook.md`, `troubleshooting.md`, transcripts | PASS | Guarded `--event-stream - --machine-output`, file JSONL, schema, event names, wrapper consumption, and troubleshooting are documented. |
+| History DB and raw storage | `README_apex-infinite-cli.md`, `history-db.md`, `operator-runbook.md`, transcripts | PASS | SQLite schema, `cc_response` compatibility, render-time labels, verbose history, and raw-storage boundaries are documented. |
+| Transcript coverage | `apex-infinite-cli/docs/transcripts/` | PASS | Plain dry-run, history ledger, and machine-output JSONL samples exist and are non-empty. |
 | Wrapper boundary and source mode | `visual-wrapper-boundary.md`, `visual-wrapper-productization.md`, `visual-wrapper-spike.md` | PASS | Event-driven wrapper boundary, optional PySide6/QML source mode, clean-room restrictions, and failure states are documented. |
-| Dependency and license plan | `README-apex-infinite-cli.md`, `operator-runbook.md`, `visual-wrapper-productization.md`, `visual-wrapper-boundary.md` | PASS | Base/wrapper dependency split, PySide6/QML license obligations, notices, source/relink, checksum, and AppImage gates are documented. |
+| Dependency and license plan | `README_apex-infinite-cli.md`, `operator-runbook.md`, `visual-wrapper-productization.md`, `visual-wrapper-boundary.md` | PASS | Base/wrapper dependency split, PySide6/QML license obligations, notices, source/relink, checksum, and AppImage gates are documented. |
 | Final release/security status | `.spec_system/SECURITY-COMPLIANCE.md`, `visual-wrapper-productization.md` | PASS | Cumulative posture now reflects Session 08 evidence, open risks, resolved event/clean-room findings, and binary-gated wrapper release state. |
 
 ---

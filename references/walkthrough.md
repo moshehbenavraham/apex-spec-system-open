@@ -396,7 +396,7 @@ User: documents
 
 Audits and updates documentation:
 - README.md
-- CONTRIBUTING.md
+- docs/CONTRIBUTING.md
 - docs/ARCHITECTURE.md
 - API documentation
 - Per-package READMEs

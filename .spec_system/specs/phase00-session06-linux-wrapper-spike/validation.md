@@ -72,11 +72,11 @@ files are workflow outputs from this validation command.
 | `apex-infinite-cli/apex_infinite_visual/main.py` | Yes | PASS |
 | `apex-infinite-cli/apex_infinite_visual/qml/Main.qml` | Yes | PASS |
 | `apex-infinite-cli/tests/test_visual_wrapper_spike.py` | Yes | PASS |
-| `docs/apex-infinite-cli/visual-wrapper-spike.md` | Yes | PASS |
-| `apex-infinite-cli/README-apex-infinite-cli.md` | Yes | PASS |
-| `docs/apex-infinite-cli/visual-wrapper-boundary.md` | Yes | PASS |
-| `docs/apex-infinite-cli/operator-runbook.md` | Yes | PASS |
-| `docs/apex-infinite-cli/troubleshooting.md` | Yes | PASS |
+| `apex-infinite-cli/docs/visual-wrapper-spike.md` | Yes | PASS |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | Yes | PASS |
+| `apex-infinite-cli/docs/visual-wrapper-boundary.md` | Yes | PASS |
+| `apex-infinite-cli/docs/operator-runbook.md` | Yes | PASS |
+| `apex-infinite-cli/docs/troubleshooting.md` | Yes | PASS |
 
 **Missing deliverables**: None
 
@@ -90,11 +90,11 @@ files are workflow outputs from this validation command.
 | `apex-infinite-cli/apex_infinite_visual/main.py` | ASCII | LF | PASS |
 | `apex-infinite-cli/apex_infinite_visual/qml/Main.qml` | ASCII | LF | PASS |
 | `apex-infinite-cli/tests/test_visual_wrapper_spike.py` | ASCII | LF | PASS |
-| `docs/apex-infinite-cli/visual-wrapper-spike.md` | ASCII | LF | PASS |
-| `apex-infinite-cli/README-apex-infinite-cli.md` | ASCII | LF | PASS |
-| `docs/apex-infinite-cli/visual-wrapper-boundary.md` | ASCII | LF | PASS |
-| `docs/apex-infinite-cli/operator-runbook.md` | ASCII | LF | PASS |
-| `docs/apex-infinite-cli/troubleshooting.md` | ASCII | LF | PASS |
+| `apex-infinite-cli/docs/visual-wrapper-spike.md` | ASCII | LF | PASS |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | ASCII | LF | PASS |
+| `apex-infinite-cli/docs/visual-wrapper-boundary.md` | ASCII | LF | PASS |
+| `apex-infinite-cli/docs/operator-runbook.md` | ASCII | LF | PASS |
+| `apex-infinite-cli/docs/troubleshooting.md` | ASCII | LF | PASS |
 
 **Encoding issues**: None
 

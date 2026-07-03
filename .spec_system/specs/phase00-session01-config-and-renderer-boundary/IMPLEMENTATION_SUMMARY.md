@@ -39,7 +39,7 @@ prompt routing, subprocess return semantics, and SQLite compatibility.
 |------|---------|
 | `apex-infinite-cli/apex_infinite.py` | Added display flags, resolved UI settings, renderer injection, and renderer-routed output paths |
 | `apex-infinite-cli/config.yaml` | Added default `ui` configuration section |
-| `apex-infinite-cli/README-apex-infinite-cli.md` | Documented display settings, flags, precedence, fallback behavior, and history guarantees |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | Documented display settings, flags, precedence, fallback behavior, and history guarantees |
 | `apex-infinite-cli/tests/conftest.py` | Added shared test import support |
 | `apex-infinite-cli/tests/test_prompts.py` | Applied Black formatting while preserving prompt expectations |
 | `.spec_system/state.json` | Recorded planned, validated, and completed session workflow state |

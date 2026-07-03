@@ -76,7 +76,7 @@ jobs:
         run: |
           FAILURES=0
           echo "Checking required files..."
-          REQUIRED_FILES="SKILL.md README.md CHANGELOG.md LICENSE CONTRIBUTING.md agents/openai.yaml"
+          REQUIRED_FILES="SKILL.md README.md docs/CHANGELOG.md docs/CONTRIBUTING.md LICENSE agents/openai.yaml"
           for f in $REQUIRED_FILES; do
             if [[ ! -f "$f" ]]; then
               echo "::error::Missing required file: $f"
@@ -114,9 +114,9 @@ jobs:
         working-directory: apex-infinite-cli
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
-          python apex_infinite.py --version
-          python apex_infinite.py --help > /tmp/apex-infinite-help.txt
+          python -m pip install -e .
+          apex-infinite --version
+          apex-infinite --help > /tmp/apex-infinite-help.txt
           grep -q -- "--check-provider" /tmp/apex-infinite-help.txt
           grep -q -- "--event-stream" /tmp/apex-infinite-help.txt
           grep -q -- "--machine-output" /tmp/apex-infinite-help.txt
@@ -174,4 +174,4 @@ jobs:
 
             ### What's Changed
 
-            See CHANGELOG.md and auto-generated changelog below.
+            See docs/CHANGELOG.md and auto-generated changelog below.

@@ -5,7 +5,7 @@ from types import SimpleNamespace
 
 import pytest
 
-import apex_infinite
+import apex_infinite.cli as apex_infinite
 
 AGENT_CFG = {
     "binary": "codex",

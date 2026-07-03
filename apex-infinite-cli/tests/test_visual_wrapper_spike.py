@@ -136,6 +136,28 @@ def test_build_apex_cli_command_uses_stdout_jsonl_guard(tmp_path):
     assert command[-1] == "--dry-run"
 
 
+def test_build_apex_cli_command_defaults_to_package_module(tmp_path):
+    command = build_apex_cli_command(
+        ApexCliLaunchOptions(
+            project_path=tmp_path,
+            python_executable=sys.executable,
+            start_command="implement",
+            max_iterations=1,
+            dry_run=True,
+        )
+    )
+
+    assert command[:5] == [
+        sys.executable,
+        "-m",
+        "apex_infinite",
+        "--path",
+        str(tmp_path),
+    ]
+    assert command[command.index("--event-stream") + 1] == "-"
+    assert "--machine-output" in command
+
+
 @pytest.mark.parametrize(
     "command",
     [

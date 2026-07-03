@@ -6,7 +6,7 @@ import json
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 
-from apex_infinite_events import (
+from apex_infinite.events import (
     EVENT_NAMES,
     EVENT_VERSION,
     EventStreamError,

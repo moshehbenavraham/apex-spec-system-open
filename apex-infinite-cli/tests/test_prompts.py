@@ -9,7 +9,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from apex_infinite import (
+from apex_infinite.cli import (
     KNOWN_COMMANDS,
     MANAGER_SYSTEM_PROMPT,
     SUMMARIZER_SYSTEM_PROMPT,

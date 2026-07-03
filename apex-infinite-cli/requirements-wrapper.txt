@@ -1,13 +1,3 @@
 # Optional Linux visual wrapper and packaging dependencies.
-# Keep this separate from requirements.txt so the base CLI remains headless-safe.
--r requirements.txt
-
-# Source visual mode runtime. PySide6/Qt Quick/QML is loaded only by
-# python -m apex_infinite_visual.main, never by the base terminal CLI.
-# Review LGPLv3/GPL/commercial obligations before publishing a binary.
-PySide6>=6.11.1
-
-# Packaging review lane. Qt for Python ships pyside6-deploy as a Nuitka-based
-# helper; keep generated bundle review, notices, checksums, and source/relink
-# obligations outside the base CLI install.
-Nuitka>=4.1.3
+# The canonical optional dependencies live in pyproject.toml.
+-e .[visual]

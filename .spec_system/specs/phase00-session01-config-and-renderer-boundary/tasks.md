@@ -49,7 +49,7 @@ Legend: `[x]` completed; `[ ]` pending; `[P]` parallelizable; `[SNNMM]` session 
 - [x] T012 [S0001] Route iteration banners, history-summary status, manager decisions, reasons, and prompt previews through renderer helpers (`apex-infinite-cli/apex_infinite.py`)
 - [x] T013 [S0001] Route `execute_codex()` dry-run, start, verbose, truncated, non-zero exit, timeout, missing-binary, and generic-error output through renderer helpers while preserving returned raw output (`apex-infinite-cli/apex_infinite.py`)
 - [x] T014 [S0001] Route LLM retry notices, interrupt pauses, help pauses, completion, and max-iteration notices through renderer helpers without hiding critical states in compact mode (`apex-infinite-cli/apex_infinite.py`)
-- [x] T015 [S0001] Document UI config keys, CLI flags, precedence, constrained-output fallback, and history raw-data guarantees (`apex-infinite-cli/README-apex-infinite-cli.md`)
+- [x] T015 [S0001] Document UI config keys, CLI flags, precedence, constrained-output fallback, and history raw-data guarantees (`apex-infinite-cli/README_apex-infinite-cli.md`)
 
 ---
 

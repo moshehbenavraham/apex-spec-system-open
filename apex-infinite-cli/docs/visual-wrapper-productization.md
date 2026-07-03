@@ -11,7 +11,7 @@ CLI with the guarded event-stream command and renders lifecycle state from
 JSONL events:
 
 ```text
-python apex_infinite.py --event-stream - --machine-output ...
+apex-infinite --event-stream - --machine-output ...
 ```
 
 The wrapper must not parse Rich output, plain terminal text, SQLite history
@@ -23,16 +23,16 @@ Install the base CLI first:
 
 ```bash
 cd apex-infinite-cli
-python -m pip install -r requirements.txt
+python -m pip install -e .
 ```
 
 Install the optional visual wrapper only when running the Linux visual mode:
 
 ```bash
-python -m pip install -r requirements-wrapper.txt
+python -m pip install -e ".[visual]"
 ```
 
-`requirements-wrapper.txt` includes PySide6 and packaging review tooling in the
+The `visual` extra includes PySide6 and packaging review tooling in the
 optional lane. The base CLI install stays free of Qt, PySide6, QML, graphical
 display requirements, Nuitka, AppImage tooling, and wrapper assets.
 
@@ -42,13 +42,13 @@ Fixture-backed source visual mode:
 
 ```bash
 cd apex-infinite-cli
-python -m apex_infinite_visual.main --dry-run --max-iterations 1
+apex-infinite-visual --dry-run --max-iterations 1
 ```
 
 Launch the real CLI subprocess from the wrapper:
 
 ```bash
-python -m apex_infinite_visual.main \
+apex-infinite-visual \
   --launch-cli \
   --path ~/projects/my-app/ \
   --start-command implement \
@@ -59,7 +59,7 @@ python -m apex_infinite_visual.main \
 Use the productized visual settings from the command line:
 
 ```bash
-python -m apex_infinite_visual.main \
+apex-infinite-visual \
   --theme crt-amber \
   --effect-intensity 55 \
   --font-family "monospace" \
@@ -71,7 +71,7 @@ python -m apex_infinite_visual.main \
 Headless smoke check:
 
 ```bash
-QT_QPA_PLATFORM=offscreen python -m apex_infinite_visual.main \
+QT_QPA_PLATFORM=offscreen apex-infinite-visual \
   --dry-run --max-iterations 1 --auto-close-ms 300
 ```
 
@@ -100,7 +100,7 @@ The wrapper renders or reports these product-facing states:
 |-----------|---------|
 | PySide6 missing | Entrypoint prints `Visual wrapper unavailable` with install guidance. |
 | Display backend unavailable | Entrypoint reports a display or Qt runtime unavailable state. |
-| Missing base CLI script | QML failure state: `CLI missing`. |
+| Missing base CLI module | QML failure state: `CLI missing`. |
 | Invalid project path | QML failure state: `Project unavailable`. |
 | Malformed JSONL | QML failure state: `Malformed event`. |
 | Subprocess timeout | QML failure state: `Timed out`. |
@@ -121,20 +121,20 @@ cd apex-infinite-cli
 ./.venv/bin/python -m pytest tests/test_visual_wrapper_spike.py \
   tests/test_visual_wrapper_productization.py -v
 ./.venv/bin/python -m py_compile \
-  apex_infinite_visual/__init__.py \
-  apex_infinite_visual/events.py \
-  apex_infinite_visual/launcher.py \
-  apex_infinite_visual/main.py \
-  apex_infinite_visual/settings.py
-./.venv/bin/pyside6-qmllint apex_infinite_visual/qml/Main.qml
-QT_QPA_PLATFORM=offscreen ./.venv/bin/python -m apex_infinite_visual.main \
+  src/apex_infinite_visual/__init__.py \
+  src/apex_infinite_visual/events.py \
+  src/apex_infinite_visual/launcher.py \
+  src/apex_infinite_visual/main.py \
+  src/apex_infinite_visual/settings.py
+./.venv/bin/pyside6-qmllint src/apex_infinite_visual/qml/Main.qml
+QT_QPA_PLATFORM=offscreen ./.venv/bin/apex-infinite-visual \
   --dry-run --max-iterations 1 --auto-close-ms 300
 ```
 
 If `pyside6-qmllint` is unavailable because optional wrapper dependencies are
 not installed, record that exact environment blocker before release
-verification. Do not move PySide6 into `requirements.txt` to make the check
-pass.
+verification. Do not move PySide6 into the base dependency set to make the
+check pass.
 
 ## Packaging Path
 
@@ -166,7 +166,7 @@ Before publishing a binary artifact:
 - Provide source availability or relink/replacement instructions required by
   the chosen license path.
 - Publish SHA256 checksums for the final artifact.
-- Keep `requirements.txt` independent of PySide6 and graphical display
+- Keep the base dependency set independent of PySide6 and graphical display
   dependencies.
 
 Experienced legal review is recommended when there is doubt about LGPLv3,
@@ -183,7 +183,7 @@ Use these checks during implementation and release verification:
 
 ```bash
 git ls-files | grep '^EXAMPLE/' && exit 1 || true
-LC_ALL=C grep -RInP '[^\x00-\x7F]' apex_infinite_visual docs/apex-infinite-cli || true
+LC_ALL=C git ls-files apex-infinite-cli | xargs -r grep -nP '[^\x00-\x7F]' || true
 git diff --check
 ```
 

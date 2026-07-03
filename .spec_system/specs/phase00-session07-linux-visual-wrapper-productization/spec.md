@@ -70,12 +70,12 @@ in Session 08.
 - Current event names and payload validation in
   `apex-infinite-cli/apex_infinite_events.py`.
 - Session 06 decision record in
-  `docs/apex-infinite-cli/visual-wrapper-spike.md`.
+  `apex-infinite-cli/docs/visual-wrapper-spike.md`.
 - PySide6/Qt Quick/QML optional dependency behavior from
   `apex-infinite-cli/requirements-wrapper.txt`.
 - Clean-room and license boundaries from `CONVENTIONS.md`,
   `SECURITY-COMPLIANCE.md`, and
-  `docs/apex-infinite-cli/visual-wrapper-boundary.md`.
+  `apex-infinite-cli/docs/visual-wrapper-boundary.md`.
 
 ### Environment Requirements
 
@@ -174,7 +174,7 @@ verification commands without copying third-party build scripts.
 |------|---------|------------|
 | `apex-infinite-cli/apex_infinite_visual/settings.py` | Validated wrapper presets, effect controls, font/scale bounds, and plain fallback settings | ~190 |
 | `apex-infinite-cli/tests/test_visual_wrapper_productization.py` | Productization tests for settings, launch validation, bridge failure states, and smoke helpers | ~280 |
-| `docs/apex-infinite-cli/visual-wrapper-productization.md` | Linux visual mode setup, packaging, release checklist, license obligations, and verification plan | ~240 |
+| `apex-infinite-cli/docs/visual-wrapper-productization.md` | Linux visual mode setup, packaging, release checklist, license obligations, and verification plan | ~240 |
 
 ### Files To Modify
 
@@ -186,10 +186,10 @@ verification commands without copying third-party build scripts.
 | `apex-infinite-cli/apex_infinite_visual/main.py` | Wire settings, bridge controls, launch validation, duplicate-trigger prevention, and productized failure handling | ~190 |
 | `apex-infinite-cli/apex_infinite_visual/qml/Main.qml` | Add productized controls, presets, failure surfaces, stable layout sizing, accessibility labels, and plain fallback | ~180 |
 | `apex-infinite-cli/requirements-wrapper.txt` | Clarify optional wrapper and packaging dependency boundaries | ~20 |
-| `apex-infinite-cli/README-apex-infinite-cli.md` | Update visual mode setup, run commands, packaging status, and productization doc links | ~45 |
-| `docs/apex-infinite-cli/operator-runbook.md` | Update operator flow for source visual mode, settings, smoke, and failure recovery | ~45 |
-| `docs/apex-infinite-cli/troubleshooting.md` | Add productized wrapper failure modes and recovery steps | ~45 |
-| `docs/apex-infinite-cli/visual-wrapper-boundary.md` | Record Session 07 productization boundaries and release gates | ~35 |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | Update visual mode setup, run commands, packaging status, and productization doc links | ~45 |
+| `apex-infinite-cli/docs/operator-runbook.md` | Update operator flow for source visual mode, settings, smoke, and failure recovery | ~45 |
+| `apex-infinite-cli/docs/troubleshooting.md` | Add productized wrapper failure modes and recovery steps | ~45 |
+| `apex-infinite-cli/docs/visual-wrapper-boundary.md` | Record Session 07 productization boundaries and release gates | ~35 |
 
 ---
 

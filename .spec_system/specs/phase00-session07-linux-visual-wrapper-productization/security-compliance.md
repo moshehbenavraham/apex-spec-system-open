@@ -7,7 +7,7 @@
 ## Scope
 
 **Files reviewed** (session deliverables and touched runtime/test/docs files):
-- `apex-infinite-cli/README-apex-infinite-cli.md` - visual mode user documentation
+- `apex-infinite-cli/README_apex-infinite-cli.md` - visual mode user documentation
 - `apex-infinite-cli/apex_infinite_visual/__init__.py` - wrapper package exports
 - `apex-infinite-cli/apex_infinite_visual/events.py` - wrapper event parsing and state mapping
 - `apex-infinite-cli/apex_infinite_visual/launcher.py` - guarded subprocess launcher
@@ -17,15 +17,15 @@
 - `apex-infinite-cli/requirements-wrapper.txt` - optional wrapper dependencies
 - `apex-infinite-cli/tests/test_visual_wrapper_productization.py` - productization tests
 - `apex-infinite-cli/tests/test_visual_wrapper_spike.py` - updated spike compatibility tests
-- `docs/apex-infinite-cli/operator-runbook.md` - operator guidance
-- `docs/apex-infinite-cli/troubleshooting.md` - wrapper recovery guidance
-- `docs/apex-infinite-cli/visual-wrapper-boundary.md` - clean-room and release boundary
-- `docs/apex-infinite-cli/visual-wrapper-productization.md` - productization guide
+- `apex-infinite-cli/docs/operator-runbook.md` - operator guidance
+- `apex-infinite-cli/docs/troubleshooting.md` - wrapper recovery guidance
+- `apex-infinite-cli/docs/visual-wrapper-boundary.md` - clean-room and release boundary
+- `apex-infinite-cli/docs/visual-wrapper-productization.md` - productization guide
 
 **Review method**: Static analysis of session deliverables, dependency check, source inspection, and security/GDPR checklist review.
 
 **Review evidence**:
-- Command/check: `rg -n "sk-[A-Za-z0-9]{20,}|Bearer [A-Za-z0-9._-]{10,}|AKIA[0-9A-Z]{16}|(?i)(api[_-]?key|secret|token|password)\s*[:=]\s*['\"][^'\"]+" apex-infinite-cli/apex_infinite_visual apex-infinite-cli/tests/test_visual_wrapper_productization.py apex-infinite-cli/tests/test_visual_wrapper_spike.py docs/apex-infinite-cli/visual-wrapper-productization.md apex-infinite-cli/requirements-wrapper.txt apex-infinite-cli/README-apex-infinite-cli.md docs/apex-infinite-cli/operator-runbook.md docs/apex-infinite-cli/troubleshooting.md docs/apex-infinite-cli/visual-wrapper-boundary.md || true`
+- Command/check: `rg -n "sk-[A-Za-z0-9]{20,}|Bearer [A-Za-z0-9._-]{10,}|AKIA[0-9A-Z]{16}|(?i)(api[_-]?key|secret|token|password)\s*[:=]\s*['\"][^'\"]+" apex-infinite-cli/apex_infinite_visual apex-infinite-cli/tests/test_visual_wrapper_productization.py apex-infinite-cli/tests/test_visual_wrapper_spike.py apex-infinite-cli/docs/visual-wrapper-productization.md apex-infinite-cli/requirements-wrapper.txt apex-infinite-cli/README_apex-infinite-cli.md apex-infinite-cli/docs/operator-runbook.md apex-infinite-cli/docs/troubleshooting.md apex-infinite-cli/docs/visual-wrapper-boundary.md || true`
   - Result: PASS
   - Evidence: matches were documented `api_key` environment placeholder examples in README and deliberate unsafe `Bearer abcdef1234567890` rejection fixtures in tests; no live hardcoded credential was found.
 - Command/check: `rg -n "subprocess|Popen|shell=True|os\.system|eval\(|exec\(|sqlite3|open\(" apex-infinite-cli/apex_infinite_visual apex-infinite-cli/tests/test_visual_wrapper_productization.py`

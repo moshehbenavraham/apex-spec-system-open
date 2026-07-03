@@ -24,7 +24,7 @@ compatibility, and raw durable history storage.
 |------|---------|-------|
 | `apex-infinite-cli/apex_infinite_events.py` | Rich-independent event emitter API, JSONL stream handling, payload validation, flushing, and cleanup | 278 |
 | `apex-infinite-cli/tests/test_event_stream.py` | Event API, CLI guardrail, dry-run lifecycle, stdout isolation, payload safety, and failure-path coverage | 538 |
-| `docs/apex-infinite-cli/event-stream.md` | Wrapper-facing JSONL event contract, event names, CLI examples, and safety boundaries | 156 |
+| `apex-infinite-cli/docs/event-stream.md` | Wrapper-facing JSONL event contract, event names, CLI examples, and safety boundaries | 156 |
 | `.spec_system/specs/phase00-session04-event-stream-boundary/code-review.md` | Code review and repair report | 85 |
 | `.spec_system/specs/phase00-session04-event-stream-boundary/security-compliance.md` | Security and GDPR compliance report | 84 |
 | `.spec_system/specs/phase00-session04-event-stream-boundary/validation.md` | Validation evidence and final PASS report | 220 |
@@ -38,10 +38,10 @@ compatibility, and raw durable history storage.
 | `apex-infinite-cli/tests/test_cli_options.py` | Added event-stream flag validation, loop wiring, JSONL-only stdout, and startup failure coverage |
 | `apex-infinite-cli/tests/test_subprocess_execution.py` | Added Codex lifecycle event coverage for dry-run, success, non-zero, timeout, missing binary, and generic errors |
 | `apex-infinite-cli/tests/test_renderer.py` | Added no-human-output renderer suppression coverage |
-| `apex-infinite-cli/README-apex-infinite-cli.md` | Documented event stream usage, `--machine-output`, stdout guardrails, and payload safety |
-| `docs/apex-infinite-cli/operator-runbook.md` | Added operator guidance for event files, machine-output mode, and wrapper consumption |
-| `docs/apex-infinite-cli/prompt-contract.md` | Clarified that event and machine-output behavior do not change prompt generation or manager parsing |
-| `docs/apex-infinite-cli/troubleshooting.md` | Added event-stream misuse, write failure, stdout collision, and machine-output troubleshooting |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | Documented event stream usage, `--machine-output`, stdout guardrails, and payload safety |
+| `apex-infinite-cli/docs/operator-runbook.md` | Added operator guidance for event files, machine-output mode, and wrapper consumption |
+| `apex-infinite-cli/docs/prompt-contract.md` | Clarified that event and machine-output behavior do not change prompt generation or manager parsing |
+| `apex-infinite-cli/docs/troubleshooting.md` | Added event-stream misuse, write failure, stdout collision, and machine-output troubleshooting |
 | `.spec_system/state.json` | Recorded Session 04 planning, validation, and completion state |
 | `.spec_system/PRD/phase_00/PRD_phase_00.md` | Marked Session 04 complete and updated phase progress to 4/8 |
 | `.spec_system/PRD/phase_00/session_04_event_stream_boundary.md` | Marked prerequisites and success criteria complete |

@@ -20,11 +20,11 @@ Session 07 may productize this path if it keeps the current boundaries:
 
 Implemented prototype files:
 
-- `apex-infinite-cli/apex_infinite_visual/__init__.py`
-- `apex-infinite-cli/apex_infinite_visual/events.py`
-- `apex-infinite-cli/apex_infinite_visual/launcher.py`
-- `apex-infinite-cli/apex_infinite_visual/main.py`
-- `apex-infinite-cli/apex_infinite_visual/qml/Main.qml`
+- `apex-infinite-cli/src/apex_infinite_visual/__init__.py`
+- `apex-infinite-cli/src/apex_infinite_visual/events.py`
+- `apex-infinite-cli/src/apex_infinite_visual/launcher.py`
+- `apex-infinite-cli/src/apex_infinite_visual/main.py`
+- `apex-infinite-cli/src/apex_infinite_visual/qml/Main.qml`
 
 The prototype provides:
 
@@ -46,15 +46,15 @@ Verification performed during the spike:
 ```bash
 cd apex-infinite-cli
 ./.venv/bin/python -m py_compile \
-  apex_infinite_visual/__init__.py \
-  apex_infinite_visual/events.py \
-  apex_infinite_visual/launcher.py \
-  apex_infinite_visual/main.py
+  src/apex_infinite_visual/__init__.py \
+  src/apex_infinite_visual/events.py \
+  src/apex_infinite_visual/launcher.py \
+  src/apex_infinite_visual/main.py
 
-QT_QPA_PLATFORM=offscreen ./.venv/bin/python -m apex_infinite_visual.main \
+QT_QPA_PLATFORM=offscreen ./.venv/bin/apex-infinite-visual \
   --dry-run --max-iterations 1 --auto-close-ms 300
 
-LC_ALL=C grep -RInP '[^\x00-\x7F]' apex_infinite_visual || true
+LC_ALL=C grep -RInP '[^\x00-\x7F]' src/apex_infinite_visual || true
 ```
 
 Results:
@@ -71,14 +71,14 @@ only when explicitly invoked:
 
 ```bash
 cd apex-infinite-cli
-python -m apex_infinite_visual.main --dry-run --max-iterations 1
+apex-infinite-visual --dry-run --max-iterations 1
 ```
 
 To launch the real base CLI subprocess from the prototype, use:
 
 ```bash
 cd apex-infinite-cli
-python -m apex_infinite_visual.main \
+apex-infinite-visual \
   --launch-cli \
   --path ~/projects/my-app/ \
   --start-command implement \
@@ -89,7 +89,7 @@ python -m apex_infinite_visual.main \
 The launch helper builds this guarded command shape:
 
 ```text
-python apex_infinite.py --path <project> --event-stream - --machine-output ...
+apex-infinite --path <project> --event-stream - --machine-output ...
 ```
 
 Stdout is reserved for JSONL. Stderr remains separate for wrapper failure
@@ -98,7 +98,7 @@ display. The wrapper does not require or inspect human terminal output.
 ## Event Contract
 
 The prototype consumes event schema version `1` from
-`apex_infinite_events.py`. It validates:
+`apex_infinite.events`. It validates:
 
 - event line is a JSON object
 - `version` is the supported integer version
@@ -144,13 +144,13 @@ No shader code or texture assets are included.
 
 ## Dependency And License Assessment
 
-The optional wrapper dependency file is:
+The optional wrapper dependency surface is:
 
 ```text
-apex-infinite-cli/requirements-wrapper.txt
+the `visual` optional dependency extra in `pyproject.toml`
 ```
 
-It keeps graphical dependencies out of `requirements.txt`.
+It keeps graphical dependencies out of the base dependency set.
 
 Current sources checked:
 

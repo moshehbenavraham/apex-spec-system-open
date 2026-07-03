@@ -10,11 +10,11 @@
 **Files reviewed** (all uncommitted changes):
 - `.spec_system/SECURITY-COMPLIANCE.md` - tracked-modified
 - `.spec_system/state.json` - tracked-modified
-- `apex-infinite-cli/README-apex-infinite-cli.md` - tracked-modified
+- `apex-infinite-cli/README_apex-infinite-cli.md` - tracked-modified
 - `apex-infinite-cli/apex_infinite.py` - tracked-modified
 - `apex-infinite-cli/tests/test_cli_options.py` - tracked-modified
-- `docs/apex-infinite-cli/operator-runbook.md` - tracked-modified
-- `docs/apex-infinite-cli/visual-wrapper-productization.md` - tracked-modified
+- `apex-infinite-cli/docs/operator-runbook.md` - tracked-modified
+- `apex-infinite-cli/docs/visual-wrapper-productization.md` - tracked-modified
 - `.spec_system/specs/phase00-session08-release-verification/clean-room-audit.md` - untracked
 - `.spec_system/specs/phase00-session08-release-verification/compatibility-fixes.md` - untracked
 - `.spec_system/specs/phase00-session08-release-verification/implementation-notes.md` - untracked

@@ -44,8 +44,8 @@ Legend: `[x]` completed; `[ ]` pending; `[P]` parallelizable; `[SNNMM]` session 
 
 ## Documentation (2 tasks)
 
-- [x] T017 [S0004] [P] Create the event stream contract with event names, payload principles, JSONL examples, `--machine-output` rules, wrapper guidance, and safety boundaries (`docs/apex-infinite-cli/event-stream.md`)
-- [x] T018 [S0004] [P] Update README, operator runbook, prompt contract, and troubleshooting docs for `--event-stream`, `--machine-output`, stdout isolation, raw payload safety, and unchanged prompt routing (`apex-infinite-cli/README-apex-infinite-cli.md`, `docs/apex-infinite-cli/operator-runbook.md`, `docs/apex-infinite-cli/prompt-contract.md`, `docs/apex-infinite-cli/troubleshooting.md`)
+- [x] T017 [S0004] [P] Create the event stream contract with event names, payload principles, JSONL examples, `--machine-output` rules, wrapper guidance, and safety boundaries (`apex-infinite-cli/docs/event-stream.md`)
+- [x] T018 [S0004] [P] Update README, operator runbook, prompt contract, and troubleshooting docs for `--event-stream`, `--machine-output`, stdout isolation, raw payload safety, and unchanged prompt routing (`apex-infinite-cli/README_apex-infinite-cli.md`, `apex-infinite-cli/docs/operator-runbook.md`, `apex-infinite-cli/docs/prompt-contract.md`, `apex-infinite-cli/docs/troubleshooting.md`)
 
 ---
 

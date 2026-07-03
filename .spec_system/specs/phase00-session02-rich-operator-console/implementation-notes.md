@@ -544,14 +544,14 @@
   or runbook content was added.
 
 **Files Changed**:
-- `apex-infinite-cli/README-apex-infinite-cli.md` - documented richer operator console behavior and fallback guarantees.
+- `apex-infinite-cli/README_apex-infinite-cli.md` - documented richer operator console behavior and fallback guarantees.
 - `.spec_system/specs/phase00-session02-rich-operator-console/implementation-notes.md` - recorded T016 evidence.
 
 **Verification**:
-- Command/check: `LC_ALL=C rg -n "operator console|BOOT|ITERATION|dry_run|separator|SQLite history" README-apex-infinite-cli.md`
+- Command/check: `LC_ALL=C rg -n "operator console|BOOT|ITERATION|dry_run|separator|SQLite history" README_apex-infinite-cli.md`
   - Result: PASS - README contains the new operator-console and fallback notes.
   - Evidence: command located the added sections and token list.
-- Command/check: `LC_ALL=C rg -n "[^\\x00-\\x7F]" README-apex-infinite-cli.md || true`
+- Command/check: `LC_ALL=C rg -n "[^\\x00-\\x7F]" README_apex-infinite-cli.md || true`
   - Result: PASS - no non-ASCII characters were found in the README.
   - Evidence: command produced no non-ASCII matches.
 - UI product-surface check: N/A - documentation task.

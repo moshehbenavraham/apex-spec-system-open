@@ -5,10 +5,10 @@
 Start here before deeper debugging:
 
 1. Re-run with `--dry-run` to inspect the chosen prompt and `codex exec` flags.
-2. Run `python apex_infinite.py --check-provider` to test provider connectivity
+2. Run `apex-infinite --check-provider` to test provider connectivity
    and configured model availability.
 3. Re-run with `--verbose` to inspect more of the Codex response.
-4. Check `python apex_infinite.py --history --path <project>` to see the last
+4. Check `apex-infinite --history --path <project>` to see the last
    recorded decisions.
 5. Confirm `config.yaml` and `.env` are the files you think they are.
 
@@ -34,7 +34,7 @@ Start here before deeper debugging:
 | Output shows broken glyphs | Terminal encoding cannot render non-ASCII glyphs | Use `--ascii`, usually with `--plain` |
 | Output wraps too much | Terminal width or log viewer is narrow | Use `--compact` and inspect details with `--verbose` only when needed |
 | JSONL has terminal text mixed in | Human rendering and stdout events were mixed by a wrapper | Use `--event-stream - --machine-output` or write events to a file |
-| Visual wrapper shows `CLI missing` | The wrapper could not find the source-tree `apex_infinite.py` script | Run from `apex-infinite-cli/`, reinstall the source tree, or launch the base CLI directly |
+| Visual wrapper shows `CLI missing` | The wrapper could not launch the `apex_infinite` module | Reinstall the package or launch the base CLI directly |
 | Visual wrapper shows `Timed out` | The wrapped base CLI exceeded the wrapper process timeout | Re-run the base CLI command directly, reduce scope, or increase `--process-timeout-seconds` |
 
 ## Path And History Issues
@@ -59,7 +59,7 @@ Cause:
 
 What to do:
 
-- try `python apex_infinite.py --history` without `--path`
+- try `apex-infinite --history` without `--path`
 - inspect the recorded path values in the history table
 
 ## Manager Behavior Issues
@@ -200,7 +200,7 @@ Cause:
 
 What to do:
 
-- run `python apex_infinite.py --event-stream - --machine-output ...`
+- run `apex-infinite --event-stream - --machine-output ...`
 - if you need human output too, write events to a file path instead of stdout
 
 ### Event file is empty
@@ -259,8 +259,8 @@ What to do:
 
 ```bash
 cd apex-infinite-cli
-pip install -r requirements-wrapper.txt
-python -m apex_infinite_visual.main --dry-run --max-iterations 1
+python -m pip install -e ".[visual]"
+apex-infinite-visual --dry-run --max-iterations 1
 ```
 
 ### Qt display backend is unavailable
@@ -275,7 +275,7 @@ What to do:
 
 ```bash
 cd apex-infinite-cli
-QT_QPA_PLATFORM=offscreen python -m apex_infinite_visual.main \
+QT_QPA_PLATFORM=offscreen apex-infinite-visual \
   --dry-run --max-iterations 1 --auto-close-ms 900
 ```
 
@@ -286,13 +286,13 @@ until the display backend is fixed.
 
 Cause:
 
-- the wrapper cannot resolve the source-tree `apex_infinite.py` file
+- the wrapper cannot launch the `apex_infinite` module
 - the wrapper is being launched from a moved or partial source checkout
 
 What to do:
 
-- run from the `apex-infinite-cli/` source directory
-- confirm `apex_infinite.py` exists next to `apex_infinite_visual/`
+- reinstall from the `apex-infinite-cli/` source directory
+- confirm `python -m apex_infinite --help` works
 - use the base terminal CLI until the source checkout is repaired
 
 ### Wrapper shows malformed event state
@@ -307,7 +307,7 @@ Cause:
 What to do:
 
 - launch the real CLI through wrapper `--launch-cli` or use
-  `python apex_infinite.py --event-stream - --machine-output`
+  `apex-infinite --event-stream - --machine-output`
 - read complete lines only
 - keep stderr separate from stdout JSONL
 - inspect the wrapper log for the rejected event reason
@@ -412,12 +412,12 @@ Use these commands when the system is behaving unexpectedly:
 
 ```bash
 cd apex-infinite-cli
-python apex_infinite.py --history
-python apex_infinite.py --path ~/projects/my-app/ --history
-python apex_infinite.py --check-provider --provider ollama
+apex-infinite --history
+apex-infinite --path ~/projects/my-app/ --history
+apex-infinite --check-provider --provider ollama
 scripts/check-ollama.sh --chat
-python apex_infinite.py --path ~/projects/my-app/ --start plansession --dry-run
-python apex_infinite.py --path ~/projects/my-app/ --start implement --verbose
+apex-infinite --path ~/projects/my-app/ --start plansession --dry-run
+apex-infinite --path ~/projects/my-app/ --start implement --verbose
 ```
 
 ## When To Edit Code Instead Of Configuration

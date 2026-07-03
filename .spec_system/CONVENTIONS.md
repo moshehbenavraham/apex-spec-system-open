@@ -15,8 +15,8 @@ honor.
 - Keep output readable in interactive terminals, plain logs, CI, remote shells,
   redirected output, and constrained terminal environments.
 - Separate durable workflow facts from human rendering.
-- Prefer small, testable helper boundaries over growing `apex_infinite.py`
-  without structure.
+- Prefer small, testable helper boundaries inside `src/apex_infinite/` over
+  growing the CLI entry point without structure.
 - Use repository evidence and record assumptions when requirements are
   incomplete.
 - Keep authored files ASCII-only with Unix LF line endings.
@@ -24,10 +24,9 @@ honor.
 ## Scope
 
 - Primary development target: `apex-infinite-cli/`.
-- Main implementation file today: `apex-infinite-cli/apex_infinite.py`.
-- CLI config file today: `apex-infinite-cli/config.yaml`.
-- CLI docs live in `apex-infinite-cli/README-apex-infinite-cli.md` and
-  `docs/apex-infinite-cli/`.
+- Main implementation package today: `apex-infinite-cli/src/apex_infinite/`.
+- CLI config file today: `apex-infinite-cli/src/apex_infinite/config.yaml`.
+- CLI docs live in `apex-infinite-cli/README.md` and `apex-infinite-cli/docs/`.
 - Root skill files remain canonical sources for Apex Spec packaging.
 - Do not edit generated plugin payloads under
   `plugins/apex-spec/skills/apex-spec/`.
@@ -38,7 +37,7 @@ honor.
 
 ## Current CLI Baseline
 
-- The CLI is a single-file Click application with a global Rich `Console`.
+- The CLI is a packaged Click application with a global Rich `Console`.
 - Current CLI flags are `--path`, `--start`, `--ceo`, `--provider`, `--model`,
   `--config`, `--history`, `--max-iterations`, `--dry-run`, `--verbose`, and
   `--version`.
@@ -46,15 +45,15 @@ honor.
 - Current runtime dependencies are Click, Rich, OpenAI Python SDK,
   python-dotenv, PyYAML, SQLite from the Python standard library, and Codex CLI.
 - Current local history is SQLite at `~/.apex-infinite/history.db`.
-- Current tests are prompt and routing focused in
-  `apex-infinite-cli/tests/test_prompts.py`.
+- Current tests live in `apex-infinite-cli/tests/`.
 - New UI, config, rendering, subprocess, history, or event work must add
   focused tests because that coverage does not exist yet.
 
 ## Python Style
 
 - Target Python 3.10+ unless project metadata raises the floor.
-- Use black formatting and pylint rules from the root `pyproject.toml`.
+- Use black formatting and pylint rules from
+  `apex-infinite-cli/pyproject.toml`.
 - Use `snake_case` for functions and variables, `PascalCase` for classes, and
   `UPPER_SNAKE_CASE` for constants.
 - Keep imports grouped as standard library, third-party, then local imports.
@@ -156,8 +155,8 @@ honor.
 - Unknown manager output passes through as raw high-level Codex instructions.
 - Keep slash tolerance, case normalization, and whitespace trimming behavior
   covered by tests.
-- When prompt behavior changes, update `apex_infinite.py`, prompt tests, README,
-  and `docs/apex-infinite-cli/prompt-contract.md` together.
+- When prompt behavior changes, update `src/apex_infinite/cli.py`, prompt
+  tests, README, and `apex-infinite-cli/docs/prompt-contract.md` together.
 - UI and event-stream work does not change the prompt contract unless prompt
   functions or routing behavior actually change.
 
@@ -253,8 +252,8 @@ honor.
 ## Testing
 
 - Run CLI tests from `apex-infinite-cli/` with `pytest tests/ -v`.
-- Install CLI dev dependencies with
-  `pip install -r requirements.txt -r requirements-dev.txt` when needed.
+- Install CLI dev dependencies with `python -m pip install -e ".[dev]"` when
+  needed.
 - Keep existing prompt/routing tests green unless the prompt contract is
   intentionally updated.
 - Add focused tests for config parsing, Click options, renderer behavior,
@@ -330,10 +329,10 @@ honor.
 
 | Category | Tool | Config |
 |----------|------|--------|
-| Python formatter | black | root `pyproject.toml` |
-| Python linter | pylint | root `pyproject.toml` |
-| Python type safety | mypy | root `pyproject.toml`, CLI dev requirements |
-| Python testing | pytest, pytest-cov, pytest-mock | root `pyproject.toml`, CLI dev requirements |
+| Python formatter | black | `apex-infinite-cli/pyproject.toml` |
+| Python linter | pylint | `apex-infinite-cli/pyproject.toml` |
+| Python type safety | mypy | `apex-infinite-cli/pyproject.toml`, CLI dev extra |
+| Python testing | pytest, pytest-cov, pytest-mock | `apex-infinite-cli/pyproject.toml`, CLI dev extra |
 | Script formatter | shfmt | `.pre-commit-config.yaml`, `.github/workflows/quality.yml` |
 | Script linter | shellcheck | `.pre-commit-config.yaml`, `.github/workflows/quality.yml` |
 | Script testing | bats | `tests/`, `.github/workflows/test.yml` |
@@ -344,7 +343,7 @@ honor.
 
 | Component | Provider | Details |
 |-----------|----------|---------|
-| Health | GitHub Actions release workflow | Apex Infinite CLI entrypoint health gate installs base requirements, runs `python apex_infinite.py --version`, and checks `python apex_infinite.py --help` output on tag releases. |
+| Health | GitHub Actions release workflow | Apex Infinite CLI entrypoint health gate installs the package, runs `apex-infinite --version`, and checks `apex-infinite --help` output on tag releases. |
 | CDN/DNS | N/A | No hosted web service; the skill and CLI source are distributed as repository files. |
 | Hosting | GitHub repository and Codex plugin wrapper | Plain-file skill payload, plugin wrapper, and CLI source are distributed from the repository. |
 | Database | Local SQLite | Operator-local `~/.apex-infinite/history.db`; no hosted production database. |

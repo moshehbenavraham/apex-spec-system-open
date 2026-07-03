@@ -12,7 +12,7 @@
 - `.spec_system/specs/phase00-session02-rich-operator-console/spec.md` - untracked session artifact
 - `.spec_system/specs/phase00-session02-rich-operator-console/tasks.md` - untracked session artifact
 - `.spec_system/specs/phase00-session02-rich-operator-console/implementation-notes.md` - untracked session artifact
-- `apex-infinite-cli/README-apex-infinite-cli.md` - tracked-modified
+- `apex-infinite-cli/README_apex-infinite-cli.md` - tracked-modified
 - `apex-infinite-cli/apex_infinite.py` - tracked-modified
 - `apex-infinite-cli/apex_infinite_ui.py` - tracked-modified
 - `apex-infinite-cli/tests/test_cli_options.py` - tracked-modified

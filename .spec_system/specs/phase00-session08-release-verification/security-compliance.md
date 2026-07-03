@@ -9,11 +9,11 @@
 **Files reviewed**:
 - `.spec_system/SECURITY-COMPLIANCE.md` - cumulative security posture refresh.
 - `.spec_system/state.json` - spec-system workflow state.
-- `apex-infinite-cli/README-apex-infinite-cli.md` - CLI release documentation.
+- `apex-infinite-cli/README_apex-infinite-cli.md` - CLI release documentation.
 - `apex-infinite-cli/apex_infinite.py` - notification behavior fix.
 - `apex-infinite-cli/tests/test_cli_options.py` - focused regression test.
-- `docs/apex-infinite-cli/operator-runbook.md` - operator release guidance.
-- `docs/apex-infinite-cli/visual-wrapper-productization.md` - wrapper release posture.
+- `apex-infinite-cli/docs/operator-runbook.md` - operator release guidance.
+- `apex-infinite-cli/docs/visual-wrapper-productization.md` - wrapper release posture.
 - `.spec_system/specs/phase00-session08-release-verification/clean-room-audit.md` - clean-room audit.
 - `.spec_system/specs/phase00-session08-release-verification/code-review.md` - code review report.
 - `.spec_system/specs/phase00-session08-release-verification/compatibility-fixes.md` - fix ledger.

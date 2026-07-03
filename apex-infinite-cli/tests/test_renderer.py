@@ -6,8 +6,8 @@ from types import SimpleNamespace
 import pytest
 from rich.console import Console
 
-import apex_infinite
-from apex_infinite_ui import (
+import apex_infinite.cli as apex_infinite
+from apex_infinite.ui import (
     ApexRenderer,
     CodexCommandSnapshot,
     DbLogSnapshot,

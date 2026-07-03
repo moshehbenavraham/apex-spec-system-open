@@ -71,11 +71,11 @@ surface and must be recorded in the release verification ledger.
 - CLI test suite under `apex-infinite-cli/tests/`.
 - Root script and reference tests under `tests/`.
 - Wrapper source under `apex-infinite-cli/apex_infinite_visual/`.
-- CLI docs under `apex-infinite-cli/README-apex-infinite-cli.md` and
-  `docs/apex-infinite-cli/`.
+- CLI docs under `apex-infinite-cli/README_apex-infinite-cli.md` and
+  `apex-infinite-cli/`.
 - Clean-room and license rules from `.spec_system/CONVENTIONS.md`,
   `.spec_system/SECURITY-COMPLIANCE.md`, and
-  `docs/apex-infinite-cli/visual-wrapper-boundary.md`.
+  `apex-infinite-cli/docs/visual-wrapper-boundary.md`.
 
 ### Environment Requirements
 
@@ -190,8 +190,8 @@ checksum, notice, source/relink, and clean-room gates before any binary release.
 | `apex-infinite-cli/apex_infinite_events.py` | Small event-stream safety or machine-output fixes only if verification fails | ~0-60 |
 | `apex-infinite-cli/apex_infinite_visual/` | Small wrapper smoke, failure-state, or optional dependency fixes only if verification fails | ~0-100 |
 | `apex-infinite-cli/tests/` | Focused regression tests for any compatibility fix applied during verification | ~0-160 |
-| `apex-infinite-cli/README-apex-infinite-cli.md` | Release-status, CLI flag, event, history, wrapper, or troubleshooting corrections found by audit | ~0-80 |
-| `docs/apex-infinite-cli/` | Documentation corrections for event stream, history DB, operator runbook, prompt contract, transcripts, troubleshooting, or wrapper release gates | ~0-160 |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | Release-status, CLI flag, event, history, wrapper, or troubleshooting corrections found by audit | ~0-80 |
+| `apex-infinite-cli/` | Documentation corrections for event stream, history DB, operator runbook, prompt contract, transcripts, troubleshooting, or wrapper release gates | ~0-160 |
 | `.spec_system/SECURITY-COMPLIANCE.md` | Updated cumulative security, GDPR, dependency, and clean-room release posture after verification | ~0-160 |
 
 ---

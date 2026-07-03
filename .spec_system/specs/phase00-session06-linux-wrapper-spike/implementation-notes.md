@@ -223,16 +223,16 @@
 - Added troubleshooting entries for missing PySide6, display backend failures, malformed JSONL, subprocess failures, and clean-room audit failures.
 
 **Files Changed**:
-- `docs/apex-infinite-cli/visual-wrapper-boundary.md` - added confirmed prototype constraints and spike link.
-- `docs/apex-infinite-cli/troubleshooting.md` - added visual wrapper prototype failure modes and recovery steps.
+- `apex-infinite-cli/docs/visual-wrapper-boundary.md` - added confirmed prototype constraints and spike link.
+- `apex-infinite-cli/docs/troubleshooting.md` - added visual wrapper prototype failure modes and recovery steps.
 - `.spec_system/specs/phase00-session06-linux-wrapper-spike/implementation-notes.md` - logged implementation evidence.
 - `.spec_system/specs/phase00-session06-linux-wrapper-spike/tasks.md` - marked task completion.
 
 **Verification**:
-- Command/check: `LC_ALL=C grep -nP '[^\\x00-\\x7F]' docs/apex-infinite-cli/visual-wrapper-boundary.md docs/apex-infinite-cli/troubleshooting.md || true`
+- Command/check: `LC_ALL=C grep -nP '[^\\x00-\\x7F]' apex-infinite-cli/docs/visual-wrapper-boundary.md apex-infinite-cli/docs/troubleshooting.md || true`
   - Result: PASS - changed docs are ASCII-only.
   - Evidence: command produced no matches.
-- Command/check: `rg -n "Confirmed Prototype Constraints|Visual wrapper spike|PySide6 imports|requirements.txt|malformed|stderr|non-zero|AppImage|Visual Wrapper Prototype Issues|PySide6 is not installed|display backend|Clean-room audit|--event-stream - --machine-output" docs/apex-infinite-cli/visual-wrapper-boundary.md docs/apex-infinite-cli/troubleshooting.md`
+- Command/check: `rg -n "Confirmed Prototype Constraints|Visual wrapper spike|PySide6 imports|requirements.txt|malformed|stderr|non-zero|AppImage|Visual Wrapper Prototype Issues|PySide6 is not installed|display backend|Clean-room audit|--event-stream - --machine-output" apex-infinite-cli/docs/visual-wrapper-boundary.md apex-infinite-cli/docs/troubleshooting.md`
   - Result: PASS - required boundary and troubleshooting topics are present.
   - Evidence: matches cover constraints, missing dependency/display errors, malformed JSONL, subprocess failure, no-copy audit, and event boundary.
 - UI product-surface check: N/A - documentation only.
@@ -254,16 +254,16 @@
 - Added real subprocess launch notes, optional dependency boundary, fallback behavior, and spike record links to operator docs.
 
 **Files Changed**:
-- `apex-infinite-cli/README-apex-infinite-cli.md` - added visual wrapper prototype install/run instructions and spike link.
-- `docs/apex-infinite-cli/operator-runbook.md` - added optional wrapper prototype operating mode and fallback behavior.
+- `apex-infinite-cli/README_apex-infinite-cli.md` - added visual wrapper prototype install/run instructions and spike link.
+- `apex-infinite-cli/docs/operator-runbook.md` - added optional wrapper prototype operating mode and fallback behavior.
 - `.spec_system/specs/phase00-session06-linux-wrapper-spike/implementation-notes.md` - logged implementation evidence.
 - `.spec_system/specs/phase00-session06-linux-wrapper-spike/tasks.md` - marked task completion.
 
 **Verification**:
-- Command/check: `LC_ALL=C grep -nP '[^\\x00-\\x7F]' apex-infinite-cli/README-apex-infinite-cli.md docs/apex-infinite-cli/operator-runbook.md || true`
+- Command/check: `LC_ALL=C grep -nP '[^\\x00-\\x7F]' apex-infinite-cli/README_apex-infinite-cli.md apex-infinite-cli/docs/operator-runbook.md || true`
   - Result: PASS - changed docs are ASCII-only.
   - Evidence: command produced no matches.
-- Command/check: `rg -n "Visual Wrapper Prototype|visual-wrapper-spike|requirements-wrapper|python -m apex_infinite_visual.main|QT_QPA_PLATFORM=offscreen|--launch-cli|--event-stream - --machine-output|PySide6 is missing|malformed|subprocess" apex-infinite-cli/README-apex-infinite-cli.md docs/apex-infinite-cli/operator-runbook.md`
+- Command/check: `rg -n "Visual Wrapper Prototype|visual-wrapper-spike|requirements-wrapper|python -m apex_infinite_visual.main|QT_QPA_PLATFORM=offscreen|--launch-cli|--event-stream - --machine-output|PySide6 is missing|malformed|subprocess" apex-infinite-cli/README_apex-infinite-cli.md apex-infinite-cli/docs/operator-runbook.md`
   - Result: PASS - required run path, optional dependency, fallback, and decision-record references are present.
   - Evidence: matches cover both docs.
 - UI product-surface check: N/A - documentation only.
@@ -286,15 +286,15 @@
 - Checked current official Qt/PySide6/Nuitka/Riverbank sources before writing the license and packaging notes.
 
 **Files Changed**:
-- `docs/apex-infinite-cli/visual-wrapper-spike.md` - added spike evidence, decision, dependency/license assessment, packaging risks, exclusions, and Session 07 recommendation.
+- `apex-infinite-cli/docs/visual-wrapper-spike.md` - added spike evidence, decision, dependency/license assessment, packaging risks, exclusions, and Session 07 recommendation.
 - `.spec_system/specs/phase00-session06-linux-wrapper-spike/implementation-notes.md` - logged implementation evidence.
 - `.spec_system/specs/phase00-session06-linux-wrapper-spike/tasks.md` - marked task completion.
 
 **Verification**:
-- Command/check: `LC_ALL=C grep -nP '[^\\x00-\\x7F]' docs/apex-infinite-cli/visual-wrapper-spike.md || true`
+- Command/check: `LC_ALL=C grep -nP '[^\\x00-\\x7F]' apex-infinite-cli/docs/visual-wrapper-spike.md || true`
   - Result: PASS - spike document is ASCII-only.
   - Evidence: command produced no matches.
-- Command/check: `rg -n "Decision|PySide6|LGPL|Nuitka|qmltermwidget|QTermWidget|PyQt|pywebview|xterm|AppImage|offscreen|--event-stream - --machine-output" docs/apex-infinite-cli/visual-wrapper-spike.md`
+- Command/check: `rg -n "Decision|PySide6|LGPL|Nuitka|qmltermwidget|QTermWidget|PyQt|pywebview|xterm|AppImage|offscreen|--event-stream - --machine-output" apex-infinite-cli/docs/visual-wrapper-spike.md`
   - Result: PASS - required decision and evidence topics are present.
   - Evidence: matches cover the accepted path, license obligations, packaging risks, exclusions, backup decision, and event boundary.
 - Source check: official Qt for Python commercial use, PySide6 PyPI metadata, Qt `pyside6-deploy`, Nuitka license note, and Riverbank PyQt FAQ.
@@ -658,7 +658,7 @@
 - `.spec_system/specs/phase00-session06-linux-wrapper-spike/tasks.md` - marked task completion.
 
 **Verification**:
-- Command/check: `sed -n '1,260p' docs/apex-infinite-cli/visual-wrapper-boundary.md`
+- Command/check: `sed -n '1,260p' apex-infinite-cli/docs/visual-wrapper-boundary.md`
   - Result: PASS - clean-room allowed concepts and forbidden-copying categories are explicit.
   - Evidence: docs define the event-driven wrapper boundary and selected PySide6/QML direction.
 - Command/check: `sed -n '1,260p' .spec_system/PRD/phase_00/session_06_linux_wrapper_spike.md`
@@ -696,7 +696,7 @@
 - Command/check: `sed -n '1,520p' apex-infinite-cli/apex_infinite_events.py`
   - Result: PASS - `EVENT_VERSION = 1`, `EVENT_NAMES` registry, `open_event_stream`, and payload validators are present.
   - Evidence: file includes event names for startup, iteration, manager decision, prompt dispatch, Codex, DB, completion, stop, and errors.
-- Command/check: `sed -n '1,320p' docs/apex-infinite-cli/event-stream.md`
+- Command/check: `sed -n '1,320p' apex-infinite-cli/docs/event-stream.md`
   - Result: PASS - docs define JSONL shape, stdout machine-output guardrails, and wrapper guidance.
   - Evidence: docs state `--event-stream -` requires `--machine-output` and wrappers must not parse human output.
 - Command/check: `rg -n "event_stream|machine_output|@click.option|def main|def infinite_loop|_emit_event" apex-infinite-cli/apex_infinite.py`

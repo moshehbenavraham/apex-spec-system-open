@@ -12,14 +12,14 @@
 - `.spec_system/specs/phase00-session03-subprocess-and-history-visibility/implementation-notes.md` - implementation evidence log
 - `.spec_system/specs/phase00-session03-subprocess-and-history-visibility/spec.md` - session specification
 - `.spec_system/specs/phase00-session03-subprocess-and-history-visibility/tasks.md` - session task checklist
-- `apex-infinite-cli/README-apex-infinite-cli.md` - CLI usage and history documentation
+- `apex-infinite-cli/README_apex-infinite-cli.md` - CLI usage and history documentation
 - `apex-infinite-cli/apex_infinite.py` - subprocess, history, and CLI workflow code
 - `apex-infinite-cli/apex_infinite_ui.py` - renderer and history display code
 - `apex-infinite-cli/tests/test_cli_options.py` - CLI option regression tests
 - `apex-infinite-cli/tests/test_history_rendering.py` - history renderer tests
 - `apex-infinite-cli/tests/test_subprocess_execution.py` - subprocess execution tests
-- `docs/apex-infinite-cli/history-db.md` - history database reference
-- `docs/apex-infinite-cli/operator-runbook.md` - operator runbook
+- `apex-infinite-cli/docs/history-db.md` - history database reference
+- `apex-infinite-cli/docs/operator-runbook.md` - operator runbook
 
 **Review method**: Static analysis of changed files, targeted subprocess and
 SQLite boundary inspection, dependency-change check, secret-pattern scan, and

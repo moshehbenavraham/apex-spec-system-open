@@ -19,7 +19,7 @@ Authoritative product and implementation rules live in:
 - `.spec_system/CONVENTIONS.md`
 - `.spec_system/SECURITY-COMPLIANCE.md`
 - `.spec_system/CONSIDERATIONS.md`
-- `docs/apex-infinite-cli/event-stream.md`
+- `apex-infinite-cli/docs/event-stream.md`
 
 The local `EXAMPLE/` tree is not a source dependency. It is an ignored,
 reference-only study tree.
@@ -122,7 +122,7 @@ which Qt modules are used.
 ## Confirmed Prototype Constraints
 
 The Session 06 spike created an isolated prototype under
-`apex-infinite-cli/apex_infinite_visual/` and recorded the decision in
+`apex-infinite-cli/src/apex_infinite_visual/` and recorded the decision in
 [Visual wrapper spike](visual-wrapper-spike.md).
 
 Confirmed constraints:
@@ -130,7 +130,7 @@ Confirmed constraints:
 - The prototype consumes JSONL events through `--event-stream - --machine-output`
   or fixture events.
 - PySide6 imports are lazy and wrapper-only.
-- The base CLI runtime path and `requirements.txt` remain free of graphical
+- The base CLI runtime path and base dependency set remain free of graphical
   dependencies.
 - The wrapper exposes malformed JSONL, stderr, non-zero subprocess exit, and
   wrapper exceptions as visible error state.
@@ -154,7 +154,7 @@ Session 07 turns the prototype into source/dev visual mode only. It adds:
   verification.
 
 Session 07 does not publish a binary, commit generated packaging output, move
-PySide6 into the base CLI requirements, or change the base workflow engine.
+PySide6 into the base CLI dependencies, or change the base workflow engine.
 
 Before binary release, Session 08 or a later release session must verify:
 
@@ -206,7 +206,7 @@ small ASCII fixtures that describe behavior. They must not include:
 - Real provider keys, operator secrets, private project paths, or customer
   data.
 
-Use deterministic text transcripts under `docs/apex-infinite-cli/transcripts/`
+Use deterministic text transcripts under `apex-infinite-cli/docs/transcripts/`
 when a visual example is needed.
 
 ## Future Wrapper Checklist
@@ -217,7 +217,7 @@ Before starting wrapper implementation:
 - Prove the required state exists in events or the importable API.
 - Add missing events in the base CLI before writing wrapper-specific state
   scrapers.
-- Keep wrapper dependencies in optional requirements only.
+- Keep wrapper dependencies in optional dependency extras only.
 - Record license obligations and packaging assumptions.
 - Verify low-effects and plain fallbacks.
 - Confirm no copied reference material is tracked with `git ls-files`.

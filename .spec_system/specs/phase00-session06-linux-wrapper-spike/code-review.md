@@ -13,17 +13,17 @@
 - `.spec_system/specs/phase00-session06-linux-wrapper-spike/tasks.md` - untracked
 - `.spec_system/specs/phase00-session06-linux-wrapper-spike/implementation-notes.md` - untracked
 - `.spec_system/specs/phase00-session06-linux-wrapper-spike/code-review.md` - untracked, this report
-- `apex-infinite-cli/README-apex-infinite-cli.md` - tracked-modified
+- `apex-infinite-cli/README_apex-infinite-cli.md` - tracked-modified
 - `apex-infinite-cli/apex_infinite_visual/__init__.py` - untracked
 - `apex-infinite-cli/apex_infinite_visual/events.py` - untracked
 - `apex-infinite-cli/apex_infinite_visual/launcher.py` - untracked
 - `apex-infinite-cli/apex_infinite_visual/main.py` - untracked
 - `apex-infinite-cli/apex_infinite_visual/qml/Main.qml` - untracked
 - `apex-infinite-cli/tests/test_visual_wrapper_spike.py` - untracked
-- `docs/apex-infinite-cli/operator-runbook.md` - tracked-modified
-- `docs/apex-infinite-cli/troubleshooting.md` - tracked-modified
-- `docs/apex-infinite-cli/visual-wrapper-boundary.md` - tracked-modified
-- `docs/apex-infinite-cli/visual-wrapper-spike.md` - untracked
+- `apex-infinite-cli/docs/operator-runbook.md` - tracked-modified
+- `apex-infinite-cli/docs/troubleshooting.md` - tracked-modified
+- `apex-infinite-cli/docs/visual-wrapper-boundary.md` - tracked-modified
+- `apex-infinite-cli/docs/visual-wrapper-spike.md` - untracked
 
 **Inventory commands**: `git status`, `git diff HEAD`, `git diff --cached`,
 `git ls-files --others --exclude-standard`

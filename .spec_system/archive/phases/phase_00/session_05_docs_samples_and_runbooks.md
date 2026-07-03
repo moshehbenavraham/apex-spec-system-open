@@ -18,14 +18,14 @@ clean-room visual boundary after the implemented behavior exists.
 
 ### In Scope (MVP)
 
-- Update `apex-infinite-cli/README-apex-infinite-cli.md` with UI flags, config
+- Update `apex-infinite-cli/README_apex-infinite-cli.md` with UI flags, config
   examples, theme descriptions, event-stream usage, and examples.
 - Update the operator runbook with theme guidance and plain-output guidance for
   CI, logs, remote shells, constrained terminals, `NO_COLOR`, redirected
   output, and `TERM=dumb`.
-- Update `docs/apex-infinite-cli/history-db.md` if display changes add status
+- Update `apex-infinite-cli/docs/history-db.md` if display changes add status
   labels, truncation rules, or verbose history behavior.
-- Update `docs/apex-infinite-cli/prompt-contract.md` with matching
+- Update `apex-infinite-cli/docs/prompt-contract.md` with matching
   prompt-contract changes or a note that UI and event changes do not alter
   prompt routing.
 - Add deterministic ASCII-only terminal transcripts or asciinema `.cast` files
@@ -119,14 +119,14 @@ full-path `EXAMPLE/` references close to the session executor.
 contract, and clean-room visual boundary after the implemented behavior exists.
 
 **Scope**:
-- Update `apex-infinite-cli/README-apex-infinite-cli.md` with UI flags,
+- Update `apex-infinite-cli/README_apex-infinite-cli.md` with UI flags,
   config examples, theme descriptions, event-stream usage, and examples.
 - Update the operator runbook with theme guidance and plain-output guidance for
   CI, logs, remote shells, constrained terminals, `NO_COLOR`, redirected
   output, and `TERM=dumb`.
-- Update `docs/apex-infinite-cli/history-db.md` if display changes add status
+- Update `apex-infinite-cli/docs/history-db.md` if display changes add status
   labels, truncation rules, or verbose history behavior.
-- Update `docs/apex-infinite-cli/prompt-contract.md` with either matching
+- Update `apex-infinite-cli/docs/prompt-contract.md` with either matching
   prompt-contract changes or a clear note that UI/event-stream changes do not
   alter `MANAGER_SYSTEM_PROMPT`, `SUMMARIZER_SYSTEM_PROMPT`, or
   `build_codex_prompt()`.
@@ -207,13 +207,13 @@ Objective: make the upgrade easy to understand and maintain.
 
 Tasks:
 
-- Update `apex-infinite-cli/README-apex-infinite-cli.md` with UI flags,
+- Update `apex-infinite-cli/README_apex-infinite-cli.md` with UI flags,
   config examples, and theme descriptions.
 - Update the operator runbook with recommended theme settings and plain-output
   guidance for CI or remote shells.
-- Update `docs/apex-infinite-cli/history-db.md` if history display changes
+- Update `apex-infinite-cli/docs/history-db.md` if history display changes
   expose new status labels or summary rules.
-- Update `docs/apex-infinite-cli/prompt-contract.md` only if prompt routing or
+- Update `apex-infinite-cli/docs/prompt-contract.md` only if prompt routing or
   machine-event behavior changes the contract. Otherwise add a short note that
   UI and event-stream changes do not alter manager prompts, summarizer prompts,
   or `build_codex_prompt()`.

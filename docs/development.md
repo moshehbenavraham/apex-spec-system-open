@@ -30,8 +30,8 @@ No build step -- the skill is plain files.
 | `scripts/` | Bash utilities for project analysis |
 | `agents/` | Codex CLI metadata (openai.yaml) |
 | `plugins/apex-spec/` | Codex plugin wrapper plus generated skill payload |
-| `apex-infinite-cli/` | Autonomous session manager (Python CLI) |
-| `docs/apex-infinite-cli/` | CLI runbook, event stream, history, prompt, wrapper, and troubleshooting docs |
+| `apex-infinite-cli/` | Autonomous session manager |
+| `apex-infinite-cli/docs/` | CLI runbook, event stream, history, prompt, wrapper, and troubleshooting docs |
 | `docs/` | Project documentation |
 | `tests/` | Root-level tests (bats) |
 | `skills/` | Legacy skill directory (pre-port, archived) |
@@ -130,21 +130,20 @@ ls references/*.md
 
 ```bash
 cd apex-infinite-cli
-pip install -r requirements.txt -r requirements-dev.txt
+python -m pip install -e ".[dev]"
 pytest tests/ -v
-python -m black --check apex_infinite.py apex_infinite_events.py apex_infinite_ui.py apex_infinite_visual tests/
-python -m pylint apex_infinite.py apex_infinite_events.py apex_infinite_ui.py apex_infinite_visual
-cd ..
+python -m black --check src tests
+python -m pylint src/apex_infinite src/apex_infinite_visual
 python -m mypy
 ```
 
-Install `requirements-wrapper.txt` only when working on the optional Linux
+Install the `visual` extra only when working on the optional Linux
 visual wrapper:
 
 ```bash
 cd apex-infinite-cli
-pip install -r requirements-wrapper.txt
-QT_QPA_PLATFORM=offscreen python -m apex_infinite_visual.main --dry-run --max-iterations 1 --auto-close-ms 900
+python -m pip install -e ".[visual]"
+QT_QPA_PLATFORM=offscreen apex-infinite-visual --dry-run --max-iterations 1 --auto-close-ms 900
 ```
 
 The test suite covers prompt routing, CLI flags, UI config, renderer behavior,
@@ -152,7 +151,7 @@ history rendering, subprocess handling, event streams, and optional wrapper
 source-mode behavior. Phase 00 release verification recorded 216 local pytest
 tests passing after wrapper productization.
 
-Deep-dive docs for the CLI live in `docs/apex-infinite-cli/`:
+Deep-dive docs for the CLI live in `apex-infinite-cli/docs/`:
 
 - `operator-runbook.md` for day-to-day operation
 - `event-stream.md` for JSONL lifecycle events and machine-output mode
@@ -170,8 +169,8 @@ The `release.yml` workflow runs 5 verification steps before publishing a release
 2. **Version sync** -- Confirms the version in `SKILL.md` frontmatter matches `README.md`.
 3. **File inventory** -- Checks that at least 23 reference files and 3 scripts are present.
 4. **Script executability** -- Verifies all `.sh` files in `scripts/` have the execute bit set.
-5. **Apex Infinite CLI health** -- Installs base CLI dependencies, runs
-   `python apex_infinite.py --version`, and checks help output for event-stream
+5. **Apex Infinite CLI health** -- Installs the CLI package, runs
+   `apex-infinite --version`, and checks help output for event-stream
    options.
 
 All release checks must pass before a GitHub Release is created.
@@ -182,9 +181,8 @@ must match the root skill version, and the packaged skill must mirror the root
 skill files.
 
 Python dependency vulnerability checks currently have local Phase 00 evidence
-from `pip-audit -r requirements.txt -r requirements-dev.txt -r
-requirements-wrapper.txt`. Recurring CLI dependency audit automation remains an
-open follow-up in `.spec_system/SECURITY-COMPLIANCE.md`.
+from `pip-audit` in the CLI development environment. Recurring CLI dependency
+audit automation remains an open follow-up in `.spec_system/SECURITY-COMPLIANCE.md`.
 
 ### Encoding Testing
 

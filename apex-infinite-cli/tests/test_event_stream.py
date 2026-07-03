@@ -6,14 +6,14 @@ from pathlib import Path
 
 import pytest
 
-import apex_infinite
-from apex_infinite_events import (
+import apex_infinite.cli as apex_infinite
+from apex_infinite.events import (
     EventEmitter,
     EventStreamError,
     NoOpEventEmitter,
     open_event_stream,
 )
-from apex_infinite_ui import NoHumanOutputRenderer
+from apex_infinite.ui import NoHumanOutputRenderer
 
 CONFIG_TEXT = """provider: ollama
 codex:

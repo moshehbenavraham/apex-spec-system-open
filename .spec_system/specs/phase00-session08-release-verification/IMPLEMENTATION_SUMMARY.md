@@ -34,9 +34,9 @@ longer receives the terminal BEL emitted by `notify()`.
 |------|---------|
 | `apex-infinite-cli/apex_infinite.py` | Guarded terminal BEL output behind interactive stdout detection. |
 | `apex-infinite-cli/tests/test_cli_options.py` | Added redirected-stdout regression coverage for `notify()`. |
-| `apex-infinite-cli/README-apex-infinite-cli.md` | Refreshed release and wrapper source-mode status. |
-| `docs/apex-infinite-cli/operator-runbook.md` | Refreshed operator release guidance. |
-| `docs/apex-infinite-cli/visual-wrapper-productization.md` | Recorded wrapper source-shippable and binary-gated posture. |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | Refreshed release and wrapper source-mode status. |
+| `apex-infinite-cli/docs/operator-runbook.md` | Refreshed operator release guidance. |
+| `apex-infinite-cli/docs/visual-wrapper-productization.md` | Recorded wrapper source-shippable and binary-gated posture. |
 | `.spec_system/SECURITY-COMPLIANCE.md` | Updated cumulative release security and open-risk posture. |
 | `.spec_system/state.json` | Marked Session 08 complete and Phase 00 complete. |
 | `.spec_system/PRD/PRD.md` | Marked Phase 00 complete and checked off success criteria. |

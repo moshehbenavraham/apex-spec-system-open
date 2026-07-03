@@ -68,7 +68,7 @@ Every row names the exact command or targeted inspection used.
 | `apex-infinite-cli/tests/test_renderer.py` | Yes | PASS |
 | `apex-infinite-cli/tests/test_ui_config.py` | Yes | PASS |
 | `apex-infinite-cli/tests/test_cli_options.py` | Yes | PASS |
-| `apex-infinite-cli/README-apex-infinite-cli.md` | Yes | PASS |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | Yes | PASS |
 
 **Missing deliverables**: None.
 **Evidence**: `for f in ...; do [ -s "$f" ] ...; done` printed `PASS exists non-empty` for all 7 files.
@@ -83,7 +83,7 @@ Every row names the exact command or targeted inspection used.
 | `apex-infinite-cli/tests/test_renderer.py` | ASCII | LF | PASS |
 | `apex-infinite-cli/tests/test_ui_config.py` | ASCII | LF | PASS |
 | `apex-infinite-cli/tests/test_cli_options.py` | ASCII | LF | PASS |
-| `apex-infinite-cli/README-apex-infinite-cli.md` | ASCII | LF | PASS |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | ASCII | LF | PASS |
 
 **Encoding issues**: None.
 **Evidence**: `file ...`, `LC_ALL=C grep -n '[^[:print:][:space:]]' ...`, and `grep -l $'\r' ...` passed for every deliverable.

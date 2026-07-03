@@ -100,7 +100,9 @@ The near-term product direction is a Rich-based terminal experience with explici
 - `cool-retro-term` material is GPL-family reference material; product work must use clean-room visual translation only.
 - PySide6/Qt Quick/QML is allowed only for an optional Linux visual wrapper path, with LGPLv3/commercial obligations documented.
 - PyQt, qmltermwidget, QTermWidget, copied QML, copied shaders, copied assets, copied fonts, and copied terminal-emulator code are excluded unless a future explicit decision changes scope.
-- The CLI must preserve existing prompt contract behavior unless `apex_infinite.py`, tests, README, and prompt-contract docs are updated together.
+- The CLI must preserve existing prompt contract behavior unless
+  `src/apex_infinite/cli.py`, tests, README, and prompt-contract docs are
+  updated together.
 
 ## Phases
 
@@ -171,13 +173,15 @@ Completed session stubs are archived under `.spec_system/archive/phases/phase_00
 - **Dependency creep slows base CLI use**: Finish Rich milestones first and keep wrapper dependencies optional.
 - **GPL contamination concerns**: Use `cool-retro-term` only as visual reference and document no-copy boundaries.
 - **Wrapper diverges from CLI behavior**: Keep one workflow engine and make the wrapper a display/runtime shell over JSONL events.
-- **Single-file CLI becomes harder to maintain**: Split renderer, config, event, DB, or subprocess helpers when that lowers risk versus extending `apex_infinite.py`.
+- **CLI entry point becomes harder to maintain**: Split renderer, config,
+  event, DB, or subprocess helpers when that lowers risk versus extending
+  `src/apex_infinite/cli.py`.
 
 ## Assumptions
 
 - The master PRD scope is Apex Infinite CLI development inside the Apex Spec System repository: the user requested `createprd apex-infinite-cli`, README identifies `apex-infinite-cli/` as the autonomous session manager, and the Phase 00 PRD plus session stubs contain the folded CLI upgrade plan.
 - The repository should be treated as a single repo with a primary subproject path: the user named `apex-infinite-cli` as the focus, while local tooling has no workspace manager config.
-- Prompt routing should remain stable during UI work: `docs/apex-infinite-cli/prompt-contract.md` and the upgrade plan both require prompt changes to be made only with matching tests and docs.
+- Prompt routing should remain stable during UI work: `apex-infinite-cli/docs/prompt-contract.md` and the upgrade plan both require prompt changes to be made only with matching tests and docs.
 - `cool-retro-term` is inspiration only: the upgrade plan records GPL/license boundaries and forbids copying source, shader, asset, font, or profile data.
 
 ### Conflict Resolutions

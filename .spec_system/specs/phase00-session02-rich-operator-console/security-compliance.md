@@ -13,7 +13,7 @@
 - `apex-infinite-cli/tests/test_renderer.py` - renderer and SQLite raw-history safety tests
 - `apex-infinite-cli/tests/test_ui_config.py` - UI config resolver and preset tests
 - `apex-infinite-cli/tests/test_cli_options.py` - CLI option and loop context tests
-- `apex-infinite-cli/README-apex-infinite-cli.md` - operator-console documentation
+- `apex-infinite-cli/README_apex-infinite-cli.md` - operator-console documentation
 
 **Review method**: Static analysis of session deliverables, targeted code inspection, full CLI tests, and dependency-change scope check.
 

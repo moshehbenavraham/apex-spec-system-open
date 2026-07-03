@@ -607,22 +607,22 @@
 **Duration**: 3 minutes
 
 **Notes**:
-- Created `docs/apex-infinite-cli/event-stream.md` with CLI modes, JSONL event
+- Created `apex-infinite-cli/docs/event-stream.md` with CLI modes, JSONL event
   shape, event names, payload principles, examples, failure behavior, wrapper
   guidance, and safety boundaries.
 - Documented `--event-stream PATH` as a file side channel and
   `--event-stream - --machine-output` as JSONL-only stdout mode.
 
 **Files Changed**:
-- `docs/apex-infinite-cli/event-stream.md` - added event-stream contract.
+- `apex-infinite-cli/docs/event-stream.md` - added event-stream contract.
 - `.spec_system/specs/phase00-session04-event-stream-boundary/implementation-notes.md` - recorded task evidence.
 - `.spec_system/specs/phase00-session04-event-stream-boundary/tasks.md` - marked T017 complete.
 
 **Verification**:
-- Command/check: `LC_ALL=C grep -n '[^[:print:][:space:]]' docs/apex-infinite-cli/event-stream.md ... || true`
+- Command/check: `LC_ALL=C grep -n '[^[:print:][:space:]]' apex-infinite-cli/docs/event-stream.md ... || true`
   - Result: PASS - no non-ASCII/control characters found.
   - Evidence: Command produced no output.
-- Command/check: `grep -n $'\\r' docs/apex-infinite-cli/event-stream.md ... || true`
+- Command/check: `grep -n $'\\r' apex-infinite-cli/docs/event-stream.md ... || true`
   - Result: PASS - no CRLF line endings found.
   - Evidence: Command produced no output.
 - UI product-surface check: N/A - documentation only.
@@ -749,21 +749,21 @@
   JSONL/stdout collision guidance, and wrapper parsing guidance.
 
 **Files Changed**:
-- `apex-infinite-cli/README-apex-infinite-cli.md` - documented event-stream and machine-output usage.
-- `docs/apex-infinite-cli/operator-runbook.md` - added event-file and machine-output operating modes.
-- `docs/apex-infinite-cli/prompt-contract.md` - clarified event stream does not alter prompt routing.
-- `docs/apex-infinite-cli/troubleshooting.md` - added event stream troubleshooting.
+- `apex-infinite-cli/README_apex-infinite-cli.md` - documented event-stream and machine-output usage.
+- `apex-infinite-cli/docs/operator-runbook.md` - added event-file and machine-output operating modes.
+- `apex-infinite-cli/docs/prompt-contract.md` - clarified event stream does not alter prompt routing.
+- `apex-infinite-cli/docs/troubleshooting.md` - added event stream troubleshooting.
 - `.spec_system/specs/phase00-session04-event-stream-boundary/implementation-notes.md` - recorded task evidence.
 - `.spec_system/specs/phase00-session04-event-stream-boundary/tasks.md` - marked T018 complete.
 
 **Verification**:
-- Command/check: `LC_ALL=C grep -n '[^[:print:][:space:]]' docs/apex-infinite-cli/event-stream.md apex-infinite-cli/README-apex-infinite-cli.md docs/apex-infinite-cli/operator-runbook.md docs/apex-infinite-cli/prompt-contract.md docs/apex-infinite-cli/troubleshooting.md || true`
+- Command/check: `LC_ALL=C grep -n '[^[:print:][:space:]]' apex-infinite-cli/docs/event-stream.md apex-infinite-cli/README_apex-infinite-cli.md apex-infinite-cli/docs/operator-runbook.md apex-infinite-cli/docs/prompt-contract.md apex-infinite-cli/docs/troubleshooting.md || true`
   - Result: PASS - docs are ASCII-only.
   - Evidence: Command produced no output.
-- Command/check: `grep -n $'\\r' docs/apex-infinite-cli/event-stream.md apex-infinite-cli/README-apex-infinite-cli.md docs/apex-infinite-cli/operator-runbook.md docs/apex-infinite-cli/prompt-contract.md docs/apex-infinite-cli/troubleshooting.md || true`
+- Command/check: `grep -n $'\\r' apex-infinite-cli/docs/event-stream.md apex-infinite-cli/README_apex-infinite-cli.md apex-infinite-cli/docs/operator-runbook.md apex-infinite-cli/docs/prompt-contract.md apex-infinite-cli/docs/troubleshooting.md || true`
   - Result: PASS - docs use LF line endings.
   - Evidence: Command produced no output.
-- Command/check: `rg -n "event-stream|event stream|machine-output|machine output|--event-stream|--machine-output|JSONL" apex-infinite-cli/README-apex-infinite-cli.md docs/apex-infinite-cli/operator-runbook.md docs/apex-infinite-cli/prompt-contract.md docs/apex-infinite-cli/troubleshooting.md`
+- Command/check: `rg -n "event-stream|event stream|machine-output|machine output|--event-stream|--machine-output|JSONL" apex-infinite-cli/README_apex-infinite-cli.md apex-infinite-cli/docs/operator-runbook.md apex-infinite-cli/docs/prompt-contract.md apex-infinite-cli/docs/troubleshooting.md`
   - Result: PASS - updated docs contain the expected event-stream references.
   - Evidence: Search output lists README, runbook, prompt-contract, and troubleshooting references.
 - UI product-surface check: N/A - documentation only.

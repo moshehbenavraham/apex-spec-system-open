@@ -1,10 +1,2 @@
-# Dev dependencies for linting and formatting
-black>=24.0
-pylint>=3.0
-mypy>=1.19
-pip-audit>=2.10.1
-
-# Testing
-pytest>=8.0
-pytest-cov>=5.0
-pytest-mock>=3.12
+# Compatibility shim. The canonical dev dependencies live in pyproject.toml.
+-e .[dev]

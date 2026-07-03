@@ -13,18 +13,18 @@
 - `apex-infinite-cli/apex_infinite_visual/main.py` - PySide6 entrypoint and QML bridge.
 - `apex-infinite-cli/apex_infinite_visual/qml/Main.qml` - optional wrapper prototype surface.
 - `apex-infinite-cli/tests/test_visual_wrapper_spike.py` - focused wrapper tests.
-- `docs/apex-infinite-cli/visual-wrapper-spike.md` - spike evidence and decision record.
-- `apex-infinite-cli/README-apex-infinite-cli.md` - optional wrapper run notes.
-- `docs/apex-infinite-cli/visual-wrapper-boundary.md` - wrapper boundary decisions.
-- `docs/apex-infinite-cli/operator-runbook.md` - operator wrapper notes.
-- `docs/apex-infinite-cli/troubleshooting.md` - wrapper failure modes.
+- `apex-infinite-cli/docs/visual-wrapper-spike.md` - spike evidence and decision record.
+- `apex-infinite-cli/README_apex-infinite-cli.md` - optional wrapper run notes.
+- `apex-infinite-cli/docs/visual-wrapper-boundary.md` - wrapper boundary decisions.
+- `apex-infinite-cli/docs/operator-runbook.md` - operator wrapper notes.
+- `apex-infinite-cli/docs/troubleshooting.md` - wrapper failure modes.
 
 **Review method**: Static analysis of session deliverables, changed-file diff,
 targeted secret/injection scans, dependency-boundary inspection, and validation
 test evidence.
 
 **Review evidence**:
-- Command/check: `rg -n "(sk-[A-Za-z0-9]{20,}|Bearer [A-Za-z0-9._-]{12,}|api[_-]?key\\s*=|password\\s*=|secret\\s*=|token\\s*=|shell=True|eval\\(|exec\\(|subprocess|sqlite|INSERT|UPDATE|DELETE|SELECT|http://|https://)" apex-infinite-cli/apex_infinite_visual apex-infinite-cli/tests/test_visual_wrapper_spike.py docs/apex-infinite-cli/visual-wrapper-spike.md apex-infinite-cli/README-apex-infinite-cli.md docs/apex-infinite-cli/visual-wrapper-boundary.md docs/apex-infinite-cli/operator-runbook.md docs/apex-infinite-cli/troubleshooting.md`
+- Command/check: `rg -n "(sk-[A-Za-z0-9]{20,}|Bearer [A-Za-z0-9._-]{12,}|api[_-]?key\\s*=|password\\s*=|secret\\s*=|token\\s*=|shell=True|eval\\(|exec\\(|subprocess|sqlite|INSERT|UPDATE|DELETE|SELECT|http://|https://)" apex-infinite-cli/apex_infinite_visual apex-infinite-cli/tests/test_visual_wrapper_spike.py apex-infinite-cli/docs/visual-wrapper-spike.md apex-infinite-cli/README_apex-infinite-cli.md apex-infinite-cli/docs/visual-wrapper-boundary.md apex-infinite-cli/docs/operator-runbook.md apex-infinite-cli/docs/troubleshooting.md`
   - Result: PASS - no hardcoded production secrets, no `shell=True`, no SQL write paths, and subprocess usage is isolated to the wrapper launcher.
   - Evidence: matches were documentation URLs/notes, subprocess references, and a deliberate unsafe `Bearer ...` fixture in `test_visual_wrapper_spike.py`.
 - Command/check: `git diff -- apex-infinite-cli/apex_infinite.py apex-infinite-cli/requirements.txt apex-infinite-cli/requirements-wrapper.txt`

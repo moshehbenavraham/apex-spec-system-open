@@ -70,16 +70,16 @@ Every row names the exact command or targeted inspection used.
 |------|-------|--------|
 | `apex-infinite-cli/apex_infinite_events.py` | Yes | PASS |
 | `apex-infinite-cli/tests/test_event_stream.py` | Yes | PASS |
-| `docs/apex-infinite-cli/event-stream.md` | Yes | PASS |
+| `apex-infinite-cli/docs/event-stream.md` | Yes | PASS |
 | `apex-infinite-cli/apex_infinite.py` | Yes | PASS |
 | `apex-infinite-cli/apex_infinite_ui.py` | Yes | PASS |
 | `apex-infinite-cli/tests/test_cli_options.py` | Yes | PASS |
 | `apex-infinite-cli/tests/test_subprocess_execution.py` | Yes | PASS |
 | `apex-infinite-cli/tests/test_renderer.py` | Yes | PASS |
-| `apex-infinite-cli/README-apex-infinite-cli.md` | Yes | PASS |
-| `docs/apex-infinite-cli/operator-runbook.md` | Yes | PASS |
-| `docs/apex-infinite-cli/prompt-contract.md` | Yes | PASS |
-| `docs/apex-infinite-cli/troubleshooting.md` | Yes | PASS |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | Yes | PASS |
+| `apex-infinite-cli/docs/operator-runbook.md` | Yes | PASS |
+| `apex-infinite-cli/docs/prompt-contract.md` | Yes | PASS |
+| `apex-infinite-cli/docs/troubleshooting.md` | Yes | PASS |
 
 **Missing deliverables**: None
 

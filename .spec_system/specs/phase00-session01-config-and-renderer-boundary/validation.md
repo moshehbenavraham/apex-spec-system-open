@@ -61,7 +61,7 @@
 | `apex-infinite-cli/tests/test_renderer.py` | Yes | PASS |
 | `apex-infinite-cli/apex_infinite.py` | Yes | PASS |
 | `apex-infinite-cli/config.yaml` | Yes | PASS |
-| `apex-infinite-cli/README-apex-infinite-cli.md` | Yes | PASS |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | Yes | PASS |
 | `apex-infinite-cli/tests/conftest.py` | Yes | PASS |
 
 **Missing deliverables**: None
@@ -77,7 +77,7 @@
 | `apex-infinite-cli/tests/test_renderer.py` | ASCII | LF | PASS |
 | `apex-infinite-cli/apex_infinite.py` | ASCII | LF | PASS |
 | `apex-infinite-cli/config.yaml` | ASCII | LF | PASS |
-| `apex-infinite-cli/README-apex-infinite-cli.md` | ASCII | LF | PASS |
+| `apex-infinite-cli/README_apex-infinite-cli.md` | ASCII | LF | PASS |
 | `apex-infinite-cli/tests/conftest.py` | ASCII | LF | PASS |
 
 **Encoding issues**: None

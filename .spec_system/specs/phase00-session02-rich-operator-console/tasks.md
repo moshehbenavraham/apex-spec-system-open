@@ -38,7 +38,7 @@ Legend: `[x]` completed; `[ ]` pending; `[P]` parallelizable; `[SNNMM]` session 
 - [x] T013 [S0002] Improve manager decision, prompt preview, and agent response panels with deterministic truncation and critical-state visibility at narrow widths (`apex-infinite-cli/apex_infinite_ui.py`)
 - [x] T014 [S0002] Improve Codex command state rendering for dry-run, start, non-zero exit, timeout, missing binary, and generic error paths while preserving returned raw strings (`apex-infinite-cli/apex_infinite_ui.py`)
 - [x] T015 [S0002] Ensure plain, ASCII, compact, `NO_COLOR`, `TERM=dumb`, and non-terminal console fallbacks stay readable and suppress low-effect separators where required (`apex-infinite-cli/apex_infinite_ui.py`)
-- [x] T016 [S0002] Add minimal README notes for the richer operator console, theme presets, and current fallback guarantees without expanding into runbook or event-stream docs (`apex-infinite-cli/README-apex-infinite-cli.md`)
+- [x] T016 [S0002] Add minimal README notes for the richer operator console, theme presets, and current fallback guarantees without expanding into runbook or event-stream docs (`apex-infinite-cli/README_apex-infinite-cli.md`)
 
 ---
 

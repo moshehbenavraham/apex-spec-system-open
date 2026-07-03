@@ -87,7 +87,6 @@ Check for the presence and quality of standard documentation files.
 | File | Purpose | Check |
 |------|---------|-------|
 | `README.md` | What this is, repo map, one-command quickstart | Exists? Current? |
-| `CONTRIBUTING.md` | Branch conventions, PR rules, commit style | Exists? Current? |
 | `LICENSE` | Legal clarity | Exists? |
 
 #### /docs/ Directory
@@ -96,6 +95,7 @@ Check for the presence and quality of standard documentation files.
 docs/
 |-- ARCHITECTURE.md        # System diagram, service relationships, tech stack
 |-- CODEOWNERS             # Who owns what
+|-- CONTRIBUTING.md        # Branch conventions, PR rules, commit style
 |-- onboarding.md          # Zero-to-hero checklist
 |-- development.md         # Local environment, dev scripts
 |-- environments.md        # Dev/staging/prod differences
@@ -157,7 +157,7 @@ For each missing required file:
 - [Getting Started](docs/onboarding.md)
 - [Development Guide](docs/development.md)
 - [Architecture](docs/ARCHITECTURE.md)
-- [Contributing](CONTRIBUTING.md)
+- [Contributing](docs/CONTRIBUTING.md)
 
 ## Tech Stack
 
@@ -170,7 +170,7 @@ For each missing required file:
 See [PRD](.spec_system/PRD/PRD.md).
 ```
 
-#### CONTRIBUTING.md Template
+#### docs/CONTRIBUTING.md Template
 
 ```markdown
 # Contributing

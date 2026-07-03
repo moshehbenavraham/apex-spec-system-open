@@ -7,7 +7,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CLI_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 PYTHON_BIN="${PYTHON:-python3}"
-CONFIG_PATH="${APEX_INFINITE_CONFIG:-${CLI_DIR}/config.yaml}"
+CONFIG_PATH="${APEX_INFINITE_CONFIG:-${CLI_DIR}/src/apex_infinite/config.yaml}"
 MODEL_OVERRIDE=""
 CHAT_CHECK=0
 
@@ -16,7 +16,7 @@ usage() {
 Usage: check-ollama.sh [options]
 
 Options:
-  --config PATH       Config file path (default: apex-infinite-cli/config.yaml)
+  --config PATH       Config file path (default: packaged config.yaml)
   --host HOST         Override OLLAMA_HOST for this check
   --port PORT         Override OLLAMA_PORT for this check
   --api-key KEY       Override OLLAMA_API_KEY for this check
@@ -70,8 +70,10 @@ while [[ $# -gt 0 ]]; do
 done
 
 cmd=(
+    env
+    "PYTHONPATH=${CLI_DIR}/src${PYTHONPATH:+:${PYTHONPATH}}"
     "$PYTHON_BIN"
-    "${CLI_DIR}/apex_infinite.py"
+    -m apex_infinite
     --config "$CONFIG_PATH"
     --provider ollama
     --check-provider
