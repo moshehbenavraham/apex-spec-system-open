@@ -6,7 +6,7 @@ Originally powered by an n8n workflow with Airtable, Slack, and SSH nodes, this 
 
 ## How It Works
 
-```
+```text
              +------------------+
              |   Manager LLM    |
              | (decides next    |
@@ -131,6 +131,16 @@ disable color by itself. `--compact` reduces spacing but keeps errors, manager
 reasons, prompts, command output summaries, help pauses, completion, timeouts,
 and non-zero exits visible.
 
+Theme summary:
+
+| Theme | Use when |
+|-------|----------|
+| `auto` | You want the CLI to pick `crt-green` in capable terminals and `plain` in constrained output. |
+| `crt-green` | You want the default styled operator-console look in an interactive terminal. |
+| `crt-amber` | You want the same operator hierarchy with amber terminal emphasis. |
+| `ibm-dos` | You want high-contrast DOS-like labels and panels. |
+| `plain` | You want logs, CI, remote shells, redirected output, or terminals where colors render poorly. |
+
 The normal run surface is a compact operator console. Startup renders a `BOOT`
 panel with project, provider, model, config, theme, effects, glyph mode,
 dry-run state, and start context. Each loop uses an `ITERATION` frame with the
@@ -172,6 +182,11 @@ Low-effect separators are ASCII-safe and are suppressed in `plain` and
 separator characters, and theme tokens remain display-only and are not written
 to SQLite history.
 
+See [Operator runbook](../docs/apex-infinite-cli/operator-runbook.md) for
+mode-selection guidance and
+[dry-run-plain.txt](../docs/apex-infinite-cli/transcripts/dry-run-plain.txt)
+for a deterministic fallback transcript.
+
 ## Usage
 
 ```bash
@@ -211,7 +226,7 @@ python apex_infinite.py --path ~/projects/my-app/ --event-stream - --machine-out
 
 ## Options
 
-```
+```text
 --path TEXT               Project path (prompted if not given)
 --start TEXT              Starting command (e.g. "plansession")
 --ceo TEXT                Initial CEO instructions
@@ -258,6 +273,9 @@ status, project key, command, reason, and response summary. `--history
 --verbose` expands reason, response, and stored-state detail without adding a
 separate history-only flag or changing the SQLite schema.
 
+See [history-ledger.txt](../docs/apex-infinite-cli/transcripts/history-ledger.txt)
+for compact and verbose history examples.
+
 ## Event Stream
 
 Use `--event-stream PATH` to write line-buffered JSONL lifecycle events for
@@ -272,7 +290,26 @@ completion, max-iteration, and stop events. Payloads contain bounded raw facts
 and exclude provider API keys, Rich markup, ANSI escapes, frame glyphs, theme
 token values, and renderer snapshots.
 
-See `docs/apex-infinite-cli/event-stream.md` for the full event contract.
+See [Event stream contract](../docs/apex-infinite-cli/event-stream.md) for the
+full event contract and
+[machine-output-events.jsonl](../docs/apex-infinite-cli/transcripts/machine-output-events.jsonl)
+for a deterministic JSONL sample.
+
+## Visual Wrapper Boundary
+
+The optional Linux visual wrapper path is future work and is separate from the
+base terminal CLI. The selected direction is PySide6 with Qt Quick/QML as an
+optional wrapper dependency, with PyQt, qmltermwidget, QTermWidget, copied
+terminal emulators, copied QML, copied shaders, copied images, copied icons,
+copied fonts, copied resource manifests, copied build scripts, and copied
+profile data excluded.
+
+Future wrappers consume the JSONL event stream or importable event API. They
+must not parse Rich panels, plain human output, terminal frames, or history
+display rows.
+
+See [Visual wrapper boundary](../docs/apex-infinite-cli/visual-wrapper-boundary.md)
+for the clean-room no-copy rules and optional wrapper direction.
 
 ## Testing
 
@@ -289,9 +326,12 @@ Click option wiring, renderer semantics, and SQLite history safety.
 ## Deep-Dive Docs
 
 - [Operator runbook](../docs/apex-infinite-cli/operator-runbook.md)
+- [Event stream contract](../docs/apex-infinite-cli/event-stream.md)
 - [History DB reference](../docs/apex-infinite-cli/history-db.md)
 - [Prompt contract](../docs/apex-infinite-cli/prompt-contract.md)
 - [Troubleshooting guide](../docs/apex-infinite-cli/troubleshooting.md)
+- [Visual wrapper boundary](../docs/apex-infinite-cli/visual-wrapper-boundary.md)
+- [Transcript samples](../docs/apex-infinite-cli/transcripts/README.md)
 
 ## Notes
 

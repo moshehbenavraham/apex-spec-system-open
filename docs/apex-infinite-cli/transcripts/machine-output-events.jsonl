@@ -1,0 +1,19 @@
+{"event":"startup_begin","payload":{"dry_run":true,"event_stream":true,"machine_output":true,"max_iterations":1},"timestamp":"2026-07-03T00:00:00Z","version":1}
+{"event":"config_loaded","payload":{"config_path":"config.yaml","model_name":"qwen2.5:7b","provider_name":"ollama"},"timestamp":"2026-07-03T00:00:01Z","version":1}
+{"event":"ui_resolved","payload":{"ascii_only":false,"color_enabled":false,"compact":false,"constraint_reason":"non-terminal output","effect_level":"off","plain":true,"requested_theme":"auto","theme_name":"plain"},"timestamp":"2026-07-03T00:00:01Z","version":1}
+{"event":"project_resolved","payload":{"project_path":"/home/user/projects/my-app/"},"timestamp":"2026-07-03T00:00:01Z","version":1}
+{"event":"startup","payload":{"ceo_present":false,"config_path":"config.yaml","dry_run":true,"event_stream_path":"-","machine_output":true,"max_iterations":1,"model_name":"qwen2.5:7b","project_path":"/home/user/projects/my-app/","provider_name":"ollama","start_command":"implement","theme_name":"plain"},"timestamp":"2026-07-03T00:00:01Z","version":1}
+{"event":"iteration_started","payload":{"dry_run":true,"iteration":1,"model_name":"qwen2.5:7b","operation":"history summary","project_path":"/home/user/projects/my-app/","provider_name":"ollama"},"timestamp":"2026-07-03T00:00:02Z","version":1}
+{"event":"history_fetched","payload":{"iteration":1,"project_path":"/home/user/projects/my-app/","record_count":0},"timestamp":"2026-07-03T00:00:02Z","version":1}
+{"event":"history_summarize_started","payload":{"iteration":1,"record_count":0},"timestamp":"2026-07-03T00:00:02Z","version":1}
+{"event":"history_summarize_finished","payload":{"iteration":1,"summary_length":29},"timestamp":"2026-07-03T00:00:02Z","version":1}
+{"event":"manager_decision_started","payload":{"iteration":1,"source":"start_command"},"timestamp":"2026-07-03T00:00:03Z","version":1}
+{"event":"manager_decision_finished","payload":{"iteration":1,"known_command":true,"output":"implement","reason":"User-specified start command"},"timestamp":"2026-07-03T00:00:03Z","version":1}
+{"event":"prompt_built","payload":{"iteration":1,"known_command":true,"manager_output":"implement","prompt_length":42},"timestamp":"2026-07-03T00:00:03Z","version":1}
+{"event":"prompt_dispatched","payload":{"iteration":1,"prompt_length":42},"timestamp":"2026-07-03T00:00:03Z","version":1}
+{"event":"codex_dry_run","payload":{"binary":"codex","project_path":"/home/user/projects/my-app/","prompt_length":42,"timeout_seconds":1800},"timestamp":"2026-07-03T00:00:03Z","version":1}
+{"event":"response_summarized","payload":{"has_output":true,"length":61,"line_count":1,"preview":"...","source":"codex_dry_run"},"timestamp":"2026-07-03T00:00:03Z","version":1}
+{"event":"db_log_started","payload":{"iteration":1,"project_path":"/home/user/projects/my-app/","stored_state":"iteration result"},"timestamp":"2026-07-03T00:00:04Z","version":1}
+{"event":"db_log_finished","payload":{"iteration":1,"project_path":"/home/user/projects/my-app/","stored_state":"iteration result"},"timestamp":"2026-07-03T00:00:04Z","version":1}
+{"event":"max_iterations_reached","payload":{"max_iterations":1},"timestamp":"2026-07-03T00:00:04Z","version":1}
+{"event":"run_stopped","payload":{"max_iterations":1,"reason":"max_iterations"},"timestamp":"2026-07-03T00:00:04Z","version":1}

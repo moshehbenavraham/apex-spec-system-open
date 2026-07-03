@@ -1,0 +1,66 @@
+Apex Infinite CLI deterministic transcript
+Mode: --plain --ascii --compact --dry-run --max-iterations 1
+Purpose: show fallback output without ANSI escapes, Rich markup, or box glyphs
+
+$ python apex_infinite.py --path /home/user/projects/my-app/ --start implement --dry-run --plain --ascii --compact --max-iterations 1
+
+BOOT Apex Infinite Operator Console
+Project: /home/user/projects/my-app/
+Provider: ollama
+Model: qwen2.5:7b
+Config: config.yaml
+Max iterations: 1
+Theme: plain requested=auto
+Effects: off
+Glyphs: ascii
+Dry run: enabled
+Start command: implement
+
+ITERATION Iteration Frame
+Iteration: 1
+Operation: history summary
+Provider: ollama
+Model: qwen2.5:7b
+Project: /home/user/projects/my-app/
+Dry run: enabled
+
+HISTORY History Summary
+Rows fetched: 0
+Summary source: no prior records
+
+DECISION Manager Decision
+Output: implement
+Type: workflow command
+Reason: User-specified start command.
+
+PROMPT Prompt Preview
+Length: 42 chars
+Preview: Run the apex-spec skill command /implement
+
+DRY RUN Codex Execution
+State: No Codex subprocess launched
+Binary: codex
+Project: /home/user/projects/my-app/
+Flags: --dangerously-auto-approve
+Timeout: 1800s
+Prompt: Run the apex-spec skill command /implement
+
+RESPONSE Agent Response
+Mode: summary
+Output: [DRY RUN] Command: Run the apex-spec skill command /implement
+
+LOGGED History Write
+Project: /home/user/projects/my-app/
+Manager output: implement
+Stored state: iteration result
+
+STOP Safety Stop
+Reached max iterations (1). Stopping.
+
+Notes:
+- This sample uses generic paths and no real provider secrets.
+- Plain mode disables color and effects. ASCII mode forces ASCII glyph choices.
+- Compact mode reduces spacing but does not hide decisions, prompts, dry-run
+  status, DB logging, or the safety stop.
+- SQLite stores raw response and manager fields; it does not store display
+  labels, theme names as style tokens, ANSI escapes, or frame characters.

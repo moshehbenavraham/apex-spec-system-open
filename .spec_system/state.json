@@ -17,7 +17,8 @@
     "phase00-session01-config-and-renderer-boundary",
     "phase00-session02-rich-operator-console",
     "phase00-session03-subprocess-and-history-visibility",
-    "phase00-session04-event-stream-boundary"
+    "phase00-session04-event-stream-boundary",
+    "phase00-session05-docs-samples-and-runbooks"
   ],
   "next_session_history": [
     {
@@ -78,6 +79,21 @@
     {
       "date": "2026-07-03",
       "session": "phase00-session04-event-stream-boundary",
+      "status": "completed"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session05-docs-samples-and-runbooks",
+      "status": "planned"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session05-docs-samples-and-runbooks",
+      "status": "validated"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session05-docs-samples-and-runbooks",
       "status": "completed"
     }
   ]

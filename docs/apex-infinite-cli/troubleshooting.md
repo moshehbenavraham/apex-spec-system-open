@@ -26,6 +26,10 @@ Start here before deeper debugging:
 | `--event-stream - requires --machine-output` | Stdout JSONL was requested while human output was still enabled | Add `--machine-output` or write events to a file path |
 | `--machine-output requires --event-stream` | Machine-output mode has no JSONL destination | Pass `--event-stream -` or a file path |
 | `Event stream error: ...` | The event path is not writable or a payload failed validation | Use a writable path and inspect recent changes for unsafe event payload values |
+| Output colors are unreadable | Terminal palette clashes with the selected theme | Use `--plain`, choose another `--theme`, or set `NO_COLOR=1` |
+| Output shows broken glyphs | Terminal encoding cannot render non-ASCII glyphs | Use `--ascii`, usually with `--plain` |
+| Output wraps too much | Terminal width or log viewer is narrow | Use `--compact` and inspect details with `--verbose` only when needed |
+| JSONL has terminal text mixed in | Human rendering and stdout events were mixed by a wrapper | Use `--event-stream - --machine-output` or write events to a file |
 
 ## Path And History Issues
 
@@ -108,6 +112,77 @@ What to do:
 - the terminal bell still fires
 - in machine-output mode, consume the JSONL stop/help/error events instead
 
+## Display And Terminal Issues
+
+### Colors are unreadable
+
+Cause:
+
+- the active terminal palette conflicts with the selected theme
+- `auto` selected a styled theme in an interactive terminal
+- a remote terminal or multiplexed shell remapped colors
+
+What to do:
+
+- run with `--plain`
+- try another explicit theme such as `--theme crt-amber` or `--theme ibm-dos`
+- set `NO_COLOR=1` for the shell or CI job
+- keep `--event-stream PATH` separate if automation still needs lifecycle
+  events
+
+### Non-UTF or non-ASCII terminal renders broken symbols
+
+Cause:
+
+- the terminal cannot render Unicode glyphs used by styled Rich panels
+- a remote shell or log collector down-converts output
+
+What to do:
+
+- run with `--ascii`
+- add `--plain` when color or panel rendering is also unreliable
+- use `--plain --ascii --compact` for the most conservative output
+
+### Narrow terminal or log viewer is hard to scan
+
+Cause:
+
+- the terminal width is too small for comfortable panels
+- a CI log viewer wraps long paths, reasons, or responses
+
+What to do:
+
+- run with `--compact`
+- use `--history` for the compact ledger
+- add `--history --verbose` only when you need expanded reason and response
+  detail
+
+### `NO_COLOR` or `TERM=dumb` forced plain output
+
+Cause:
+
+- environment constraints intentionally default to plain output
+
+What to do:
+
+- accept plain output for logs, CI, and constrained terminals
+- pass an explicit `--theme` only when the destination really supports styled
+  output
+- keep `--ascii` if the terminal has encoding limitations
+
+### Redirected output or remote shell lost the operator-console look
+
+Cause:
+
+- non-TTY output defaults to plain so logs do not contain terminal formatting
+- remote shells may report limited terminal capabilities
+
+What to do:
+
+- use `--plain --ascii --compact` for deterministic logs
+- write lifecycle events to a file with `--event-stream /tmp/apex-events.jsonl`
+- use stdout JSONL only with `--event-stream - --machine-output`
+
 ## Event Stream Issues
 
 ### JSONL output contains human text
@@ -148,6 +223,22 @@ What to do:
 - read one full line at a time
 - parse only the JSONL stream from `--event-stream` or the importable event API
 - ignore Rich output and history display rows
+
+### Wrapper state disagrees with terminal output
+
+Cause:
+
+- the wrapper scraped Rich panels, plain text, or history rows instead of
+  consuming event payloads
+- the wrapper treated display-only labels as workflow state
+
+What to do:
+
+- consume JSONL events from `--event-stream PATH`
+- use `--event-stream - --machine-output` only when stdout must be JSONL
+- keep wrapper state derived from events or the importable event API
+- read [Visual wrapper boundary](visual-wrapper-boundary.md) before adding
+  wrapper behavior
 
 ## Config Issues
 
@@ -204,3 +295,5 @@ Code changes are justified for:
 - [Event stream contract](event-stream.md)
 - [History DB reference](history-db.md)
 - [Prompt contract](prompt-contract.md)
+- [Visual wrapper boundary](visual-wrapper-boundary.md)
+- [Transcript samples](transcripts/README.md)

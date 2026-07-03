@@ -81,6 +81,65 @@ columns. Default history output keeps reason and response text truncated for
 state detail. These labels, summaries, truncation counts, and status values are
 not written back to SQLite.
 
+## Display-Time Status Labels
+
+Status labels are derived at render time in this order:
+
+1. If `help_or_done_msg` has text, that text is the status, truncated for
+   display when needed.
+2. If `ai_decision_output` is `alldonebaby`, status is `complete`.
+3. If `ai_decision_output` is `help`, status is `help`.
+4. If `ai_decision_output` has any other value, status is `iteration`.
+5. If the row is sparse or legacy and has no command, status is `legacy`.
+
+Current completed-run rows normally display `ALL DONE BABY!` because the
+completion path stores that marker in `help_or_done_msg`. The `complete` label
+appears only for `alldonebaby` rows where that stored marker is empty.
+
+The compact summary line has this shape:
+
+```text
+#<id> <created_at> status=<status> project=<project-key> command=<manager-output>
+```
+
+`project-key` is the final path segment after trimming the stored path for
+display. It does not rewrite the stored `path`.
+
+## Truncation And Verbose Display
+
+Default history output is optimized for 80-column terminals:
+
+- Project path detail truncates around 48 characters.
+- Manager reason truncates around 72 characters.
+- Agent response truncates around 88 characters.
+- Summary command text truncates around 28 characters.
+- Shortened values include a character-count suffix.
+
+`--history --verbose` expands the same render-time fields:
+
+- Project path detail expands around 160 characters.
+- Manager reason expands around 160 characters.
+- Agent response expands around 220 characters.
+- Stored state from `help_or_done_msg` is shown as an additional detail row.
+
+Verbose history does not add a second flag and does not mutate storage.
+
+## Raw Storage Boundary
+
+SQLite rows store workflow facts only. They do not store:
+
+- Rich markup.
+- ANSI escapes.
+- Box or frame glyphs.
+- Theme token values.
+- Rendered status labels.
+- Truncation suffixes.
+- History summaries.
+- Wrapper state.
+
+Use [history-ledger.txt](transcripts/history-ledger.txt) for a deterministic
+compact and verbose history sample.
+
 ## History Summary Input Format
 
 Before summarization, each fetched row is transformed into this structure:
@@ -130,3 +189,4 @@ sqlite3 ~/.apex-infinite/history.db \
 - [Operator runbook](operator-runbook.md)
 - [Prompt contract](prompt-contract.md)
 - [Troubleshooting guide](troubleshooting.md)
+- [Transcript samples](transcripts/README.md)

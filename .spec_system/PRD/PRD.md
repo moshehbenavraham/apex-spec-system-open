@@ -108,7 +108,7 @@ This system delivers the product via phases. Each phase is implemented via multi
 
 | Phase | Name | Sessions | Status |
 |-------|------|----------|--------|
-| 00 | Apex Infinite CLI Upgrade | 8 | Not Started |
+| 00 | Apex Infinite CLI Upgrade | 8 | In Progress |
 
 ## Phase 00: Apex Infinite CLI Upgrade
 

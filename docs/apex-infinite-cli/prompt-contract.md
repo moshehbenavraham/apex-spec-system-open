@@ -171,6 +171,26 @@ The event stream does not alter:
 Wrappers and tests should consume events instead of parsing the manager prompt,
 Codex prompt, Rich output, or history rendering.
 
+## Display, History, And Wrapper Boundary
+
+UI settings, history display, event-stream samples, machine-output mode, and
+visual-wrapper documentation are observational surfaces. They do not change
+the prompt contract.
+
+Specifically, these do not alter manager or Codex routing:
+
+- `--theme`, `--plain`, `--ascii`, and `--compact`
+- history status labels and truncation
+- `--event-stream PATH`
+- `--event-stream - --machine-output`
+- deterministic transcript files under `docs/apex-infinite-cli/transcripts/`
+- the optional visual wrapper boundary
+
+Future visual wrappers must consume JSONL events or the importable event API.
+They must not infer workflow state by scraping `MANAGER_SYSTEM_PROMPT`,
+`SUMMARIZER_SYSTEM_PROMPT`, Codex prompts, Rich panels, plain output, or
+history display rows.
+
 ## Important Nuance
 
 The runtime prompt string above is a wrapper convention used by
@@ -208,3 +228,5 @@ If you change any of these behaviors, update all of the following together:
 - [Event stream contract](event-stream.md)
 - [History DB reference](history-db.md)
 - [Troubleshooting guide](troubleshooting.md)
+- [Visual wrapper boundary](visual-wrapper-boundary.md)
+- [Transcript samples](transcripts/README.md)

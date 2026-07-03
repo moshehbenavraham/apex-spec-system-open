@@ -1,7 +1,7 @@
 # Session 05: Docs Samples And Runbooks
 
 **Session ID**: `phase00-session05-docs-samples-and-runbooks`
-**Status**: Not Started
+**Status**: Complete
 **Estimated Tasks**: ~12-25
 **Estimated Duration**: 2-4 hours
 
@@ -49,10 +49,10 @@ clean-room visual boundary after the implemented behavior exists.
 
 ## Prerequisites
 
-- [ ] Sessions 01 through 04 validated.
-- [ ] Implemented flags, config keys, event behavior, and fallback behavior are
+- [x] Sessions 01 through 04 validated.
+- [x] Implemented flags, config keys, event behavior, and fallback behavior are
   available to document.
-- [ ] Clean-room and license boundaries are reviewed against the phase PRD.
+- [x] Clean-room and license boundaries are reviewed against the phase PRD.
 
 ---
 
@@ -67,10 +67,10 @@ clean-room visual boundary after the implemented behavior exists.
 
 ## Success Criteria
 
-- [ ] Users can discover and configure the new look from documentation.
-- [ ] Operators have clear fallback instructions for poor terminal rendering.
-- [ ] Docs preserve the Apex Spec workflow contract and no-copying boundary.
-- [ ] Event-stream usage is documented without implying that wrappers parse
+- [x] Users can discover and configure the new look from documentation.
+- [x] Operators have clear fallback instructions for poor terminal rendering.
+- [x] Docs preserve the Apex Spec workflow contract and no-copying boundary.
+- [x] Event-stream usage is documented without implying that wrappers parse
   Rich output.
 
 ---

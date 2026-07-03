@@ -31,6 +31,10 @@ Guardrails:
 - `--machine-output` requires `--event-stream`.
 - `--event-stream PATH` without `--machine-output` leaves normal human stdout
   unchanged and writes JSONL to `PATH`.
+- Wrappers that need human-readable logs should use a file event stream and
+  leave stdout/stderr for the normal terminal surface.
+- Wrappers that need machine-readable stdout should use
+  `--event-stream - --machine-output` and treat stdout as JSONL only.
 
 ## Event Shape
 
@@ -55,6 +59,8 @@ markup, frame glyphs, display token names, secret-looking keys, and
 secret-looking values.
 
 ## Event Names
+
+These names are emitted by the current CLI flow:
 
 Startup and configuration:
 
@@ -97,9 +103,13 @@ Storage, operator, and stop states:
 - `run_stopped`
 - `event_stream_error`
 
-Compatibility aliases are accepted by the emitter for future wrapper
-experiments, but the names above are the implemented CLI contract for this
-release.
+The registry also accepts compatibility names for wrapper experiments and
+future migrations: `config_resolved`, `history_summary_started`,
+`history_summary_completed`, `manager_decision_completed`, `codex_completed`,
+`codex_failed`, `output_summary`, `db_logged`, `completion`, and `error`.
+Current code may emit `error` for startup, history-summary, or manager-decision
+failures. Consumers should ignore unknown future event names only after logging
+the raw event for diagnosis.
 
 ## Payload Principles
 
@@ -132,6 +142,11 @@ Events do not include:
 {"event":"startup","payload":{"ceo_present":false,"config_path":"config.yaml","dry_run":true,"event_stream_path":"/tmp/apex-events.jsonl","machine_output":false,"max_iterations":1,"model_name":"qwen2.5:7b","project_path":"/home/user/projects/my-app/","provider_name":"ollama","start_command":"implement","theme_name":"plain"},"timestamp":"2026-07-03T00:00:01Z","version":1}
 ```
 
+See
+[machine-output-events.jsonl](transcripts/machine-output-events.jsonl)
+for a deterministic stdout JSONL sample that covers startup, UI resolution,
+prompt dispatch, dry-run execution, DB logging, and stop events.
+
 ## Failure Behavior
 
 If an event payload or write fails in normal human-output mode, the CLI prints
@@ -149,8 +164,15 @@ directly. They should not parse terminal output, Rich markup, history display
 rows, or frame-like text. The event stream is append-only during a run and is
 flushed after every event so wrapper state can update incrementally.
 
+The event stream is the supported visual-wrapper state boundary. A wrapper may
+show its own log viewport or styled panels, but those views must be derived
+from events or an importable API, not from scraping Rich panels, plain output,
+ANSI captures, or SQLite history display text.
+
 Related docs:
 
 - [Operator runbook](operator-runbook.md)
 - [Prompt contract](prompt-contract.md)
 - [Troubleshooting guide](troubleshooting.md)
+- [Visual wrapper boundary](visual-wrapper-boundary.md)
+- [Transcript samples](transcripts/README.md)
