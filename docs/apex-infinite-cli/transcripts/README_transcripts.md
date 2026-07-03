@@ -46,7 +46,7 @@ samples.
 
 ## Related Docs
 
-- [CLI README](../../../apex-infinite-cli/README-apex-infinite-cli.md)
+- [CLI README](../../../apex-infinite-cli/README_apex-infinite-cli.md)
 - [Operator runbook](../operator-runbook.md)
 - [Event stream contract](../event-stream.md)
 - [History DB reference](../history-db.md)

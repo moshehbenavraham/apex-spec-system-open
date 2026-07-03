@@ -9,7 +9,7 @@ import sys
 import time
 from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import TextIO
+from typing import Literal, TextIO
 
 EVENT_VERSION = 1
 
@@ -116,7 +116,7 @@ class NoOpEventEmitter:
     def __enter__(self) -> "NoOpEventEmitter":
         return self
 
-    def __exit__(self, _exc_type, _exc, _traceback) -> bool:
+    def __exit__(self, _exc_type, _exc, _traceback) -> Literal[False]:
         self.close()
         return False
 
@@ -170,12 +170,15 @@ class EventEmitter:
     def __enter__(self) -> "EventEmitter":
         return self
 
-    def __exit__(self, _exc_type, _exc, _traceback) -> bool:
+    def __exit__(self, _exc_type, _exc, _traceback) -> Literal[False]:
         self.close()
         return False
 
 
-def open_event_stream(path: str | None, stdout_allowed: bool = False) -> EventEmitter:
+EventStream = NoOpEventEmitter | EventEmitter
+
+
+def open_event_stream(path: str | None, stdout_allowed: bool = False) -> EventStream:
     """Open a file or stdout event stream path."""
     if not path:
         return NoOpEventEmitter()

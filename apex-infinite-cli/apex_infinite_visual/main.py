@@ -98,8 +98,9 @@ def build_bridge_class(qt):  # pylint: disable=too-many-statements
     slot = qt["Slot"]
     timer = qt["QTimer"]
 
-    class WrapperBridge(  # pylint: disable=too-many-instance-attributes,invalid-name
-        qobject
+    class WrapperBridge(
+        # pylint: disable=too-many-instance-attributes,invalid-name
+        qobject  # type: ignore[misc, valid-type]
     ):
         """Expose event-driven wrapper state and controls to QML."""
 

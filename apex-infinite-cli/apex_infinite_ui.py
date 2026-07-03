@@ -7,6 +7,7 @@ from __future__ import annotations
 import os
 import re
 from dataclasses import dataclass, fields, replace
+from pathlib import Path
 from typing import Mapping, Sequence
 
 from rich import box
@@ -689,7 +690,7 @@ class ApexRenderer:  # pylint: disable=too-many-public-methods
             label=SEMANTIC_LABELS["boot"],
         )
 
-    def print_project_list(self, project_dirs: Sequence[object]) -> None:
+    def print_project_list(self, project_dirs: Sequence[Path]) -> None:
         """Render available project choices."""
         rows = [
             (str(index), f"~/{directory.relative_to(directory.home())}/")

@@ -175,4 +175,4 @@ Related docs:
 - [Prompt contract](prompt-contract.md)
 - [Troubleshooting guide](troubleshooting.md)
 - [Visual wrapper boundary](visual-wrapper-boundary.md)
-- [Transcript samples](transcripts/README.md)
+- [Transcript samples](transcripts/README_transcripts.md)

@@ -229,4 +229,4 @@ Before starting wrapper implementation:
 - [Troubleshooting guide](troubleshooting.md)
 - [Visual wrapper productization](visual-wrapper-productization.md)
 - [Visual wrapper spike](visual-wrapper-spike.md)
-- [Transcript samples](transcripts/README.md)
+- [Transcript samples](transcripts/README_transcripts.md)

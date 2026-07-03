@@ -219,7 +219,7 @@ If you change any of these behaviors, update all of the following together:
 
 1. `apex_infinite.py`
 2. `apex-infinite-cli/tests/test_prompts.py`
-3. `apex-infinite-cli/README-apex-infinite-cli.md`
+3. `apex-infinite-cli/README_apex-infinite-cli.md`
 4. This document
 
 ## Related Docs
@@ -229,4 +229,4 @@ If you change any of these behaviors, update all of the following together:
 - [History DB reference](history-db.md)
 - [Troubleshooting guide](troubleshooting.md)
 - [Visual wrapper boundary](visual-wrapper-boundary.md)
-- [Transcript samples](transcripts/README.md)
+- [Transcript samples](transcripts/README_transcripts.md)

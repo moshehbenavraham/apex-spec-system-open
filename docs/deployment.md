@@ -56,8 +56,9 @@ ls ~/.agents/skills/apex-spec/SKILL.md
 
 ## CI/CD Pipeline
 
-```
-Push --> Quality (shellcheck, shfmt, encoding) --> Tests (bats) --> Security (audit)
+```text
+Push --> Quality (shellcheck, shfmt, encoding) --> Tests (bats) --> Security scans
+Tag  --> Release inventory + base CLI health --> GitHub Release
 ```
 
 ### Workflows
@@ -67,7 +68,7 @@ Push --> Quality (shellcheck, shfmt, encoding) --> Tests (bats) --> Security (au
 | quality.yml | Push, PR | Shellcheck, shfmt, ASCII encoding checks |
 | test.yml | Push, PR | Bats tests for scripts |
 | integration.yml | Push, PR | Cross-platform tests, reference integrity |
-| security.yml | Push, PR | Security audit |
+| security.yml | Push, PR, weekly schedule | Gitleaks, sensitive-file scan, script security patterns |
 | release.yml | Tag | Release automation |
 
 ## Release Process
@@ -80,7 +81,13 @@ Push --> Quality (shellcheck, shfmt, encoding) --> Tests (bats) --> Security (au
    - Verify ASCII encoding (no non-ASCII in core files)
    - Verify version sync (SKILL.md and README.md match tag)
    - Verify file inventory (23+ references, 3 scripts, all executable)
+   - Verify Apex Infinite CLI health (`--version` and help-output smoke)
    - Create GitHub Release with installation instructions
+
+The optional Linux visual wrapper is source-mode only. Do not publish a binary
+or AppImage until the generated-bundle review, license/module review, notices,
+SHA256 checksums, and source/relink instructions are complete for the concrete
+artifact.
 
 ## Updating an Existing Installation
 

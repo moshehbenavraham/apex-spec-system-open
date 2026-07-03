@@ -8,7 +8,7 @@ import sys
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, TextIO
+from typing import Callable, Literal, TextIO, cast
 
 DEFAULT_CLEANUP_TIMEOUT = 5.0
 
@@ -57,23 +57,23 @@ class ApexCliProcess:
     def __init__(
         self,
         options: ApexCliLaunchOptions,
-        popen_factory: Callable[..., subprocess.Popen] = subprocess.Popen,
+        popen_factory: Callable[..., subprocess.Popen[str]] = subprocess.Popen,
     ):
         self.options = options
         self.popen_factory = popen_factory
         self.command = build_apex_cli_command(options)
-        self.process: subprocess.Popen | None = None
+        self.process: subprocess.Popen[str] | None = None
         self._project_path = validate_project_path(options.project_path)
 
     @property
     def stdout(self) -> TextIO | None:
         """Return the process stdout pipe."""
-        return self.process.stdout if self.process else None
+        return cast(TextIO | None, self.process.stdout) if self.process else None
 
     @property
     def stderr(self) -> TextIO | None:
         """Return the process stderr pipe."""
-        return self.process.stderr if self.process else None
+        return cast(TextIO | None, self.process.stderr) if self.process else None
 
     def start(self) -> "ApexCliProcess":
         """Start the CLI process with stdout reserved for JSONL events."""
@@ -134,7 +134,7 @@ class ApexCliProcess:
     def __enter__(self) -> "ApexCliProcess":
         return self.start()
 
-    def __exit__(self, _exc_type, _exc, _traceback) -> bool:
+    def __exit__(self, _exc_type, _exc, _traceback) -> Literal[False]:
         self.terminate()
         return False
 

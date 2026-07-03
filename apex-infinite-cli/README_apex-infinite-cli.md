@@ -108,6 +108,11 @@ providers:
 
 API keys use `${ENV_VAR}` syntax, expanded at runtime. The `codex` section controls the agent binary and execution flags -- customize `binary` if codex is not on your PATH, and adjust `exec_flags` or `model_reasoning_effort` as needed.
 
+Before real runs, review the target `--path`, provider, model, Codex binary,
+and `codex.exec_flags`. The sample config uses broad autonomous Codex approval
+flags for unattended operation; use `--dry-run` first when validating a new
+project or provider setup.
+
 ### Display Settings
 
 The CLI renders operator output through a UI boundary that keeps terminal
@@ -276,6 +281,13 @@ status, project key, command, reason, and response summary. `--history
 --verbose` expands reason, response, and stored-state detail without adding a
 separate history-only flag or changing the SQLite schema.
 
+The manager and summarizer can send recent history, latest agent output,
+operator instructions, summaries, and project paths to the configured LLM
+provider. Do not include provider keys, secrets, personal data, or customer
+data in operator instructions or target-project outputs. The local history
+database currently has no CLI purge, retention, or redaction command; remove or
+protect `~/.apex-infinite/history.db` manually when needed.
+
 See [history-ledger.txt](../docs/apex-infinite-cli/transcripts/history-ledger.txt)
 for compact and verbose history examples.
 
@@ -366,6 +378,8 @@ cd apex-infinite-cli
 pip install -r requirements.txt -r requirements-dev.txt
 pytest tests/ -v
 pip-audit
+cd ..
+python -m mypy
 ```
 
 The test suite covers prompt/routing compatibility, UI setting resolution,
@@ -381,7 +395,7 @@ Click option wiring, renderer semantics, and SQLite history safety.
 - [Visual wrapper productization](../docs/apex-infinite-cli/visual-wrapper-productization.md)
 - [Visual wrapper spike](../docs/apex-infinite-cli/visual-wrapper-spike.md)
 - [Visual wrapper boundary](../docs/apex-infinite-cli/visual-wrapper-boundary.md)
-- [Transcript samples](../docs/apex-infinite-cli/transcripts/README.md)
+- [Transcript samples](../docs/apex-infinite-cli/transcripts/README_transcripts.md)
 
 ## Notes
 

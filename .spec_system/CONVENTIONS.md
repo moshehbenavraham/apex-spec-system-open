@@ -332,13 +332,26 @@ honor.
 |----------|------|--------|
 | Python formatter | black | root `pyproject.toml` |
 | Python linter | pylint | root `pyproject.toml` |
-| Python type safety | not configured | - |
+| Python type safety | mypy | root `pyproject.toml`, CLI dev requirements |
 | Python testing | pytest, pytest-cov, pytest-mock | root `pyproject.toml`, CLI dev requirements |
 | Script formatter | shfmt | `.pre-commit-config.yaml`, `.github/workflows/quality.yml` |
 | Script linter | shellcheck | `.pre-commit-config.yaml`, `.github/workflows/quality.yml` |
 | Script testing | bats | `tests/`, `.github/workflows/test.yml` |
 | Git hooks | pre-commit | `.pre-commit-config.yaml` |
 | Database | SQLite | `~/.apex-infinite/history.db` |
+
+## Infrastructure
+
+| Component | Provider | Details |
+|-----------|----------|---------|
+| Health | GitHub Actions release workflow | Apex Infinite CLI entrypoint health gate installs base requirements, runs `python apex_infinite.py --version`, and checks `python apex_infinite.py --help` output on tag releases. |
+| CDN/DNS | N/A | No hosted web service; the skill and CLI source are distributed as repository files. |
+| Hosting | GitHub repository and Codex plugin wrapper | Plain-file skill payload, plugin wrapper, and CLI source are distributed from the repository. |
+| Database | Local SQLite | Operator-local `~/.apex-infinite/history.db`; no hosted production database. |
+| Backup | N/A | No production database or object storage exists for this repo; operator-local history backup is outside repository infrastructure. |
+| WAF/Rate Limit | N/A | No public HTTP service surface; release and repository security controls are workflow based. |
+| Security | GitHub Actions | `security.yml` runs gitleaks, sensitive-file detection, and script security checks. |
+| Deploy | GitHub Actions release workflow | Tag `v*` creates a GitHub Release after encoding, version sync, inventory, and CLI health gates pass. |
 
 ## CI/CD
 

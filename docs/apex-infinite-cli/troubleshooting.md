@@ -429,4 +429,4 @@ Code changes are justified for:
 - [Visual wrapper productization](visual-wrapper-productization.md)
 - [Visual wrapper spike](visual-wrapper-spike.md)
 - [Visual wrapper boundary](visual-wrapper-boundary.md)
-- [Transcript samples](transcripts/README.md)
+- [Transcript samples](transcripts/README_transcripts.md)

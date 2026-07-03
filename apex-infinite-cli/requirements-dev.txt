@@ -1,6 +1,7 @@
 # Dev dependencies for linting and formatting
 black>=24.0
 pylint>=3.0
+mypy>=1.19
 pip-audit>=2.10.1
 
 # Testing

@@ -36,9 +36,13 @@ apex-spec-system-open/
 |   |-- check-prereqs.sh      # Environment verification
 |   \-- common.sh             # Shared functions
 |-- apex-infinite-cli/        # Autonomous session manager
-|   |-- apex_infinite.py      # Main CLI (~1000 lines Python)
-|   |-- config.yaml           # LLM provider and Codex agent config
-|   |-- tests/                # pytest test suite (57 tests)
+|   |-- apex_infinite.py      # CLI entry point and workflow loop
+|   |-- apex_infinite_ui.py   # Rich/plain renderer boundary
+|   |-- apex_infinite_events.py # JSONL lifecycle event boundary
+|   |-- apex_infinite_visual/ # Optional Linux visual wrapper source mode
+|   |-- config.yaml           # Provider, Codex, and UI config
+|   |-- requirements*.txt     # Base, dev, and optional wrapper dependencies
+|   |-- tests/                # pytest suite for CLI, renderer, events, wrapper
 |   \-- n8n-workflow/         # Original n8n workflow (reference archive)
 \-- docs/                     # Project documentation
 ```
@@ -137,9 +141,15 @@ without human intervention.
 
 | Component | Purpose |
 |-----------|---------|
-| `apex_infinite.py` | Main CLI entry point (~1000 lines) |
-| `config.yaml` | LLM provider selection and Codex agent config |
-| `tests/` | pytest test suite (57 tests) |
+| `apex_infinite.py` | Click entry point, config loading, manager loop, Codex subprocess execution, SQLite history, notifications |
+| `apex_infinite_ui.py` | Rich/plain renderer boundary, display settings, themes, width-aware output helpers |
+| `apex_infinite_events.py` | Importable event emitter and line-buffered JSONL lifecycle event writer |
+| `apex_infinite_visual/` | Optional PySide6/Qt Quick Linux visual wrapper over the event stream |
+| `config.yaml` | LLM provider selection, Codex execution flags, and UI defaults |
+| `requirements.txt` | Base terminal CLI dependencies |
+| `requirements-dev.txt` | pytest, black, pylint, mypy, pip-audit, and test tooling |
+| `requirements-wrapper.txt` | Optional wrapper dependencies isolated from the base install |
+| `tests/` | pytest coverage for prompt routing, CLI flags, renderer, history, subprocess, events, and wrapper behavior |
 | `n8n-workflow/` | Original n8n workflow JSON (reference archive) |
 
 ### How It Works
@@ -147,7 +157,9 @@ without human intervention.
 1. Manager LLM decides the next workflow command
 2. CLI executes `codex exec` with the chosen command
 3. Response is logged to SQLite (`~/.apex-infinite/history.db`)
-4. Loop repeats until `alldonebaby` or max iterations
+4. Optional JSONL lifecycle events are emitted to a file or machine-output
+   stdout
+5. Loop repeats until `alldonebaby`, an operator stop, or max iterations
 
 ### Tech Stack
 
@@ -157,16 +169,22 @@ without human intervention.
 | SQLite (WAL mode) | Interaction history |
 | OpenAI-compatible API | Manager and summarizer LLM calls |
 | Codex CLI (`codex exec`) | Agent execution subprocess |
+| Rich | Human terminal rendering with plain and ASCII fallbacks |
 | pytest + pytest-mock | Test suite |
+| black, pylint, mypy | Python formatting, linting, and type checks |
+| pip-audit | Local Python dependency vulnerability audit |
+| PySide6 / Qt Quick / QML | Optional Linux visual wrapper source mode |
 
-See [apex-infinite-cli/README-apex-infinite-cli.md](../apex-infinite-cli/README-apex-infinite-cli.md) for usage details.
+See [apex-infinite-cli/README_apex-infinite-cli.md](../apex-infinite-cli/README_apex-infinite-cli.md) for usage details.
 
 Deep-dive docs:
 
 - [Operator runbook](apex-infinite-cli/operator-runbook.md)
+- [Event stream contract](apex-infinite-cli/event-stream.md)
 - [History DB reference](apex-infinite-cli/history-db.md)
 - [Prompt contract](apex-infinite-cli/prompt-contract.md)
 - [Troubleshooting guide](apex-infinite-cli/troubleshooting.md)
+- [Visual wrapper boundary](apex-infinite-cli/visual-wrapper-boundary.md)
 
 ## Key Decisions
 

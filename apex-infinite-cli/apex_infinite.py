@@ -68,7 +68,7 @@ KNOWN_COMMANDS = {
 }
 
 # Codex skill commands use canonical names; no aliases needed currently
-COMMAND_ALIASES = {}
+COMMAND_ALIASES: dict[str, str] = {}
 
 COMMAND_TIMEOUT = 1800  # 30 minutes
 PROCESS_CLEANUP_TIMEOUT = 5

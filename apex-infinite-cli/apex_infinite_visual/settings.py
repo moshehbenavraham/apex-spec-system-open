@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, replace
+from typing import Any
 
 THEME_CRT_GREEN = "crt-green"
 THEME_CRT_AMBER = "crt-amber"
@@ -176,7 +177,7 @@ class WrapperSettings:
             return self.effective_intensity >= 65
         return False
 
-    def updated(self, **changes: object) -> "WrapperSettings":
+    def updated(self, **changes: Any) -> "WrapperSettings":
         """Return a validated copy with selected fields changed."""
         return replace(self, **changes)
 

@@ -189,4 +189,4 @@ sqlite3 ~/.apex-infinite/history.db \
 - [Operator runbook](operator-runbook.md)
 - [Prompt contract](prompt-contract.md)
 - [Troubleshooting guide](troubleshooting.md)
-- [Transcript samples](transcripts/README.md)
+- [Transcript samples](transcripts/README_transcripts.md)
