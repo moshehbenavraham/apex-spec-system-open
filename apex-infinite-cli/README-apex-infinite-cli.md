@@ -6,7 +6,7 @@ Originally powered by an n8n workflow with Airtable, Slack, and SSH nodes, this 
 
 ## How It Works
 
-```
+```text
              +------------------+
              |   Manager LLM    |
              | (decides next    |
@@ -29,25 +29,30 @@ Originally powered by an n8n workflow with Airtable, Slack, and SSH nodes, this 
 
 1. **Fetch history** -- Last 15 interactions from SQLite
 2. **Summarize** -- LLM condenses history to <2000 chars
-3. **Decide** -- Manager LLM picks the next command (plansession, implement, validate, etc.)
+3. **Decide** -- Manager LLM picks the next command (plansession, implement, creview, validate, etc.)
 4. **Execute** -- Runs `codex exec` with the chosen command in your project directory
 5. **Log** -- Records the interaction
 6. **Repeat** -- Until `alldonebaby` or max iterations reached
 
-The manager LLM can also output `help` to pause for CEO (human) input, or give custom instructions to Codex CLI for edge cases.
+Each Apex Spec command ends with a `Next command:` handoff. The manager LLM uses
+that line as the primary routing signal, or sends concise custom instructions to
+Codex CLI when a fix must happen before the next command.
 
 ## Supported Commands
 
-All Apex Spec commands are recognized and routed through the skill invocation prompt:
+The CLI recognizes the staged Apex Spec commands and routes them through the
+skill invocation prompt. The autonomous manager loop is intended for projects
+that have already been initialized, so normal manager decisions use only the
+session workflow and phase-transition commands.
 
 | Stage | Commands |
 |-------|----------|
-| Initialization | `initspec`, `createprd`, `createuxprd` |
-| Session workflow | `plansession`, `implement`, `validate`, `updateprd` |
+| Initialization, explicit start only | `initspec`, `createprd`, `createuxprd` |
+| Session workflow | `plansession`, `implement`, `creview`, `validate`, `updateprd` |
 | Phase transition | `audit`, `pipeline`, `infra`, `carryforward`, `documents`, `phasebuild` |
-| Terminal | `help` (pauses for CEO input), `alldonebaby` (stops loop) |
+| Terminal | `alldonebaby` (stops loop) |
 
-Any output not matching a known command is sent as custom instructions directly to Codex CLI, allowing the manager LLM to give ad-hoc instructions (e.g., "Fix the two failing tests then rerun validate").
+Any output not matching a known command is sent as custom instructions directly to Codex CLI, allowing the manager LLM to give ad-hoc instructions (e.g., "Fix the two failing tests then rerun validate"). `help` remains an emergency operator pause in the CLI, but it is not part of the normal Apex workflow.
 
 ## Install
 
@@ -55,6 +60,21 @@ Any output not matching a known command is sent as custom instructions directly 
 cd apex-infinite-cli
 pip install -r requirements.txt
 ```
+
+For development, testing, and dependency audits:
+
+```bash
+pip install -r requirements.txt -r requirements-dev.txt
+```
+
+For the optional Linux visual wrapper source mode only:
+
+```bash
+pip install -r requirements-wrapper.txt
+```
+
+The wrapper dependencies are intentionally separate from the base CLI install.
+The base terminal CLI does not import PySide6 or require a graphical display.
 
 ## Configuration
 
@@ -88,6 +108,88 @@ providers:
 
 API keys use `${ENV_VAR}` syntax, expanded at runtime. The `codex` section controls the agent binary and execution flags -- customize `binary` if codex is not on your PATH, and adjust `exec_flags` or `model_reasoning_effort` as needed.
 
+### Display Settings
+
+The CLI renders operator output through a UI boundary that keeps terminal
+styling separate from workflow data and SQLite history. Add or edit the `ui`
+section in `config.yaml`:
+
+```yaml
+ui:
+  theme: "auto"          # auto | crt-green | crt-amber | ibm-dos | plain
+  effect_level: "low"    # off | low | medium
+  ascii: false           # use ASCII-safe glyphs
+  compact: false         # reduce vertical spacing
+  show_elapsed: true
+  show_provider: true
+  themes: {}
+```
+
+Built-in themes are `auto`, `crt-green`, `crt-amber`, `ibm-dos`, and `plain`.
+`auto` resolves to `crt-green` for capable interactive terminals and to
+`plain` for constrained output such as `NO_COLOR`, `TERM=dumb`, non-terminal
+Rich consoles, or redirected/non-TTY output. `--plain` always forces plain
+output and disables effects. `--ascii` only changes glyph choices; it does not
+disable color by itself. `--compact` reduces spacing but keeps errors, manager
+reasons, prompts, command output summaries, help pauses, completion, timeouts,
+and non-zero exits visible.
+
+Theme summary:
+
+| Theme | Use when |
+|-------|----------|
+| `auto` | You want the CLI to pick `crt-green` in capable terminals and `plain` in constrained output. |
+| `crt-green` | You want the default styled operator-console look in an interactive terminal. |
+| `crt-amber` | You want the same operator hierarchy with amber terminal emphasis. |
+| `ibm-dos` | You want high-contrast DOS-like labels and panels. |
+| `plain` | You want logs, CI, remote shells, redirected output, or terminals where colors render poorly. |
+
+The normal run surface is a compact operator console. Startup renders a `BOOT`
+panel with project, provider, model, config, theme, effects, glyph mode,
+dry-run state, and start context. Each loop uses an `ITERATION` frame with the
+current operation, provider/model, project, elapsed time, and dry-run state when
+those facts are available. Manager choices, prompt previews, Codex execution,
+captured responses, DB writes, help, interrupts, timeouts, completion, and
+safety stops use stable text labels so the same state remains clear in styled,
+plain, ASCII, compact, and non-terminal output.
+
+Display precedence is:
+
+```text
+CLI flags -> environment constraints -> config.yaml -> built-in defaults
+```
+
+An explicit `--theme` may opt back into color under `NO_COLOR` or other
+constraints. Invalid theme names, unknown `ui` keys, malformed `ui.themes`
+entries, and invalid effect levels fail fast instead of silently falling back.
+
+Custom themes live under `ui.themes.<name>` and inherit from a built-in base:
+
+```yaml
+ui:
+  themes:
+    night-shift:
+      base: "crt-green"
+      foreground: "bright_white"
+      accent: "cyan"
+      warning: "yellow"
+```
+
+Theme token overrides must be non-empty strings and can use the same token keys
+as the built-in renderer: `foreground`, `accent`, `muted`, `success`,
+`warning`, `error`, `info`, `dry_run`, `complete`, `separator`, `panel`,
+`border`, `emphasis`, and `dim`.
+
+Low-effect separators are ASCII-safe and are suppressed in `plain` and
+`compact` modes. Rendered labels, Rich markup, ANSI escapes, frame glyphs,
+separator characters, and theme tokens remain display-only and are not written
+to SQLite history.
+
+See [Operator runbook](../docs/apex-infinite-cli/operator-runbook.md) for
+mode-selection guidance and
+[dry-run-plain.txt](../docs/apex-infinite-cli/transcripts/dry-run-plain.txt)
+for a deterministic fallback transcript.
+
 ## Usage
 
 ```bash
@@ -106,17 +208,28 @@ python apex_infinite.py --path ~/projects/my-app/ --start plansession --dry-run
 # View history
 python apex_infinite.py --history
 python apex_infinite.py --history --path ~/projects/my-app/
+python apex_infinite.py --history --verbose
 
 # Override provider/model
 python apex_infinite.py --path ~/projects/my-app/ --provider ollama --model "qwen2.5:72b"
 
 # Limit iterations
 python apex_infinite.py --path ~/projects/my-app/ --start plansession --max-iterations 5
+
+# Choose display modes
+python apex_infinite.py --path ~/projects/my-app/ --theme crt-amber
+python apex_infinite.py --path ~/projects/my-app/ --plain --ascii --compact
+
+# Write machine-readable events to a file while keeping human output
+python apex_infinite.py --path ~/projects/my-app/ --event-stream /tmp/apex-events.jsonl
+
+# Reserve stdout for JSONL events
+python apex_infinite.py --path ~/projects/my-app/ --event-stream - --machine-output
 ```
 
 ## Options
 
-```
+```text
 --path TEXT               Project path (prompted if not given)
 --start TEXT              Starting command (e.g. "plansession")
 --ceo TEXT                Initial CEO instructions
@@ -127,15 +240,21 @@ python apex_infinite.py --path ~/projects/my-app/ --start plansession --max-iter
 --max-iterations INTEGER  Safety limit (default: 50)
 --dry-run                 Show what would execute without running codex
 --verbose                 Show full agent output
+--theme TEXT              UI theme: auto|crt-green|crt-amber|ibm-dos|plain
+--plain                   Disable color and effects
+--ascii                   Use ASCII-safe glyphs
+--compact                 Reduce vertical spacing
+--event-stream TEXT       Write lifecycle JSONL to PATH, or '-' with --machine-output
+--machine-output          Disable human output and reserve stdout for JSONL
 --version                 Show version
 ```
 
-## CEO Intervention
+## Operator Intervention
 
-Two ways to inject human guidance:
+Operator intervention is outside the normal autonomous workflow:
 
-- **`help` pause** -- When the manager LLM outputs `help`, the CLI pauses and prompts for input
-- **Ctrl+C interrupt** -- Press once to pause after the current step for CEO input. Press twice to force quit.
+- **Ctrl+C interrupt** -- Press once to pause after the current step for operator input. Press twice to force quit.
+- **Emergency `help` pause** -- Supported by the CLI for unrecoverable external blockers, but the manager prompt tells the LLM to follow `Next command:` instead for ordinary workflow routing.
 
 ## Safety Features
 
@@ -148,6 +267,97 @@ Two ways to inject human guidance:
 ## Data
 
 Interaction history is stored at `~/.apex-infinite/history.db` (SQLite with WAL mode).
+Rendered labels, ANSI escapes, Rich markup, frame glyphs, theme tokens, and
+display-only status text are not written to history rows. The database keeps
+raw agent responses, manager output, manager reasons, and terminal help/done
+state so styled, plain, and ASCII modes do not change durable workflow data.
+History display derives a compact ledger at render time with timestamp,
+status, project key, command, reason, and response summary. `--history
+--verbose` expands reason, response, and stored-state detail without adding a
+separate history-only flag or changing the SQLite schema.
+
+See [history-ledger.txt](../docs/apex-infinite-cli/transcripts/history-ledger.txt)
+for compact and verbose history examples.
+
+## Event Stream
+
+Use `--event-stream PATH` to write line-buffered JSONL lifecycle events for
+automation or future wrappers. File event streams are a side channel and do not
+change normal human output. Use `--event-stream - --machine-output` when stdout
+must contain JSONL only; this disables human rendering, terminal bell, and
+desktop notifications.
+
+The stream emits startup, config/UI resolution, iteration, history summary,
+manager decision, prompt dispatch, Codex subprocess, DB log, help, interrupt,
+completion, max-iteration, and stop events. Payloads contain bounded raw facts
+and exclude provider API keys, Rich markup, ANSI escapes, frame glyphs, theme
+token values, and renderer snapshots.
+
+See [Event stream contract](../docs/apex-infinite-cli/event-stream.md) for the
+full event contract and
+[machine-output-events.jsonl](../docs/apex-infinite-cli/transcripts/machine-output-events.jsonl)
+for a deterministic JSONL sample.
+
+## Visual Wrapper Source Mode
+
+The optional Linux visual wrapper is separate from the base terminal CLI. It
+uses PySide6 with Qt Quick/QML as an optional dependency and consumes the JSONL
+event stream through the guarded `--event-stream - --machine-output` boundary.
+Session 08 release verification keeps source/dev visual mode shippable after
+final gates; binary publishing remains gated for future packaging, license,
+notice, checksum, and source/relink review.
+
+Install the optional dependencies, then run the fixture-backed smoke path:
+
+```bash
+cd apex-infinite-cli
+pip install -r requirements-wrapper.txt
+python -m apex_infinite_visual.main --dry-run --max-iterations 1
+```
+
+The wrapper exposes green CRT, amber CRT, IBM DOS, and plain presets, effect
+intensity, font family, font scale, reduced effects, and plain fallback
+controls. The same settings can be passed on the command line:
+
+```bash
+python -m apex_infinite_visual.main \
+  --theme crt-amber \
+  --effect-intensity 55 \
+  --font-family "monospace" \
+  --font-scale 1.05 \
+  --plain-fallback
+```
+
+For headless smoke checks:
+
+```bash
+QT_QPA_PLATFORM=offscreen python -m apex_infinite_visual.main \
+  --dry-run --max-iterations 1 --auto-close-ms 900
+```
+
+To launch the real CLI subprocess from the wrapper, opt in explicitly:
+
+```bash
+python -m apex_infinite_visual.main \
+  --launch-cli \
+  --path ~/projects/my-app/ \
+  --start-command implement \
+  --dry-run \
+  --max-iterations 1
+```
+
+PyQt, qmltermwidget, QTermWidget, copied terminal emulators, copied QML, copied
+shaders, copied images, copied icons, copied fonts, copied resource manifests,
+copied build scripts, and copied profile data remain excluded. The wrapper
+does not parse Rich panels, plain human output, terminal frames, or history
+display rows.
+
+See [Visual wrapper productization](../docs/apex-infinite-cli/visual-wrapper-productization.md)
+for source-mode setup, packaging gates, license notes, checksums, and clean-room
+verification. See [Visual wrapper spike](../docs/apex-infinite-cli/visual-wrapper-spike.md)
+for the original decision record and
+[Visual wrapper boundary](../docs/apex-infinite-cli/visual-wrapper-boundary.md)
+for the clean-room no-copy rules.
 
 ## Testing
 
@@ -155,24 +365,23 @@ Interaction history is stored at `~/.apex-infinite/history.db` (SQLite with WAL 
 cd apex-infinite-cli
 pip install -r requirements.txt -r requirements-dev.txt
 pytest tests/ -v
+pip-audit
 ```
 
-The test suite has 54 tests across 5 classes:
-
-| Class | Tests | Coverage |
-|-------|-------|----------|
-| TestManagerSystemPrompt | 12 | Content validation, forbidden strings, structure |
-| TestSummarizerSystemPrompt | 5 | Prompt content and formatting |
-| TestUserMessageTemplate | 4 | Mock LLM integration, message assembly |
-| TestBuildCodexPrompt | 18 | Parametrized across all 13 known commands + edge cases |
-| TestJsonParsing | 2 | json_mode parsing and regex fallback |
+The test suite covers prompt/routing compatibility, UI setting resolution,
+Click option wiring, renderer semantics, and SQLite history safety.
 
 ## Deep-Dive Docs
 
 - [Operator runbook](../docs/apex-infinite-cli/operator-runbook.md)
+- [Event stream contract](../docs/apex-infinite-cli/event-stream.md)
 - [History DB reference](../docs/apex-infinite-cli/history-db.md)
 - [Prompt contract](../docs/apex-infinite-cli/prompt-contract.md)
 - [Troubleshooting guide](../docs/apex-infinite-cli/troubleshooting.md)
+- [Visual wrapper productization](../docs/apex-infinite-cli/visual-wrapper-productization.md)
+- [Visual wrapper spike](../docs/apex-infinite-cli/visual-wrapper-spike.md)
+- [Visual wrapper boundary](../docs/apex-infinite-cli/visual-wrapper-boundary.md)
+- [Transcript samples](../docs/apex-infinite-cli/transcripts/README.md)
 
 ## Notes
 
@@ -187,3 +396,5 @@ The test suite has 54 tests across 5 classes:
 - Python 3.10+
 - Codex CLI (`codex`) installed and accessible
 - An LLM provider API key (Grok, OpenAI) or local Ollama instance
+- Optional Linux visual wrapper: PySide6/Qt Quick/QML and Nuitka from
+  `requirements-wrapper.txt`

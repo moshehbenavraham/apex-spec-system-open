@@ -79,10 +79,10 @@ jobs:
           fi
           echo "All references resolve."
 
-      - name: Verify command and skill directories exist
+      - name: Verify skill component directories exist
         run: |
           FAILED=0
-          for dir in commands skills agents; do
+          for dir in references scripts agents; do
             if [ ! -d "$dir" ]; then
               echo "::error::Missing directory: $dir/"
               FAILED=1

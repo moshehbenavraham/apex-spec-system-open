@@ -43,6 +43,12 @@ Before marking a task complete, verify the relevant items:
 - [ ] **Accessibility and platform compliance**: Interactive elements
   participate in the platform's accessibility model with appropriate labels,
   focus handling, and input support.
+- [ ] **Product surface discipline**: User-facing screens, games, dashboards,
+  extensions, and visual components show product-relevant content only. Debug
+  panels, runtime telemetry, implementation labels, seed/frame/input readouts,
+  resize readouts, readiness badges, route ownership notes, and scaffolding copy
+  are absent from normal product routes unless the spec explicitly requires a
+  developer/admin/debug surface.
 
 ## Priority Spot-Check for Validation
 
@@ -55,6 +61,7 @@ When validation needs a bounded spot-check, prioritize these categories:
 | 3 | Mutation safety | State-mutating actions can be triggered multiple times while in-flight, or the write path lacks idempotency protection |
 | 4 | Failure path completeness | An operation can fail but has no explicit caller-visible failure handling |
 | 5 | Contract alignment | The interface between components has a shape mismatch, schema drift, or missing enum handling |
+| UI | Product surface discipline | A normal user-facing route exposes implementation diagnostics, debug scaffolding, or telemetry that is not part of the product experience |
 
 ## Usage Notes
 

@@ -63,8 +63,12 @@ each document.
   rules, and workflow handoff logic in the command reference itself
 - Move reusable cross-cutting guidance into supporting checklist references
   under `references/` when the same guidance appears in multiple workflow docs
+- Commands must be autonomous: do not ask questions, request approval, wait for
+  feedback, or route through an interactive review stop
 - End with `## Output`, and add `## Next Action` when the command has a normal
-  handoff to another workflow step or a user decision
+  handoff to another workflow step
+- Every workflow command output must include a concise `Summary:` block and a
+  literal `Next command:` line, using `none` only when the workflow is complete
 
 For the highest-leverage workflow references, normalize section names and order
 before adding more prose. The goal is predictability, not longer files.
@@ -118,7 +122,7 @@ before adding more prose. The goal is predictability, not longer files.
 - Verify ASCII-only encoding: `LC_ALL=C grep -n '[^[:print:][:space:]]' file`
 - Verify LF line endings: `grep -n "$(printf '\r')" file`
 - Test each command dispatch independently via the orchestrator
-- End-to-end test: initspec -> plansession -> implement -> validate
+- End-to-end test: initspec -> plansession -> implement -> creview -> validate
 
 ## Git & Version Control
 

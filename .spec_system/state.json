@@ -1,0 +1,148 @@
+{
+  "version": "2.0",
+  "project_name": "Apex Infinite CLI",
+  "description": "Autonomous OpenAI Codex CLI session manager and operator console for Apex Spec System workflows.",
+  "current_phase": 0,
+  "current_session": null,
+  "monorepo": false,
+  "phases": {
+    "0": {
+      "name": "Apex Infinite CLI Upgrade",
+      "description": "Deliver the Rich terminal operator console, compatibility-preserving history and subprocess display, event stream boundary, documentation, optional Linux visual wrapper, and release verification.",
+      "status": "complete",
+      "session_count": 8
+    }
+  },
+  "completed_sessions": [
+    "phase00-session01-config-and-renderer-boundary",
+    "phase00-session02-rich-operator-console",
+    "phase00-session03-subprocess-and-history-visibility",
+    "phase00-session04-event-stream-boundary",
+    "phase00-session05-docs-samples-and-runbooks",
+    "phase00-session06-linux-wrapper-spike",
+    "phase00-session07-linux-visual-wrapper-productization",
+    "phase00-session08-release-verification"
+  ],
+  "next_session_history": [
+    {
+      "date": "2026-07-02",
+      "session": "phase00-session01-config-and-renderer-boundary",
+      "status": "planned"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session01-config-and-renderer-boundary",
+      "status": "validated"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session01-config-and-renderer-boundary",
+      "status": "completed"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session02-rich-operator-console",
+      "status": "planned"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session02-rich-operator-console",
+      "status": "validated"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session02-rich-operator-console",
+      "status": "completed"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session03-subprocess-and-history-visibility",
+      "status": "planned"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session03-subprocess-and-history-visibility",
+      "status": "validated"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session03-subprocess-and-history-visibility",
+      "status": "completed"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session04-event-stream-boundary",
+      "status": "planned"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session04-event-stream-boundary",
+      "status": "validated"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session04-event-stream-boundary",
+      "status": "completed"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session05-docs-samples-and-runbooks",
+      "status": "planned"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session05-docs-samples-and-runbooks",
+      "status": "validated"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session05-docs-samples-and-runbooks",
+      "status": "completed"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session06-linux-wrapper-spike",
+      "status": "planned"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session06-linux-wrapper-spike",
+      "status": "validated"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session06-linux-wrapper-spike",
+      "status": "completed"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session07-linux-visual-wrapper-productization",
+      "status": "planned"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session07-linux-visual-wrapper-productization",
+      "status": "validated"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session07-linux-visual-wrapper-productization",
+      "status": "completed"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session08-release-verification",
+      "status": "planned"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session08-release-verification",
+      "status": "validated"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session08-release-verification",
+      "status": "completed"
+    }
+  ]
+}

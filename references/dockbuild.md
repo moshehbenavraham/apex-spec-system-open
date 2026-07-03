@@ -26,8 +26,10 @@ compose configuration:
   that select specific files or profiles
 - Check which containers and images are currently running (`sudo docker compose ps`,
   `sudo docker ps`) to understand the active setup
-- If multiple compose configurations exist, ask the user which one to target rather
-  than guessing
+- If multiple compose configurations exist, choose the safest project-local default
+  in this order: `compose.yml`, `compose.yaml`, `docker-compose.yml`,
+  `docker-compose.yaml`, then environment-specific files matching the current
+  branch or documented dev environment. Report the selected file and evidence.
 - Use the identified configuration (e.g., `sudo docker compose -f <file> ...`) for
   all subsequent commands
 
@@ -55,3 +57,15 @@ Present:
 
 The user sees the full build output followed by a summary of container status and a
 categorized list of every issue found (errors, warnings, deprecations, notices, etc.).
+
+End with:
+
+```text
+Summary:
+- Compose configuration: [file/profile]
+- Containers running: [count/status]
+- Issues found: [count by category]
+
+Next command: `none`
+Reason: dockbuild is a standalone utility and does not advance the staged workflow.
+```

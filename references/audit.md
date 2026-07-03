@@ -6,12 +6,15 @@ This is the first command in the Phase Transition stage. If `audit` finishes wit
 
 ## Rules
 
-1. **One bundle per run** - add one, validate all, fix all
-2. **Never break syntax** - revert after 2 failed fix attempts
-3. **Respect known-issues.md** - don't fix intentional exceptions
-4. **Update CONVENTIONS.md** - record what was added in Local Dev Tools table
-5. **Continue on failure** - one tool failing doesn't stop the audit
-6. **Monorepo aware** - run per package, report per package
+1. **Autonomous execution** - do not ask questions, request approval, or wait for human feedback
+2. **One bundle per run** - add one, validate all, fix all
+3. **Never break syntax** - revert after 2 failed fix attempts
+4. **Respect known-issues.md** - don't fix intentional exceptions
+5. **Update CONVENTIONS.md** - record what was added in Local Dev Tools table
+6. **Continue on failure** - one tool failing doesn't stop the audit
+7. **Monorepo aware** - run per package, report per package
+8. **Evidence required** - record selected bundle, package scope, exact
+   commands run, fixes applied, check results, and remaining blockers
 
 ### No Deferral Policy
 
@@ -20,8 +23,29 @@ This is the first command in the Phase Transition stage. If `audit` finishes wit
 - If a directory needs creating, CREATE IT
 - If a config file needs generating, GENERATE IT
 - "The environment isn't set up" is NOT a blocker -- setting it up IS the task
-- The ONLY valid blocker is something that requires USER input or credentials you don't have
+- The ONLY valid blocker is an external requirement you cannot satisfy from the repository or environment, such as missing credentials, billing, sudo access, or platform access
 - If you skip a task that was executable, that is a **critical failure**
+
+### Rationalizations To Reject
+
+- "The tool is configured, so audit is done" -> No. Every configured tool must
+  run in the current repo state before `audit` can hand off to `pipeline`.
+- "One package passed, so the monorepo passed" -> No. Run and report each
+  relevant package or record why a package-specific check is not applicable.
+- "The formatter fixed it, so no evidence is needed" -> No. Record the command,
+  files or issue counts changed, and the follow-up check result.
+- "This failure belongs to a later command" -> No. If local tooling exposes a
+  repo-fixable issue, fix it here and re-run the affected check.
+
+### Red Flags
+
+- Output recommends `pipeline` without listing the commands that passed.
+- A package, configured tool, or known-issues filter is mentioned in detection
+  but missing from the final report.
+- Remaining failures are summarized without package path, command, and blocker
+  evidence.
+- `CONVENTIONS.md` says a tool is configured but the audit output did not run
+  or validate it.
 
 ## Master List (7 Bundles)
 
@@ -50,7 +74,7 @@ Industry standard order (fast to slow, format before validate):
 ### Step 1: DETECT
 
 1. Check for `.spec_system/CONVENTIONS.md`
-   - If missing: Run initspec yourself to create it. Only ask the user if initspec requires user input you don't have.
+   - If missing: Run initspec yourself to create it.
    - Read Stack section for languages/runtimes
    - Read Local Dev Tools table for configured tools
    - Read Workspace Structure table (if present) for per-package tool status
@@ -132,7 +156,7 @@ Install and configure the single selected bundle missing.
 1. Install tool via detected package manager
 2. Generate config file with sensible defaults
 3. **Monorepo**: When installing per-package, use workspace commands where available (e.g., `pnpm --filter web add -D biome`, `cargo add -p api tracing`)
-4. If install fails and not `--skip-install`: Try alternative install methods (different package manager, build from source, etc.). Only document for manual install if you have exhausted all automated options and the failure requires sudo or credentials you don't have.
+4. If install fails and not `--skip-install`: Try alternative install methods (different package manager, build from source, etc.). Only document an external setup blocker if you have exhausted all automated options and the failure requires sudo, credentials, billing, or platform access you don't have.
 
 #### Observability Bundle Implementation ("Logger")
 
@@ -175,13 +199,13 @@ Install and configure the single selected bundle missing.
 
 **Steps:**
 1. Detect DB type and existing migration tool from project signals
-2. If no migration tool found, recommend one based on detected stack (prompt user to confirm)
+2. If no migration tool found, choose one based on detected stack and project conventions
 3. Verify migration tool is installed and configured
 4. Create seed script if none exists (location based on stack conventions)
 5. Create test DB configuration if none exists (`.env.test` or equivalent with separate `DATABASE_URL`)
 6. Validate: run migrations (up + down + up to verify reversibility), run seed, run test suite
 
-**Monorepo**: Prompt user for DB ownership model (shared / per-package / hybrid). Install migration tool in owner package or per-package as appropriate. Update CONVENTIONS.md Database Ownership table.
+**Monorepo**: Infer the DB ownership model (shared / per-package / hybrid) from service boundaries, environment variables, existing schema locations, and package dependencies. Install the migration tool in the owner package or per-package as appropriate. Update CONVENTIONS.md Database Ownership table.
 
 **Detection signals:**
 
@@ -235,7 +259,14 @@ Run ALL configured tools (not just the new one):
 
 **Single-repo**: Run each tool from the project root as usual.
 
-Capture all output. Parse for errors, warnings, fixes applied.
+Capture all output. Parse for errors, warnings, fixes applied. For each
+configured tool, record:
+- Bundle and tool name
+- Package path or `root`
+- Exact command run
+- Result: PASS, FAIL, WARN, or N/A
+- Fixes applied or known-issues filter used
+- Remaining blocker, if any, and why it cannot be resolved autonomously
 
 ### Step 6: FIX
 
@@ -244,7 +275,7 @@ For each issue found in Step 5:
 1. **Auto-fixable** (format, some lint): Already fixed in Step 5
 2. **Type errors**: Attempt fix, verify syntax still valid
 3. **Test failures**: Attempt fix, re-run affected test
-4. **Unfixable after 3 attempts**: Try a different approach. Only log for manual review if the fix requires sudo or credentials you don't have. Revert if syntax broken.
+4. **Unfixable after 3 attempts**: Try a different approach. Only log an external blocker if the fix requires sudo, credentials, billing, or platform access you don't have. Revert if syntax broken.
 
 **Guardrail**: After any fix, verify syntax/compilation. If broken after 2 retries, revert.
 
@@ -296,13 +327,23 @@ REPORT
 - Known: 5 issues in src/legacy/** (ignored per known-issues.md)
 ```
 
+Include an evidence ledger in the report:
+
+```markdown
+## Evidence Ledger
+
+| Bundle | Package | Command | Result | Fixes Applied | Remaining / Blocker |
+|--------|---------|---------|--------|---------------|---------------------|
+| Formatting | root | `ruff format .` | PASS | 12 files formatted | None |
+```
+
 ### Step 9: RECOMMEND
 
-- **If issues remain**: List required actions, prompt user to rerun `audit` after fixing. Do not recommend `pipeline` yet.
+- **If issues remain**: List required actions and set `Next command: audit`. Do not recommend `pipeline` yet.
 - **If all configured tools pass**: Recommend `pipeline` as the immediate next workflow command.
 - **If all 7 bundles are configured and passing**: Confirm `audit` is fully complete for the current project state, and still recommend `pipeline` as the immediate next workflow command.
 
-Be explicit in the user-facing report:
+Be explicit in the report:
 - `audit -> pipeline` is the required Phase Transition handoff
 - `infra` comes only after `pipeline`
 - Returning to `plansession` does not happen until the next phase has been created via `phasebuild`
@@ -312,6 +353,23 @@ Be explicit in the user-facing report:
 Report the selected bundle, configuration files created or updated, fixes
 applied, remaining issues, known ignored issues, and whether the command is
 ready to hand off to `pipeline`.
+
+Use this shape:
+
+```text
+audit complete!
+
+Summary:
+- Selected bundle: [name or "none - validation only"]
+- Configs changed: [brief list]
+- Fixes applied: [counts]
+- Evidence: [commands/checks run by bundle and package]
+- Remaining issues: [none | brief list]
+- Known ignored issues: [count]
+
+Next command: `[pipeline | audit]`
+Reason: [all configured tools pass | configured tools still fail or external blocker remains]
+```
 
 ## Next Action
 

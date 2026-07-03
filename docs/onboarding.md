@@ -17,7 +17,7 @@ Verify with: `bash scripts/check-prereqs.sh --env`
 ### 1. Install
 
 ```bash
-git clone https://github.com/aiwithapex/apex-spec-system-open.git \
+git clone https://github.com/moshehbenavraham/apex-spec-system-open.git \
   ~/.agents/skills/apex-spec
 ```
 
@@ -34,7 +34,7 @@ This creates a `.spec_system/` directory with state tracking, scripts, and conve
 ### 3. Follow the Workflow
 
 ```
-initspec -> createprd -> phasebuild -> plansession -> implement -> validate -> updateprd
+initspec -> createprd -> phasebuild -> plansession -> implement -> creview -> validate -> updateprd
 ```
 
 See [references/workflow-overview.md](../references/workflow-overview.md) for the full command reference.
@@ -44,7 +44,7 @@ See [references/workflow-overview.md](../references/workflow-overview.md) for th
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/aiwithapex/apex-spec-system-open.git
+git clone https://github.com/moshehbenavraham/apex-spec-system-open.git
 cd apex-spec-system-open
 ```
 

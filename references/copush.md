@@ -2,7 +2,16 @@
 
 Pull the latest from origin, increment the project version, commit all non-gitignored
 changes, and push to origin. Designed as a single command to bundle routine
-commit-and-push workflows without manual version tracking.
+commit-and-push workflows without separate version tracking.
+
+## When Not To Use
+
+- Do not use `copush` when only a selective subset of changes should be committed;
+  this command stages all non-gitignored changes by design.
+- Do not use `copush` to synchronize from an upstream/original repository; use
+  `pullndoc` for upstream pulls that need change documentation.
+- Do not use `copush` to finish implementation or validation work that is still
+  incomplete; run the appropriate workflow or quick command first.
 
 ## Rules
 
@@ -92,3 +101,5 @@ Report:
 - The commit hash and message
 - Whether the push succeeded
 - Any warnings, errors, or issues encountered at any step
+- `Next command: none` when the push succeeds
+- `Next command: copush` when merge conflicts, pull failure, or push rejection prevented completion after the external repo state is resolved

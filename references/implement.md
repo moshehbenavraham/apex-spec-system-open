@@ -4,20 +4,34 @@ Execute each task in the session's task list, updating progress as you go.
 
 This is the second command in the Session Workflow stage. Run it after
 `plansession` has created `spec.md` and `tasks.md`. When `implement` finishes,
-the next workflow command is `validate`.
+the next workflow command is `creview`.
 
 ## Rules
 
-1. **Make NO assumptions.** Before editing, read the relevant code and comments; pattern-match precisely, validate systematically.
-2. **Follow `CONVENTIONS.md`.** All code must follow project-specific coding standards.
-3. **ASCII-only characters** and Unix LF line endings in all output.
-4. **Never lie and implement exactly what's in the spec** -- no lying, no extra features, no refactoring unrelated code.
-5. **Update `tasks.md` immediately** after completing each task -- never batch checkbox updates.
-6. **Write tests as specified** -- ensure they pass before moving on.
-7. **Ensure logging and error handling** -- no silent failures.
-8. **Prefer cohesive, moderately sized modules** -- avoid multi-thousand-line god files; if a file grows beyond ~400-600 LOC or multiple responsibilities, schedule a refactor.
-9. **Behavioral correctness over speed** - Code must handle edge cases, cleanup, and failure paths before a task is marked done. A checked task with a behavioral bug costs 10x more to find in a later audit.
-10. **No schema drift on database work** -- If a task changes persisted data shape or database behavior, implement the matching schema artifact in the same session (migration, schema file, SQL patch, DDL, seed update, etc.) and verify it locally before marking the task complete.
+1. **Autonomous execution** - do not ask questions, request approval, or wait for human feedback.
+2. **Make NO assumptions.** Before editing, read the relevant code and comments; pattern-match precisely, validate systematically.
+3. **Follow `CONVENTIONS.md`.** All code must follow project-specific coding standards.
+4. **ASCII-only characters** and Unix LF line endings in all output.
+5. **Never lie and implement exactly what's in the spec** -- no lying, no extra features, no refactoring unrelated code.
+6. **Update `tasks.md` immediately** after completing each task -- never batch checkbox updates.
+7. **Write tests as specified** -- ensure they pass before moving on.
+8. **Ensure logging and error handling** -- no silent failures.
+9. **Prefer cohesive, moderately sized modules** -- avoid multi-thousand-line god files; if a file grows beyond ~400-600 LOC or multiple responsibilities, schedule a refactor.
+10. **Behavioral correctness over speed** - Code must handle edge cases, cleanup, and failure paths before a task is marked done. A checked task with a behavioral bug costs 10x more to find in a later audit.
+11. **No schema drift on database work** -- If a task changes persisted data shape or database behavior, implement the matching schema artifact in the same session (migration, schema file, SQL patch, DDL, seed update, etc.) and verify it locally before marking the task complete.
+12. **Evidence per task** -- every completed task log entry must name the files changed and include exact verification checks with results.
+13. **Product surface discipline for UI work** -- User-facing routes, screens,
+    dashboards, games, extensions, and visual components must present the product
+    experience, not implementation telemetry. Do not expose debug labels,
+    runtime boundaries, seed/frame/input panels, resize readouts, "shell ready",
+    readiness badges, data-source status, route ownership notes, or scaffolding
+    copy in the primary interface unless the spec explicitly requires a
+    developer/admin/debug surface. Put diagnostics in logs, tests, devtools,
+    hidden development overlays, or separate developer-only routes.
+14. **UI craft floor** -- UI implementation is not just data plumbing. For UI
+    work, follow PRD_UX and existing product/design evidence, preserve or improve
+    visual hierarchy, responsive behavior, accessibility, and interaction polish,
+    and reject generic filler layouts.
 
 ### No Deferral Policy
 
@@ -26,8 +40,22 @@ the next workflow command is `validate`.
 - If a dependency needs installing, INSTALL IT
 - If a directory needs creating, CREATE IT
 - "The environment isn't set up" is NOT a blocker -- setting it up IS the task
-- The ONLY valid blocker is something that requires USER input or credentials you don't have
+- The ONLY valid blocker is an external requirement you cannot satisfy from the repository or environment, such as missing credentials, API keys, billing, or sudo access
 - If you skip a task that was executable, that is a **critical failure**
+
+### Rationalizations To Reject
+
+- "I can update all checkboxes at the end" -> No. Task status and notes must be updated immediately after each completed task.
+- "The change is obvious, so verification can wait for validate" -> No. Record task-level evidence now; `validate` is a later gate, not a substitute for implementation checks.
+- "This file looks unrelated, so I do not need to read it" -> No. Read the code, spec, and surrounding context before inferring intent or impact.
+- "The test failure is probably pre-existing" -> No. Investigate the current failure and record evidence before deciding whether it blocks this session.
+
+### Red Flags
+
+- A checked task without a matching `implementation-notes.md` task entry.
+- A task log entry that says "done" or "verified" without exact commands, checks, or inspected files.
+- Files changed outside the task or package scope without a recorded justification.
+- Tests, schema verification, or BQC fixes deferred even though the repository provides enough context to run or apply them now.
 
 ## Steps
 
@@ -52,7 +80,7 @@ This returns structured JSON including:
 - `packages` - Array of registered packages (empty if not monorepo)
 - `active_package` - Resolved package context (null if not applicable)
 
-**IMPORTANT**: Use the `current_session` value from this output. If `current_session` is `null`, run plansession yourself to set one up. Only ask the user if that command requires user input.
+**IMPORTANT**: Use the `current_session` value from this output. If `current_session` is `null`, run plansession yourself to set one up.
 
 ### 1a. Determine Package Context (Monorepo Only)
 
@@ -62,7 +90,7 @@ Resolve the active package for this session:
 
 1. **spec.md header**: Read the `Package:` field from the session's spec.md (set during plansession)
 2. **active_package from script**: If spec.md has no Package field, use `active_package` from the JSON output
-3. **Prompt user**: If neither resolves a package, ask the user which package this session targets (or whether it is cross-cutting)
+3. **Evidence-backed fallback**: If neither resolves a package, infer from task paths and repo layout. If no single package is defensible, treat the session as cross-cutting.
 
 Store the resolved package path for use in Steps 2, 4, and 5. A `null` package means this is a cross-cutting session.
 
@@ -90,7 +118,7 @@ This verifies:
 # Example: check-prereqs.sh --json --env --package apps/web
 ```
 
-**If any environment check fails**: FIX the issues yourself. Install missing tools, create missing directories, start required services. The ONLY reason to stop is if you need credentials or input only the user can provide.
+**If any environment check fails**: FIX the issues yourself. Install missing tools, create missing directories, start required services. Stop only for external requirements you cannot satisfy, such as credentials, API keys, billing, or sudo access; report the exact blocker and set `Next command: implement`.
 
 **Optional - Tool Verification**: After reading spec.md (next step), if the Prerequisites section lists required tools, also run:
 
@@ -118,6 +146,8 @@ Using the `current_session` value from the script output, read:
 - `.spec_system/specs/[current-session]/tasks.md` - Task checklist
 - `.spec_system/specs/[current-session]/implementation-notes.md` - Progress log (if exists)
 - `.spec_system/specs/[current-session]/security-compliance.md` - Prior security report (if exists from previous validation run)
+- `.spec_system/PRD/PRD_UX.md` - UX requirements, design brief, product surface
+  boundaries, and anti-patterns when the session changes UI (if present)
 - `.spec_system/CONVENTIONS.md` - Project coding conventions (if exists)
 
 **Resuming?** If `implementation-notes.md` and completed tasks already exist, read them to understand current state and resume from the next incomplete task.
@@ -193,8 +223,22 @@ Find the first unchecked `- [ ]` task in tasks.md
 - **Database completion rule**: If this task changes persisted data shape, constraints, indexes, queries that depend on schema, or other DB-layer behavior, add the matching schema artifact now (migration, patch, schema definition, ORM metadata, seed/test updates, etc.), apply or verify it locally, and do not mark the task complete until code and schema are aligned
 - **Monorepo path validation**: If a package was resolved in Step 1a, verify that files being created or modified fall within the declared package directory (e.g., `apps/web/...`). Warn if a task references files outside the package scope -- this may indicate scope creep. Exception: cross-cutting sessions (package: null) may touch any file.
 - **Behavioral quality verification** (if BQC loaded in Step 3a): Before marking this task complete, scan your code against the applicable checklist items. Fix violations now -- do not defer. Note any BQC fixes in the task log entry (Step 5D).
+- **UI product-surface verification**: If the task changes a user-facing
+  surface, inspect the rendered route or component at the target viewport before
+  marking it complete. Confirm the first viewport is product-focused and does not
+  contain implementation diagnostics or generic scaffolding. If diagnostics are
+  needed for development, move them to a developer-only route, hidden dev-only
+  overlay, logs, tests, or implementation notes.
+- **UI craft verification**: For UI tasks, compare the result to PRD_UX,
+  existing design patterns, and adjacent product surfaces. Fix generic spacing,
+  weak hierarchy, broken responsive behavior, inaccessible controls, or rough
+  interaction states before marking the task complete.
 
 #### C. Update Task Status
+Before marking the task complete, write the task log entry from Step 5D,
+including the `Verification` subsection. Do not check the task off until that
+evidence exists.
+
 In `tasks.md`, change:
 ```markdown
 - [ ] T001 [S0101] Task description
@@ -220,6 +264,16 @@ Add to `.spec_system/specs/[current-session]/implementation-notes.md`:
 **Files Changed**:
 - `path/to/file` - [changes made]
 
+**Verification**:
+- Command/check: `[exact command or targeted inspection]`
+  - Result: PASS/FAIL/N/A - [specific result]
+  - Evidence: [test count, diff inspected, output summary, or why no automated check applies]
+- UI product-surface check: [PASS/FAIL/N/A] - [route/component inspected,
+  viewport, and confirmation that debug/runtime/scaffolding copy is absent from
+  the normal product surface]
+- UI craft check: [PASS/FAIL/N/A] - [UX PRD/design evidence used, viewports or
+  components inspected, and polish issues fixed]
+
 **BQC Fixes** (if any):
 - [Category]: [What was caught and fixed] (`path/to/file`)
 
@@ -243,7 +297,11 @@ If you encounter an obstacle, RESOLVE IT YOURSELF before documenting:
 - **Connection refused?** Check `DATABASE_URL` in `.env`, verify port
 - **"The environment isn't set up"** is NOT a blocker -- setting it up IS the task
 
-The ONLY valid reason to pause and ask the user is when you need credentials, API keys, or decisions only a human can make. If you skip a task that was executable, that is a **critical failure**.
+If credentials, API keys, billing, sudo access, or another external requirement
+prevents progress, do not ask for it. Preserve completed work, document the
+blocker and exact missing requirement in implementation-notes.md, and set
+`Next command: implement` so the same command resumes after the requirement
+exists. If you skip a task that was executable, that is a **critical failure**.
 
 After resolving, document in implementation-notes.md:
 ```markdown
@@ -280,7 +338,7 @@ When making implementation choices:
 After each task:
 - Update Progress Summary table in tasks.md
 - Update implementation-notes.md
-- Report status to user: tasks done (X of Y), next task
+- Report status: tasks done (X of Y), next task
 
 **Checkpoint every 3-5 tasks minimum** and before any risky operations. If approaching context limits, document current state and next task in implementation-notes.md.
 
@@ -292,10 +350,31 @@ Session implementation complete!
 Tasks: N/N (100%)
 BQC: [X] fixes applied across [Y] tasks [or "N/A - no application code in session"]
 
-Run the validate workflow step to verify session completeness.
+Summary:
+- Completed all implementation tasks for [current-session]
+- Task evidence recorded in implementation-notes.md with files changed and verification results
+- Tests/checks run: [brief list]
+- Remaining blockers: none
+
+Next command: `creview`
+Reason: implementation is complete and all uncommitted changes must be reviewed and repaired before validation.
+```
+
+If an external blocker remains:
+
+```text
+Implementation blocked.
+
+Summary:
+- Completed tasks: X/Y
+- Blocker: [exact missing external requirement]
+- Preserved work in: [files/artifacts]
+
+Next command: `implement`
+Reason: implementation must resume after the external requirement exists; validate is not valid until all tasks are complete.
 ```
 
 ## Next Action
 
-After `implement` completes, run `validate`. Do not jump directly from
-`implement` to `updateprd`.
+After `implement` completes, run `creview`. Do not jump directly from
+`implement` to `validate` or `updateprd`.

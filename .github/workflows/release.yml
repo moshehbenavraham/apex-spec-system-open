@@ -86,8 +86,8 @@ jobs:
           echo "Checking reference files..."
           REF_COUNT=$(find references/ -name '*.md' -type f | wc -l)
           echo "Found $REF_COUNT reference files"
-          if [[ "$REF_COUNT" -lt 22 ]]; then
-            echo "::error::Expected at least 22 reference files, found $REF_COUNT"
+          if [[ "$REF_COUNT" -lt 23 ]]; then
+            echo "::error::Expected at least 23 reference files, found $REF_COUNT"
             FAILURES=$((FAILURES + 1))
           fi
           echo "Checking scripts exist and are executable..."
@@ -151,7 +151,7 @@ jobs:
             | Directory | Contents |
             |-----------|----------|
             | `SKILL.md` | Root orchestrator and skill entry point |
-            | `references/` | 26 command reference files |
+            | `references/` | Command and supporting reference files |
             | `scripts/` | 3 bash utilities (analyze-project.sh, check-prereqs.sh, common.sh) |
             | `agents/` | Codex CLI metadata (openai.yaml) |
             | `docs/` | Architecture, development, onboarding, deployment guides |

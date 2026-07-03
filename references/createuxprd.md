@@ -1,26 +1,46 @@
 # createuxprd
 
-Convert user-provided design documents (wireframes, user flows, design specs, Figma notes) into the UX PRD at `.spec_system/PRD/PRD_UX.md`.
+Convert design material (wireframes, user flows, design specs, Figma notes,
+repository UI evidence, or product requirements) into the UX PRD at
+`.spec_system/PRD/PRD_UX.md`.
 
 This is a companion to `PRD.md` (functional requirements). plansession reads both when planning UI-focused sessions.
 
 ## Rules
 
 1. **PRD.md must exist first** - run createprd if it doesn't
-2. **Never overwrite a real PRD_UX.md** without explicit user confirmation (template placeholders can be overwritten silently)
-3. **Do not invent design decisions** - ask 3-8 targeted questions for missing info
-4. **ASCII-only characters** and Unix LF line endings in all output
-5. **Reference PRD.md, don't duplicate it** - link to functional requirements, don't restate them
-6. **Keep it actionable** - every section should directly inform implementation
-7. **Design brief before structure** - always establish emotional targets and aesthetic identity before documenting screens and flows
-8. **Performance budget** - target locked 60fps; note any performance-sensitive interactions
-9. **Accessibility baseline** - WCAG AA contrast minimum, semantic HTML, focus states, reduced-motion support
+2. **Autonomous execution** - do not ask questions, request approval, or wait for human feedback
+3. **Never destroy a real PRD_UX.md** - back it up before replacing it, or update it in place when safer
+4. **Make evidence-backed design decisions** - use PRD, codebase UI evidence, domain clues, and recorded assumptions
+5. **Resolve normal UX ambiguity with working assumptions** - sparse design input is not a reason to stop when PRD and repo evidence can support a defensible UX PRD
+6. **Surface and resolve material conflicts** between design sources, PRD requirements, and existing UI evidence before writing
+7. **Distinguish working assumptions from true hard blockers** - successful UX artifacts must not contain blocker placeholders or interactive follow-up notes
+8. **ASCII-only characters** and Unix LF line endings in all output
+9. **Reference PRD.md, don't duplicate it** - link to functional requirements, don't restate them
+10. **Keep it actionable** - every section should directly inform implementation
+11. **Design brief before structure** - always establish emotional targets and aesthetic identity before documenting screens and flows
+12. **Performance budget** - target locked 60fps; note any performance-sensitive interactions
+13. **Accessibility baseline** - WCAG AA contrast minimum, semantic HTML, focus states, reduced-motion support
+14. **Product surface boundaries** - primary user-facing screens must describe
+    the product experience, not internal runtime diagnostics. Debug/status
+    telemetry belongs only in explicitly scoped developer, admin, or debug
+    surfaces.
+
+### No Deferral Policy
+
+- Read PRD.md, provided design material, codebase UI evidence, and project state before declaring a blocker
+- Ambiguity alone is not a blocker; in Mode C, make evidence-backed design decisions and record material ones as working assumptions
+- If inputs disagree, choose the best-supported interpretation and record the resolution when it materially shapes the UX PRD
+- Do not write PRD_UX.md when PRD.md is missing; run `createprd` first, then resume this command
+- Stop only when PRD.md is inaccessible or when available evidence is too thin to produce a defensible UX PRD
+- Use Open UX Decisions only for non-blocking product, brand, legal, or compliance decisions that cannot be resolved from available evidence
+- Successful output must not contain unresolved template placeholders, hard-blocker text, or requests for user arbitration
 
 ## Steps
 
 ### 1. Confirm Spec System and PRD Exist
 
-Check for `.spec_system/PRD/PRD.md`. If missing, tell the user to run createprd first -- the UX PRD depends on functional requirements being defined.
+Check for `.spec_system/PRD/PRD.md`. If missing, run `createprd` first -- the UX PRD depends on functional requirements being defined.
 
 Read `.spec_system/PRD/PRD.md` to understand the product context, users, and requirements.
 
@@ -42,45 +62,81 @@ Use the JSON output for project name and current state.
 
 The command accepts three input modes:
 
-**Mode A: Text provided** -- The user pastes or types design notes, user flow descriptions, screen lists, or UX requirements directly in the prompt.
+**Mode A: Text provided** -- Design notes, user flow descriptions, screen lists, or UX requirements are available directly in the prompt.
 
-**Mode B: File reference provided** -- The user provides a file path (design spec, exported Figma notes, wireframe descriptions). Read the file and use its contents as the source material.
+**Mode B: File reference provided** -- A file path is available (design spec, exported Figma notes, wireframe descriptions). Read the file and use its contents as the source material.
 
-**Mode C: No source provided (autonomous)** -- The user runs createuxprd with no additional input. Derive the entire UX PRD autonomously from:
+**Mode C: No source provided (autonomous)** -- No additional input is available. Derive the entire UX PRD autonomously from:
 1. `.spec_system/PRD/PRD.md` (functional requirements, use cases, user personas)
 2. The existing codebase (if any UI code exists, infer patterns, routes, components)
 3. `state.json` project context (name, phase, tech stack)
 
-In Mode C, do NOT ask clarifying questions. Make confident, opinionated decisions for every section. Use PRD.md personas to define emotional targets. Infer aesthetic identity from the product domain. Choose a distinctive design direction rather than defaulting to safe/generic. Document all autonomous decisions clearly so the user can review and override.
+In all modes, do not ask clarifying questions. Make confident, opinionated
+decisions for every section based on the available evidence. Use PRD.md personas
+to define emotional targets. Infer aesthetic identity from the product domain.
+Choose a distinctive design direction rather than defaulting to safe/generic.
+Document all autonomous decisions clearly in the generated UX PRD.
 
-**For Modes A and B only** -- if the source is sparse, ask 3-8 targeted questions covering:
+When source material is sparse, resolve these areas from PRD and code evidence:
+- Primary user flows and critical paths
+- Screen/page inventory and routes
+- Navigation structure
+- Key interaction patterns
+- Device/responsive strategy
+- Accessibility requirements
+- Emotional targets and aesthetic identity
+- Material metaphor and signature moment
 
-**Structural questions:**
-- Primary user flows (what are the critical paths?)
-- Screen/page inventory (what screens exist?)
-- Navigation structure (how do users move between screens?)
-- Key interaction patterns (forms, modals, drag-drop, real-time?)
-- Device/responsive strategy (mobile-first? desktop-only? both?)
-- Accessibility requirements (WCAG level? specific needs?)
+### 4. Resolve Assumptions And Conflicts
 
-**Design identity questions** (ask when no visual design assets are provided):
-- Who are the real people using this? What is their emotional state when they arrive? (stressed founder at midnight? curious teenager? professional making high-stakes decisions?)
-- What should users FEEL? Define 2-3 emotional targets (e.g., "calm authority + subtle delight," "raw energy + controlled chaos," "intimate warmth + precision")
-- Is there a reference domain outside web design that fits the product's personality? (architecture, fashion editorial, scientific instruments, aerospace interfaces, museum exhibitions, vintage packaging, botanical illustrations...)
-- What material metaphor describes how this interface should feel? (brushed steel? handmade paper? wet ink? polished marble? frosted glass? worn leather?)
-- What is the ONE interaction or moment that should make someone pause or screenshot?
+Before writing or updating the UX PRD, explicitly resolve ambiguity that will
+shape the artifact.
 
-### 4. Decide Whether to Create or Update
+**Materiality threshold**:
+- Treat an assumption or conflict as material if it changes emotional targets,
+  aesthetic identity, screen inventory, navigation, critical flows, interaction
+  patterns, responsive strategy, accessibility requirements, performance
+  constraints, or design-system direction
+- Do not record cosmetic phrasing choices, routine section ordering,
+  placeholder cleanup, or obvious deduplication as material decisions
+
+For each material working assumption, state:
+- The assumption itself
+- The PRD, source-design, repo UI, or project-state evidence supporting it
+- Why the UX PRD can proceed without user arbitration
+
+For each material conflict between inputs, state:
+- The conflicting sources
+- The viable interpretations
+- The chosen interpretation
+- Why that interpretation is the best-supported one
+
+Mode C requirements:
+- Every material autonomous design decision must be traceable to PRD, repo UI
+  evidence, project domain, or project state
+- If no material assumption remains after evidence review, do not invent one
+  just to satisfy format
+
+Rules for this step:
+- A working assumption is not a hard blocker
+- Hard blockers stop the command only when PRD.md is inaccessible or evidence
+  is insufficient for a defensible UX PRD
+- Record assumptions and conflict resolutions in the generated UX PRD when they
+  materially shape the artifact
+- Keep hard blockers out of successful UX PRD sections
+
+### 5. Decide Whether to Create or Update
 
 Check whether `.spec_system/PRD/PRD_UX.md` already exists.
 
 - If it does not exist: create it
 - If it exists with template placeholders (2+ bracket markers like `[Screen Name]`): overwrite silently
-- If it exists with real content: ask for confirmation, backup to `.spec_system/archive/PRD/PRD_UX-backup-YYYYMMDD-HHMMSS.md` before overwriting
+- If it exists with real content: create a timestamped backup in `.spec_system/archive/PRD/` before replacing it, or update it in place when that is safer
 
-### 5. Extract and Normalize UX Requirements
+### 6. Extract and Normalize UX Requirements
 
-From the source material (Modes A/B) or PRD.md alone (Mode C), extract:
+From the source material (Modes A/B) or PRD.md plus resolved assumptions and
+conflict decisions (Mode C), extract:
 
 **Design identity:**
 - **Emotional targets**: 2-3 feeling words that define the experience
@@ -93,6 +149,9 @@ From the source material (Modes A/B) or PRD.md alone (Mode C), extract:
 - **Screen inventory**: every distinct screen/page/view
 - **Navigation structure**: how screens connect
 - **Interaction patterns**: forms, modals, notifications, real-time elements
+- **Product surface boundaries**: what belongs on primary user-facing surfaces,
+  what diagnostics are excluded, and whether any developer/admin/debug surface is
+  explicitly required
 
 **Design system:**
 - **Color architecture**: dominant surface (60%), secondary (25%), accent (10%), signal (5%)
@@ -113,11 +172,12 @@ From the source material (Modes A/B) or PRD.md alone (Mode C), extract:
 
 Important:
 - Derive flows from PRD.md use cases -- don't invent new ones
-- **Modes A/B**: If design details are missing, note them in Open Questions rather than guessing
-- **Mode C**: Make opinionated decisions for ALL sections -- do not leave Open Questions for things you can reasonably decide. Only list questions that genuinely require user input (e.g., brand colors already chosen, legal/compliance constraints)
+- If design details are missing, make the best-supported decision and record it as a working assumption when it materially shapes the UX PRD
+- Apply chosen assumptions and conflict resolutions consistently across all sections
+- Use Open UX Decisions only for non-blocking product, brand, legal, or compliance decisions that cannot be resolved from evidence
 - The Design Brief can be populated even without visual design assets -- it captures intent and direction
 
-### 6. Generate UX PRD
+### 7. Generate UX PRD
 
 Create `.spec_system/PRD/PRD_UX.md`:
 
@@ -213,6 +273,11 @@ Create `.spec_system/PRD/PRD_UX.md`:
 
 ### Notifications
 - [Toast, banner, inline -- when each is used]
+
+### Product Surface Boundaries
+- Primary surfaces: [What users should see first and why it supports the core experience]
+- Developer/admin/debug surfaces: [Separate route, hidden development overlay, logs/tests, or "none"]
+- Excluded from primary UI: [Runtime telemetry, seed/frame/input panels, resize readouts, readiness badges, route ownership notes, scaffolding labels, or other implementation diagnostics]
 
 ---
 
@@ -335,19 +400,37 @@ Palette character: [WARM or COOL? NATURAL or SYNTHETIC? LOUD or QUIET?]
 
 ---
 
-## 13. Open UX Questions
+## 13. Assumptions And Conflict Resolutions
 
-1. [Question requiring designer/user input]
-2. [Question]
+<!-- Omit this section if no material assumptions or conflicts shaped the UX PRD -->
+
+### Working Assumptions
+
+- [Working assumption]: [Supporting evidence and why it is safe to proceed]
+
+### Conflict Resolutions
+
+- [Conflict]: [Chosen interpretation and supporting evidence]
+
+## 14. Open UX Decisions
+
+1. [Decision needing later product, brand, legal, or compliance resolution]
+2. [Decision]
 ```
 
 Notes:
 - Omit sections that have no content rather than leaving placeholders
 - Sections 1 (Design Brief), 6 (Motion), 7 (Layout), 10 (Design System), and 12 (Anti-Patterns) are optional for purely utilitarian interfaces (admin panels, internal CRUD tools) but recommended for any consumer-facing product
 - Keep flows as ASCII diagrams, not verbose prose
+- Primary product screens must not contain internal implementation diagnostics
+  unless the product itself is a developer/admin tool and the diagnostics are
+  explicitly part of the user goal
 - The Design Brief can be populated even without visual design assets -- it captures intent and direction
+- If no material working assumptions or conflicts shaped the UX PRD, omit `Assumptions And Conflict Resolutions`
+- If only assumptions or only conflicts exist, include only the relevant subsection
+- Open UX Decisions must be non-blocking; do not use them for true hard blockers
 
-### 7. Validate Output
+### 8. Validate Output
 
 ```bash
 file .spec_system/PRD/PRD_UX.md
@@ -373,10 +456,11 @@ Summary:
 - Interaction Patterns: N documented
 - Motion Strategy: [populated / omitted]
 - Design System: [populated / partial / omitted]
-- Open UX Questions: N items
+- Working Assumptions: N recorded
+- Conflict Resolutions: N recorded
+- Open UX Decisions: N items
 
-Next Steps:
-1. Review the UX PRD and refine as needed
-2. Run plansession -- it will use both PRD.md and PRD_UX.md for UI sessions
+Next command: `phasebuild`
+Reason: PRD.md and PRD_UX.md are ready for phase structure; phasebuild creates the session stubs before plansession can plan an implementation session.
 
 ```

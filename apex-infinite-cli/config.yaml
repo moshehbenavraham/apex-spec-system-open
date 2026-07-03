@@ -7,6 +7,16 @@ codex:
   exec_flags: "--dangerously-auto-approve"
   model_reasoning_effort: "high"
 
+# Operator display configuration
+ui:
+  theme: "auto"
+  effect_level: "low"
+  ascii: false
+  compact: false
+  show_elapsed: true
+  show_provider: true
+  themes: {}
+
 providers:
   ollama:
     base_url: "http://localhost:11434/v1"

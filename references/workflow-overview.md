@@ -1,6 +1,8 @@
 # Workflow Overview
 
-Quick-reference for the Apex Spec System's 13-command workflow.
+Quick-reference for the Apex Spec System's 14-command staged workflow. Apex
+Spec also exposes 10 utility commands, listed separately below, for out-of-band
+support tasks.
 
 ## Core Philosophy
 
@@ -17,6 +19,16 @@ technical PRD.
 | Maximum duration | 4 hours |
 | Ideal task count | 12-25 (sweet spot: 20) |
 | Objectives | Single clear objective |
+
+## Autonomy and Handoff Rules
+
+- Commands must not ask questions, request approval, wait for feedback, or add
+  interactive review stops.
+- Commands resolve ambiguity from repository evidence and record working
+  assumptions when needed.
+- If an external requirement prevents progress, commands report it as a
+  blocker and still provide a deterministic next command.
+- Every command response ends with `Summary:`, `Next command:`, and `Reason:`.
 
 ## The 3 Stages
 
@@ -35,12 +47,14 @@ technical PRD.
 |------|---------|---------|
 | 1 | plansession | Analyze project state, create spec + task checklist |
 | 2 | implement | AI-led task-by-task implementation |
-| 3 | validate | Verify session completeness and quality gates |
-| 4 | updateprd | Mark session complete, sync PRD and state |
+| 3 | creview | Review and repair all uncommitted changes |
+| 4 | validate | Verify session completeness and quality gates |
+| 5 | updateprd | Mark session complete, sync PRD and state |
 
 Repeat this cycle for each session in the phase.
 
 Important: after a successful `plansession` run that creates `spec.md` and `tasks.md`, the next workflow command is always `implement`.
+Important: after a successful `implement` run, the next workflow command is always `creview`; after `creview`, the next workflow command is `validate`.
 Important: after a successful `updateprd` run, return to `plansession` if the phase still has unfinished sessions; otherwise begin Phase Transition at `audit`.
 
 ### Stage 3: Phase Transition (After All Phase Sessions Complete)
@@ -50,12 +64,15 @@ Important: after a successful `updateprd` run, return to `plansession` if the ph
 | 1 | audit | Set up local dev tooling (formatter, linter, types, tests) |
 | 2 | pipeline | Configure CI/CD workflows (quality, build, security) |
 | 3 | infra | Set up production infrastructure (health, security, deploy) |
-| 4 | carryforward | Capture lessons learned (optional but recommended) |
+| 4 | carryforward | Capture lessons learned |
 | 5 | documents | Audit and update project documentation |
-| - | (manual) | Manual testing and LLM audit (highly recommended) |
-| 6 | phasebuild | Create next phase structure, return to Stage 2 |
+| 6 | phasebuild | Create next phase structure if another phase remains |
 
-Important: `carryforward` does not lead directly to `plansession`. Finish `documents`, then manual testing and LLM audit, then `phasebuild` only if `PRD.md` still defines another unfinished phase. Only after `phasebuild` do you return to Stage 2 with `plansession`. If `PRD.md` has no remaining phase, the workflow ends and the project is complete.
+Important: `carryforward` does not lead directly to `plansession`. Finish
+`documents`, then run `phasebuild` only if `PRD.md` still defines another
+unfinished phase. Only after `phasebuild` do you return to Stage 2 with
+`plansession`. If `PRD.md` has no remaining phase, the workflow ends and the
+project is complete.
 
 ## Workflow Diagram
 
@@ -68,16 +85,13 @@ initspec                plansession ----+         audit
 createprd (opt)         implement       |         pipeline
     |                       |           |             |
     v                       v           |             v
-createuxprd (opt)       validate        |         infra
+createuxprd (opt)       creview         |         infra
     |                       |           |             |
     v                       v           |             v
-phasebuild              updateprd ------+         carryforward
-                                                      |
-                                                      v
-                                                  documents
-                                                      |
-                                                      v
-                                          [manual testing + LLM audit]
+phasebuild              validate        |         carryforward
+                            |           |             |
+                            v           |             v
+                        updateprd ------+         documents
                                                       |
                                                       v
                                                   phasebuild --> Stage 2
@@ -85,12 +99,14 @@ phasebuild              updateprd ------+         carryforward
 
 ## Utility Commands (Safe at Any Time)
 
-These 9 commands run outside the session workflow:
+These 10 commands are not part of the required staged workflow. They run outside
+the session workflow and can be used for support tasks at any time:
 
 | Command | Purpose |
 |---------|---------|
 | copush | Pull, version-bump, commit all changes, push to origin |
 | sculpt-ui | Guide AI-led creation of distinctive frontend interfaces |
+| seshsplit | Insert or refresh a session split plan inside a text or Markdown plan file |
 | dockbuild | Quick Docker Compose build and start |
 | dockcleanbuild | Clean Docker environment and rebuild from scratch |
 | up2imp | Audit upstream changes and curate implementation list |
@@ -99,23 +115,24 @@ These 9 commands run outside the session workflow:
 | qbackenddev | Autonomous backend/infrastructure development session |
 | pullndoc | Git pull upstream repo and document imported changes |
 
-## Command Quick Reference
+## Staged Workflow Command Quick Reference
 
-| Command | Input | Output |
-|---------|-------|--------|
-| initspec | Project info | .spec_system/ structure |
-| createprd | Requirements doc | PRD/PRD.md |
-| createuxprd | Design docs | PRD/PRD_UX.md |
-| plansession | state.json, PRD | spec.md + tasks.md |
-| implement | spec.md, tasks.md | implementation-notes.md |
-| validate | All session files | validation.md |
-| updateprd | validation.md | Updated state.json |
-| audit | CONVENTIONS.md | Updated dev tools |
-| pipeline | CONVENTIONS.md | Workflow files |
-| infra | CONVENTIONS.md | Config files |
-| documents | state.json, PRD | Updated docs |
-| carryforward | Phase artifacts | CONSIDERATIONS.md |
-| phasebuild | PRD | PRD/phase_NN/ |
+| Command | Input | Output | Normal next command |
+|---------|-------|--------|---------------------|
+| initspec | Project info | .spec_system/ structure | createprd |
+| createprd | Requirements doc | PRD/PRD.md | createuxprd or phasebuild |
+| createuxprd | Design docs | PRD/PRD_UX.md | phasebuild |
+| phasebuild | PRD | PRD/phase_NN/ | plansession or none |
+| plansession | state.json, PRD | spec.md + tasks.md | implement or audit |
+| implement | spec.md, tasks.md | implementation-notes.md | creview |
+| creview | All uncommitted changes | code-review.md | validate |
+| validate | All session files | validation.md | updateprd or implement |
+| updateprd | validation.md | Updated state.json | plansession or audit |
+| audit | CONVENTIONS.md | Updated dev tools | pipeline or audit |
+| pipeline | CONVENTIONS.md | Workflow files | infra or pipeline |
+| infra | CONVENTIONS.md | Config files | carryforward or infra |
+| carryforward | Phase artifacts | CONSIDERATIONS.md | documents |
+| documents | state.json, PRD | Updated docs | phasebuild or none |
 
 ## Task Format
 

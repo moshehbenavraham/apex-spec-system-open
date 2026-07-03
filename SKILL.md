@@ -4,13 +4,14 @@ description: >
   Specification-driven workflow system for AI-assisted development.
   Use when the user mentions "spec system", "session workflow", "create PRD",
   "UX PRD", "plan session", "implement session", "validate session",
-  "phase build", "session scope", "task checklist", "initspec", "plansession",
-  "audit", "pipeline", "infra", "carryforward", "documents", "copush",
-  "sculpt-ui", "docker build", "upstream changes", "quick implement",
-  "quick frontend", "quick backend", "pull upstream",
+  "code review", "creview", "phase build", "session scope", "task checklist",
+  "initspec", "plansession", "audit", "pipeline", "infra", "carryforward",
+  "documents", "copush", "sculpt-ui", "seshsplit", "session split",
+  "split plan into sessions", "docker build", "upstream changes",
+  "quick implement", "quick frontend", "quick backend", "pull upstream",
   or when working in a project containing a .spec_system/ directory.
   Philosophy: 1 session = 1 spec = 2-4 hours (12-25 tasks).
-version: 2.0.18-codex
+version: 2.1.15-codex
 ---
 
 # Apex Spec Workflow
@@ -46,7 +47,37 @@ technical PRD.
 | Duration | 2-3 hours |
 | Focus | Stable/late MVP |
 
-## The 13-Command Workflow
+## Command Structure
+
+The skill exposes 24 commands total: 14 staged workflow commands and 10 utility
+commands. The staged workflow drives the spec lifecycle; utility commands are
+listed separately and run outside the session workflow.
+
+## Autonomous Command Contract
+
+Every command runs autonomously. Commands must not ask questions, request
+approval, wait for feedback, or insert an interactive review stop into the
+workflow. When information is incomplete, choose the safest evidence-backed
+default, record the assumption, and continue. When an external requirement such
+as credentials, sudo access, billing, or a third-party dashboard action makes
+progress impossible, stop after preserving all completed work and report the
+blocker as a fact; do not ask for a decision.
+
+Every command response must end with an explicit handoff that another agent can
+follow without interpretation:
+
+```text
+Summary:
+- [facts about what changed or why no change was made]
+
+Next command: `command-name` OR `none`
+Reason: [why that command is the correct next workflow step]
+```
+
+Use `none` only when the project is complete or the command is a utility that
+does not participate in the staged workflow.
+
+## The 14-Command Workflow
 
 The workflow has **3 distinct stages**:
 
@@ -57,13 +88,9 @@ initspec           ->  Set up spec system in project
       |
       v
 createprd          ->  Generate PRD from requirements doc (optional)
-  OR                   OR
-[User Action]      ->  Manually populate PRD with requirements
       |
       v
 createuxprd        ->  Generate UX PRD from design docs (optional)
-  OR                   OR
-[User Action]      ->  Manually populate UX PRD with requirements
       |
       v
 phasebuild         ->  Create first phase structure (session stubs)
@@ -78,6 +105,9 @@ plansession    ->  Analyze project, create spec + task checklist
 implement      ->  AI-led task-by-task implementation
       |
       v
+creview        ->  Review and repair all uncommitted changes
+      |
+      v
 validate       ->  Verify session completeness
       |
       v
@@ -88,6 +118,10 @@ updateprd      ->  Sync PRD, mark session complete
 ```
 
 After a successful `plansession` run that creates the session spec and task checklist, the next workflow command is always `implement`.
+
+After a successful `implement` run, the next workflow command is always
+`creview`. After a successful `creview` run, the next workflow command is
+`validate`.
 
 After a successful `updateprd` run, the next workflow command has two paths: return to `plansession` if the phase still has unfinished sessions; otherwise exit the session loop and begin Phase Transition at `audit`.
 
@@ -103,13 +137,10 @@ pipeline           ->  CI/CD workflows (quality, build, security)
 infra              ->  Production infrastructure (health, security, deploy)
       |
       v
-carryforward       ->  Capture lessons learned (optional but recommended)
+carryforward       ->  Capture lessons learned
       |
       v
 documents          ->  Audit and update documentation
-      |
-      v
-[User Action]      ->  Manual testing and LLM audit (HIGHLY recommended)
       |
       v
 phasebuild         ->  Create next phase structure
@@ -118,16 +149,21 @@ phasebuild         ->  Create next phase structure
                    ->  Return to Stage 2 for new phase
 ```
 
-`carryforward` does not jump directly to `plansession`. The usual handoff is `carryforward -> documents -> [User Action] manual testing and LLM audit -> phasebuild`; however, run `phasebuild` only if `PRD.md` still defines another unfinished phase. If `PRD.md` has no remaining phase, the workflow ends after `documents` and the project is complete.
+`carryforward` does not jump directly to `plansession`. The usual handoff is
+`carryforward -> documents -> phasebuild`; however, run `phasebuild` only if
+`PRD.md` still defines another unfinished phase. If `PRD.md` has no remaining
+phase, the workflow ends after `documents` and the project is complete.
 
 ### Utility Commands (Safe at Any Time)
 
-These 9 commands run outside the session workflow:
+These 10 commands are not part of the required staged workflow. They run outside
+the session workflow and can be used for support tasks at any time:
 
 | Command | Purpose |
 |---------|---------|
 | copush | Pull, version-bump, commit all changes, push to origin |
 | sculpt-ui | Guide AI-led creation of distinctive frontend interfaces |
+| seshsplit | Insert or refresh a session split plan inside a text or Markdown plan file |
 | dockbuild | Quick Docker Compose build and start |
 | dockcleanbuild | Clean Docker environment and rebuild from scratch |
 | up2imp | Audit upstream changes and curate implementation list |
@@ -140,7 +176,7 @@ These 9 commands run outside the session workflow:
 
 ## Command Dispatch
 
-When the user requests a specific workflow step, read the corresponding
+When the user requests a specific command or workflow step, read the corresponding
 reference document from this skill's references/ directory and follow
 its instructions exactly. Match the user's intent to the closest entry
 in the table below.
@@ -160,6 +196,7 @@ in the table below.
 |---------------|----------------|-------------|
 | "plan session", "next session" | references/plansession.md | Analyze project, create spec and task checklist |
 | "implement", "execute tasks" | references/implement.md | AI-led task-by-task implementation |
+| "code review", "creview", "review and repair" | references/creview.md | Review and repair all uncommitted changes |
 | "validate", "verify session" | references/validate.md | Verify session completeness |
 | "update PRD", "mark complete" | references/updateprd.md | Sync PRD, mark session complete |
 
@@ -179,6 +216,7 @@ in the table below.
 |---------------|----------------|-------------|
 | "copush", "push", "bump version" | references/copush.md | Pull, bump, commit, push |
 | "sculpt", "UI design", "frontend design" | references/sculpt-ui.md | Distinctive frontend interface design |
+| "seshsplit", "session split", "split plan into sessions" | references/seshsplit.md | Insert or refresh a session split plan |
 | "docker build" | references/dockbuild.md | Docker Compose build and start |
 | "docker clean", "docker rebuild" | references/dockcleanbuild.md | Clean Docker rebuild |
 | "upstream", "upstream changes" | references/up2imp.md | Audit upstream changes |
@@ -187,7 +225,7 @@ in the table below.
 | "quick backend" | references/qbackenddev.md | Autonomous backend development |
 | "pull upstream", "pull and document" | references/pullndoc.md | Pull and document upstream changes |
 
-**Total**: 22 commands mapped to 22 reference files.
+**Total**: 24 command references: 14 staged workflow commands and 10 utilities.
 
 ---
 
@@ -210,6 +248,7 @@ project/
 |   |       |-- spec.md
 |   |       |-- tasks.md
 |   |       |-- implementation-notes.md
+|   |       |-- code-review.md
 |   |       |-- security-compliance.md
 |   |       \-- validation.md
 |   |-- scripts/                # Bash automation (copied during init)
@@ -285,7 +324,7 @@ All files must use ASCII-only characters (code points 0-127):
 
 ---
 
-## Quick Reference
+## Staged Workflow Quick Reference
 
 | Command | Purpose | Input | Output |
 |---------|---------|-------|--------|
@@ -294,6 +333,7 @@ All files must use ASCII-only characters (code points 0-127):
 | createuxprd | Generate UX PRD | Design docs | PRD/PRD_UX.md |
 | plansession | Analyze, spec, task list | state.json, PRD | spec.md + tasks.md |
 | implement | Code implementation | spec.md, tasks.md | implementation-notes.md |
+| creview | Review and repair | All uncommitted changes | code-review.md |
 | validate | Verify completeness | All session files | validation.md |
 | updateprd | Mark complete | validation.md | Updated state.json |
 | audit | Local dev tooling | CONVENTIONS.md | Updated tools |

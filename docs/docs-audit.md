@@ -63,7 +63,7 @@
 
 | Area | Coverage |
 |------|----------|
-| Installation | 4 methods documented (README + deployment.md) |
+| Installation | 5 methods documented (README + deployment.md), including Codex plugin marketplace |
 | Architecture | Skill structure, dispatch flow, tech stack, apex-infinite-cli |
 | Development | Setup, scripts, testing (bash + pytest), validation checklist |
 | Onboarding | Prerequisites, install, workflow, contributing |

@@ -10,15 +10,16 @@ CI failures can be caused by **billing/usage limits** (e.g., exhausted GitHub Ac
 
 ## Rules
 
-1. **One bundle per run, one run per phase** - add one workflow, validate all. Bundles accumulate across phases as the project matures.
-2. **GitHub Actions first** - GitLab CI noted but limited support
-3. **Respect known-issues.md** - skip workflows marked as flaky
-4. **Document secrets, never create them** - just document requirements
-5. **3-minute timeout** - if CI still running, report and exit
-6. **Monorepo aware** - matrix builds or path filters
-7. **PR-aware** - check and fix open PRs with failing CI or pending reviews
-8. **Address reviews** - apply code changes from review comments when actionable
-9. **Questions need humans** - flag review questions for manual response, don't guess
+1. **Autonomous execution** - do not ask questions, request approval, or wait for human feedback
+2. **One bundle per run, one run per phase** - add one workflow, validate all. Bundles accumulate across phases as the project matures.
+3. **GitHub Actions first** - GitLab CI noted but limited support
+4. **Respect known-issues.md** - skip workflows marked as flaky
+5. **Document secrets, never create them** - just document requirements
+6. **3-minute timeout** - if CI still running, validate locally and report the fallback
+7. **Monorepo aware** - matrix builds or path filters
+8. **PR-aware** - check and fix open PRs with failing CI or pending reviews
+9. **Address reviews** - apply code changes from review comments when actionable
+10. **Review questions** - answer from repository evidence when possible; if a maintainer-only decision is required, report it as an external blocker
 
 ### No Deferral Policy
 
@@ -27,7 +28,7 @@ CI failures can be caused by **billing/usage limits** (e.g., exhausted GitHub Ac
 - If a workflow file needs creating, CREATE IT
 - If a config needs generating, GENERATE IT
 - "The environment isn't set up" is NOT a blocker -- setting it up IS the task
-- The ONLY valid blocker is something that requires USER input, credentials/secrets you don't have, or sudo access
+- The ONLY valid blocker is an external requirement you cannot satisfy from the repository or environment, such as missing credentials/secrets, billing, sudo access, or platform access
 - If you skip a task that was executable, that is a **critical failure**
 
 ## Master List (5 Bundles)
@@ -56,7 +57,7 @@ Industry standard order (fast feedback to comprehensive):
 ### Step 1: DETECT
 
 1. Check for `.spec_system/CONVENTIONS.md`
-   - If missing: Run initspec yourself to create it. Only ask the user if initspec requires user input you don't have.
+   - If missing: Run initspec yourself to create it.
    - Read Stack section for languages/runtimes
    - Read CI/CD section for platform and configured workflows
    - Read Workspace Structure table (if present) for package list and stacks
@@ -195,7 +196,7 @@ Generate workflow file(s) for the selected bundle.
 - Create `.github/workflows/deploy.yml` triggered on push to main (after tests pass)
 - If the infra workflow step has configured a deploy target (webhook, Git-based, or platform integration), wire it into the workflow
 - Add a post-deploy smoke test step: `curl -f https://[production-url]/health` (or equivalent health endpoint)
-- If smoke test fails, the workflow should report failure (rollback is manual unless platform supports automatic rollback)
+- If smoke test fails, the workflow should report failure (rollback is external unless platform supports automatic rollback)
 - If no deploy target is configured yet, generate a placeholder workflow with a `TODO` comment and document in REPORT
 - **Monorepo**: Create per-package deploy jobs (triggered by path filters) or a single orchestrated deploy using the task runner
 
@@ -277,9 +278,9 @@ CI still running. Validate locally and proceed.
 - **Logic issues**: Fix bugs or improve implementation
 - **Missing tests**: Add requested test cases
 - **Documentation**: Add/update comments or docs
-- **Questions**: If clarification needed, note in report for manual response
+- **Questions**: Resolve from code and repository evidence when possible; if a maintainer-only decision is required, report it as an external blocker
 
-**After 3 failed attempts per issue**: Try a completely different approach. Only log for manual review if the fix requires secrets, platform access, or credentials you don't have.
+**After 3 failed attempts per issue**: Try a completely different approach. Only log an external blocker if the fix requires secrets, billing, platform access, or credentials you don't have.
 
 Filter out workflows in known-issues.md Skipped Workflows section.
 
@@ -326,7 +327,7 @@ REPORT
 - CI Status: All checks passing (was: 3 failing)
 - Fixed: 2 type errors, 1 test failure
 - Reviews addressed: 4 comments resolved
-- Remaining reviews: 1 (question - needs manual response)
+- Remaining reviews: 1 (external decision required)
 - Review status: Changes requested -> Ready for re-review
 ```
 
@@ -339,16 +340,38 @@ REPORT
 ### Step 9: RECOMMEND
 
 - **CI failures remain**: List required actions and rerun `pipeline`. Do not recommend `infra` yet.
-- **PR has unresolved items**: Report status, note what needs manual response, and do not recommend `infra` yet.
+- **PR has unresolved items**: Report status, set `Next command: pipeline`, and do not recommend `infra` yet.
 - **PR is ready**: Confirm all checks passing and reviews addressed. If the current `pipeline` run is otherwise complete, still recommend `infra` as the next workflow command.
 - **Bundles remain**: Note which bundle comes next in a future phase's `pipeline` run. Remaining bundles do not block the current `pipeline -> infra` handoff.
 - **Current run passes**: Recommend `infra` as the immediate next workflow command.
 - **All 5 bundles configured and passing**: Confirm `pipeline` is fully mature for the current project state, and still recommend `infra` as the immediate next workflow command.
 
-Be explicit in the user-facing report:
+Be explicit in the report:
 - `pipeline -> infra` is the required Phase Transition handoff
 - `carryforward` comes only after `infra`
 - Returning to `plansession` does not happen until the next phase has been created via `phasebuild`
+
+## Output
+
+Report the selected bundle, workflow files created or updated, fixes applied,
+CI/PR status, required secrets, remaining external blockers, and next action.
+
+Use this shape:
+
+```text
+pipeline complete!
+
+Summary:
+- Selected bundle: [name or "none - validation only"]
+- Workflows changed: [brief list]
+- CI validation: [passing | local fallback passed | failing]
+- PR review status: [none | addressed | unresolved external decision]
+- Required secrets: [none | brief list]
+- Remaining issues: [none | brief list]
+
+Next command: `[infra | pipeline]`
+Reason: [current pipeline run is validated | CI, PR, secret, or external blocker remains]
+```
 
 ## Dry Run Output
 
@@ -393,7 +416,7 @@ Would fix:
 Would address reviews:
 - src/auth.ts:30 - "Add error handling" (actionable)
 - src/auth.ts:52 - "Rename variable" (actionable)
-- src/auth.ts:67 - "Why this approach?" (question - manual response needed)
+- src/auth.ts:67 - "Why this approach?" (answer from repository evidence or report external decision)
 
 Run without --dry-run to apply.
 ```

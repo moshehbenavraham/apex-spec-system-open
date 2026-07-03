@@ -2,7 +2,7 @@
 
 ## A Claude Code Plugin Version Available Here: https://github.com/moshehbenavraham/apex-spec-system
 
-**Version: 2.0.18-codex**
+**Version: 2.1.15-codex**
 
 A specification-driven workflow system for AI-assisted development, packaged as
 an Agent Skill following the [Agent Skills standard](https://agentskills.io).
@@ -33,7 +33,7 @@ Verify with: `bash scripts/check-prereqs.sh --env`
 ## Quick Start
 
 ```bash
-# 1. Install the skill (see Installation below)
+# 1. Install the Codex plugin or skill (see Installation below)
 # 2. Initialize spec system in your project
 $apex-spec initspec
 
@@ -46,6 +46,7 @@ $apex-spec phasebuild
 # 5. Plan and implement sessions
 $apex-spec plansession
 $apex-spec implement
+$apex-spec creview
 $apex-spec validate
 $apex-spec updateprd
 ```
@@ -62,7 +63,8 @@ If you are not starting from `SKILL.md`, use this quick routing fallback:
 - PRD is ready and you need the next right-sized unit of work: use `phasebuild`
 - `.spec_system/` exists and you need the next scoped session: use `plansession`
 - A session already has `spec.md` and `tasks.md`: use `implement`
-- Implementation is finished and needs verification: use `validate`
+- Implementation is done and the new code needs review/repair: use `creview`
+- Review is done and the session needs verification: use `validate`
 - Validation passed and the session should be marked complete: use `updateprd`
 - All sessions in the current phase are complete: start Phase Transition at `audit`
 - You want an autonomous implementation burst against an existing current
@@ -76,35 +78,46 @@ For the full staged workflow and handoff rules, see
 
 ## Installation
 
-### Method 1: Git Clone (Recommended)
+### Method 1: Codex Plugin Marketplace (Recommended for Codex)
+
+Add this repo as a Codex plugin marketplace source:
+
+```bash
+codex plugin marketplace add moshehbenavraham/apex-spec-system-open --ref master
+```
+
+Then open Codex, run `/plugins`, select the **Apex Spec System** marketplace,
+and install **Apex Spec System**.
+
+### Method 2: Git Clone
 
 Clone directly into your agent skills directory:
 
 ```bash
-git clone https://github.com/aiwithapex/apex-spec-system-open.git \
+git clone https://github.com/moshehbenavraham/apex-spec-system-open.git \
   ~/.agents/skills/apex-spec
 ```
 
-### Method 2: Skill Installer
+### Method 3: Skill Installer
 
 If your agent supports skill installation commands:
 
 ```bash
 # Codex CLI
-codex install-skill https://github.com/aiwithapex/apex-spec-system-open.git
+codex install-skill https://github.com/moshehbenavraham/apex-spec-system-open.git
 ```
 
-### Method 3: Manual Download
+### Method 4: Manual Download
 
 Download and extract to your skills directory:
 
 ```bash
 mkdir -p ~/.agents/skills/apex-spec
-curl -L https://github.com/aiwithapex/apex-spec-system-open/archive/refs/heads/master.tar.gz \
+curl -L https://github.com/moshehbenavraham/apex-spec-system-open/archive/refs/heads/master.tar.gz \
   | tar xz --strip-components=1 -C ~/.agents/skills/apex-spec
 ```
 
-### Method 4: Skills Catalog (Experimental)
+### Method 5: Skills Catalog (Experimental)
 
 Install from the [openai/skills](https://github.com/openai/skills) catalog
 using the skill installer inside Codex (PR #244 submitted to `.experimental/`
@@ -116,7 +129,22 @@ $skill-installer install the apex-spec skill from the .experimental folder
 
 After installation, verify: `ls ~/.agents/skills/apex-spec/SKILL.md`
 
-## The 13-Command Workflow
+## Command Structure
+
+Apex Spec exposes 24 commands total: 14 staged workflow commands and 10 utility
+commands. The staged workflow drives the spec lifecycle; utilities are separate
+helpers for out-of-band tasks.
+
+## Autonomous Handoffs
+
+Workflow commands are designed for unattended agent-to-agent execution. They do
+not ask questions, wait for approval, or insert human feedback gates. If input is
+incomplete, the command uses repo evidence and safe defaults, records the
+assumption, and continues. Each command ends with a short summary and an
+explicit `Next command:` line so another agent can route the next step without
+guessing.
+
+## The 14-Command Workflow
 
 The workflow has 3 distinct stages. See
 [references/workflow-overview.md](references/workflow-overview.md) for the
@@ -136,6 +164,7 @@ phasebuild    ->  Create first phase structure
 ```
 plansession   ->  Analyze project, create spec + task checklist
 implement     ->  AI-led task-by-task implementation
+creview       ->  Review and repair all uncommitted changes
 validate      ->  Verify session completeness
 updateprd     ->  Mark session complete, sync state
 ```
@@ -153,10 +182,15 @@ phasebuild    ->  Create next phase structure
 
 ### Utility Commands (Safe at Any Time)
 
+These 10 commands are not part of the required staged workflow. Use them for
+support tasks such as Git, Docker, upstream sync, focused implementation bursts,
+or frontend/backend utility work.
+
 | Command | Purpose |
 |---------|---------|
 | copush | Pull, version-bump, commit, push |
 | sculpt-ui | Guide AI-led frontend design |
+| seshsplit | Insert or refresh a session split plan inside a text or Markdown plan file |
 | dockbuild | Docker Compose build and start |
 | dockcleanbuild | Clean Docker rebuild |
 | up2imp | Audit upstream changes |
@@ -218,7 +252,7 @@ workspaces, Go modules, Lerna.
 
 ## Features
 
-- **22-Command Workflow**: Structured process from initialization to completion
+- **24 Commands Total**: 14 staged workflow commands plus 10 utility commands
 - **Session Scoping**: 12-25 tasks per session, 2-4 hours max
 - **Progress Tracking**: State file and checklists track progress
 - **Validation Gates**: Verify completeness and security before marking done
@@ -237,7 +271,7 @@ workspaces, Go modules, Lerna.
 - [Deployment](docs/deployment.md) - Installation, CI/CD, release process
 - [Usage Guidance](references/guidance.md) - When to use, workflow modes, team patterns
 - [Production Walkthrough](references/walkthrough.md) - Real-world examples
-- [Workflow Quick-Reference](references/workflow-overview.md) - 13-command overview
+- [Workflow Quick-Reference](references/workflow-overview.md) - 14-command staged workflow overview
 - [Contributing](CONTRIBUTING.md) - Branch conventions, commit style, PR process
 - [ADRs](docs/adr/) - Architecture decision records
 
