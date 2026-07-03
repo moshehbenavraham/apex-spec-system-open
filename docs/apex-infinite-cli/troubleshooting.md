@@ -5,10 +5,12 @@
 Start here before deeper debugging:
 
 1. Re-run with `--dry-run` to inspect the chosen prompt and `codex exec` flags.
-2. Re-run with `--verbose` to inspect more of the Codex response.
-3. Check `python apex_infinite.py --history --path <project>` to see the last
+2. Run `python apex_infinite.py --check-provider` to test provider connectivity
+   and configured model availability.
+3. Re-run with `--verbose` to inspect more of the Codex response.
+4. Check `python apex_infinite.py --history --path <project>` to see the last
    recorded decisions.
-4. Confirm `config.yaml` and `.env` are the files you think they are.
+5. Confirm `config.yaml` and `.env` are the files you think they are.
 
 ## Common Failures
 
@@ -18,6 +20,8 @@ Start here before deeper debugging:
 | `Config file not found: ...` | Bad `--config` path | Fix the path and retry |
 | `Unknown provider: ...` | `provider` does not match a key under `providers` | Fix `config.yaml` or override with `--provider` |
 | `Directory not found: ...` | Bad `--path` value | Use an existing directory |
+| `Provider preflight failed for ... could not list models` | Provider URL is wrong, Ollama is not running, or a hosted provider is unreachable | Check `.env`, `config.yaml`, and network/provider status; for Ollama run `scripts/check-ollama.sh` |
+| `configured model '...' is not available` | The selected model is not installed or not exposed by the provider | Pull/install the model or change `OLLAMA_MODEL`/`--model` |
 | `Invalid selection.` | Interactive project number was out of range | Re-run and choose a valid entry |
 | `[ERROR] 'codex' command not found. Is Codex CLI installed?` | Codex CLI is missing or not on `PATH` | Install Codex or set `codex.binary` in `config.yaml` |
 | `[TIMEOUT] Codex command timed out after 1800s` | The underlying Codex step ran too long | Narrow the task, inspect the project state, or re-run with clearer CEO guidance |
@@ -377,7 +381,7 @@ What to do:
 
 Checks:
 
-- confirm the provider `api_key` field uses `${ENV_VAR}` syntax
+- confirm the provider string field uses `${ENV_VAR}` syntax
 - confirm the variable exists in `.env` next to `config.yaml` or in the shell
 - confirm you are using the provider you think you are using
 
@@ -392,6 +396,16 @@ What to do:
 
 - pass both `--provider` and `--model` when you want an explicit pair
 
+### Local Ollama check fails
+
+Checks:
+
+- confirm Ollama is running and serving the configured `OLLAMA_PORT`
+- run `scripts/check-ollama.sh --chat` from `apex-infinite-cli/`
+- run `ollama list` and confirm the configured `OLLAMA_MODEL` is present
+- set `APEX_INFINITE_PROVIDER_CHECK_TIMEOUT=30` for slow local hardware
+- use `--skip-provider-check` only when intentionally testing offline CLI wiring
+
 ## Recovery Shortcuts
 
 Use these commands when the system is behaving unexpectedly:
@@ -400,6 +414,8 @@ Use these commands when the system is behaving unexpectedly:
 cd apex-infinite-cli
 python apex_infinite.py --history
 python apex_infinite.py --path ~/projects/my-app/ --history
+python apex_infinite.py --check-provider --provider ollama
+scripts/check-ollama.sh --chat
 python apex_infinite.py --path ~/projects/my-app/ --start plansession --dry-run
 python apex_infinite.py --path ~/projects/my-app/ --start implement --verbose
 ```

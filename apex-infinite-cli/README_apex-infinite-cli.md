@@ -91,9 +91,9 @@ codex:
 
 providers:
   ollama:
-    base_url: "http://localhost:11434/v1"
-    api_key: "ollama"
-    model: "llama3.1:70b"
+    base_url: "http://${OLLAMA_HOST}:${OLLAMA_PORT}/v1"
+    api_key: "${OLLAMA_API_KEY}"
+    model: "${OLLAMA_MODEL}"
 
   grok:
     base_url: "https://api.x.ai/v1"
@@ -106,12 +106,20 @@ providers:
     model: "gpt-4o"
 ```
 
-API keys use `${ENV_VAR}` syntax, expanded at runtime. The `codex` section controls the agent binary and execution flags -- customize `binary` if codex is not on your PATH, and adjust `exec_flags` or `model_reasoning_effort` as needed.
+Provider values use `${ENV_VAR}` syntax, expanded at runtime. Ollama defaults
+to `localhost`, port `11434`, API key `ollama`, and model `qwen2.5:7b` when
+those env vars are not set. The `codex` section controls the agent binary and
+execution flags -- customize `binary` if codex is not on your PATH, and adjust
+`exec_flags` or `model_reasoning_effort` as needed.
 
 Before real runs, review the target `--path`, provider, model, Codex binary,
-and `codex.exec_flags`. The sample config uses broad autonomous Codex approval
-flags for unattended operation; use `--dry-run` first when validating a new
-project or provider setup.
+and `codex.exec_flags`. Startup runs a provider preflight before the loop:
+the CLI lists provider models and fails fast when the configured model is not
+available. Use `--check-provider` to run only that preflight, add
+`--check-provider-chat` for a tiny chat completion, or pass
+`--skip-provider-check` only for deliberate offline wiring checks. The sample
+config uses broad autonomous Codex approval flags for unattended operation; use
+`--dry-run` first when validating a new project.
 
 ### Display Settings
 
@@ -218,6 +226,11 @@ python apex_infinite.py --history --verbose
 # Override provider/model
 python apex_infinite.py --path ~/projects/my-app/ --provider ollama --model "qwen2.5:72b"
 
+# Check provider connectivity and model availability
+python apex_infinite.py --provider ollama --check-provider
+python apex_infinite.py --provider ollama --check-provider --check-provider-chat
+./scripts/check-ollama.sh --chat
+
 # Limit iterations
 python apex_infinite.py --path ~/projects/my-app/ --start plansession --max-iterations 5
 
@@ -249,6 +262,9 @@ python apex_infinite.py --path ~/projects/my-app/ --event-stream - --machine-out
 --plain                   Disable color and effects
 --ascii                   Use ASCII-safe glyphs
 --compact                 Reduce vertical spacing
+--check-provider          Run provider connectivity and model preflight, then exit
+--check-provider-chat     Include a tiny chat completion in provider checks
+--skip-provider-check     Skip startup provider preflight before the loop
 --event-stream TEXT       Write lifecycle JSONL to PATH, or '-' with --machine-output
 --machine-output          Disable human output and reserve stdout for JSONL
 --version                 Show version
@@ -402,6 +418,7 @@ Click option wiring, renderer semantics, and SQLite history safety.
 - **Nesting**: The CLI launches `codex exec` subprocesses. Codex CLI does not require special environment variable handling for nested invocations.
 - **Slash tolerance**: The manager LLM sometimes outputs `/plansession` instead of `plansession`. The CLI strips leading slashes before routing.
 - **LLM retries**: Both LLM calls (summarizer and manager) retry 3 times with a 5-second wait between attempts, matching the original n8n workflow's `retryOnFail` + `waitBetweenTries: 5000`.
+- **Provider preflight**: Normal runs check provider connectivity and model availability before the loop starts. Set `APEX_INFINITE_PROVIDER_CHECK_TIMEOUT` to tune the timeout, and set `APEX_INFINITE_LIVE_OLLAMA=1` to include the opt-in live Ollama pytest.
 - **Reference workflow**: The original n8n workflow JSON is preserved in `n8n-workflow/` for reference.
 - **DB column naming**: The SQLite `cc_response` column name is preserved for backward compatibility with existing databases. Python variable names use `agent_response` but the DB schema was not migrated to avoid breaking existing history.
 

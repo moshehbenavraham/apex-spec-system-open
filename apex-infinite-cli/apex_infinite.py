@@ -75,6 +75,7 @@ PROCESS_CLEANUP_TIMEOUT = 5
 DEFAULT_MAX_ITERATIONS = 50
 LLM_RETRY_COUNT = 3
 LLM_RETRY_WAIT = 5  # seconds (matches n8n waitBetweenTries: 5000)
+PROVIDER_PREFLIGHT_TIMEOUT = 10
 
 console = Console()
 _ACTIVE_RENDERER = None
@@ -84,6 +85,17 @@ _MACHINE_OUTPUT_ACTIVE = False
 
 class CliStartupError(RuntimeError):
     """Raised for startup failures that need CLI-aware reporting."""
+
+
+@dataclass(frozen=True)
+class ProviderPreflightResult:
+    """Facts returned by a successful provider preflight."""
+
+    provider_name: str
+    base_url: str
+    model_name: str
+    model_count: int
+    completion_checked: bool
 
 
 def _emit_event(
@@ -604,7 +616,7 @@ signal.signal(signal.SIGINT, _handle_sigint)
 
 
 def load_config(config_path, provider_override=None, model_override=None):
-    """Load YAML config, apply overrides, expand env vars in api_key."""
+    """Load YAML config, apply overrides, expand provider env vars."""
     path = Path(config_path)
     if not path.exists():
         raise CliStartupError(f"Config file not found: {config_path}")
@@ -622,14 +634,43 @@ def load_config(config_path, provider_override=None, model_override=None):
     # Load .env from same directory as config file
     load_dotenv(path.parent / ".env")
 
-    # Expand env vars in api_key
+    # Expand env vars in provider string fields.
     provider_cfg = config["providers"][provider_name]
-    provider_cfg["api_key"] = os.path.expandvars(provider_cfg["api_key"])
+    env_defaults = _provider_env_defaults(provider_name)
+    for key, value in list(provider_cfg.items()):
+        if isinstance(value, str):
+            provider_cfg[key] = _expand_config_env(value, env_defaults)
 
     if model_override:
         provider_cfg["model"] = model_override
 
     return config
+
+
+def _provider_env_defaults(provider_name):
+    """Return provider-specific defaults for optional env-backed config."""
+    if provider_name != "ollama":
+        return {}
+    return {
+        "OLLAMA_HOST": "localhost",
+        "OLLAMA_PORT": "11434",
+        "OLLAMA_API_KEY": "ollama",
+        "OLLAMA_MODEL": "qwen2.5:7b",
+    }
+
+
+def _expand_config_env(value, defaults):
+    """Expand $VAR and ${VAR}, using defaults only for known optional vars."""
+
+    def replace(match):
+        name = match.group(1) or match.group(2)
+        if name in os.environ:
+            return os.environ[name]
+        if name in defaults:
+            return defaults[name]
+        return match.group(0)
+
+    return re.sub(r"\$(\w+)|\$\{([^}]+)\}", replace, value)
 
 
 def get_llm_client(config):
@@ -639,6 +680,217 @@ def get_llm_client(config):
         OpenAI(base_url=provider["base_url"], api_key=provider["api_key"]),
         provider["model"],
     )
+
+
+def run_provider_preflight(config, check_completion=False):
+    """Verify the active OpenAI-compatible provider and configured model."""
+    provider_name = config["provider"]
+    provider = config["providers"][provider_name]
+    base_url = _required_provider_string(provider, "base_url", provider_name)
+    api_key = _required_provider_string(provider, "api_key", provider_name)
+    model_name = _required_provider_string(provider, "model", provider_name)
+    timeout_seconds = _provider_preflight_timeout()
+
+    client = OpenAI(
+        base_url=base_url,
+        api_key=api_key,
+        timeout=timeout_seconds,
+    )
+    try:
+        model_ids = _list_provider_model_ids(client)
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        raise CliStartupError(
+            "Provider preflight failed for "
+            f"{provider_name} at {base_url}: could not list models "
+            f"({exc.__class__.__name__}: {exc})"
+        ) from exc
+
+    if not model_ids:
+        raise CliStartupError(
+            f"Provider preflight failed for {provider_name} at {base_url}: "
+            "the provider returned no models."
+        )
+
+    if not _model_is_available(model_name, model_ids):
+        raise CliStartupError(
+            f"Provider preflight failed for {provider_name} at {base_url}: "
+            f"configured model '{model_name}' is not available. "
+            f"Available models: {_format_model_sample(model_ids)}"
+        )
+
+    if check_completion:
+        _check_provider_chat_completion(client, provider_name, base_url, model_name)
+
+    return ProviderPreflightResult(
+        provider_name=provider_name,
+        base_url=base_url,
+        model_name=model_name,
+        model_count=len(model_ids),
+        completion_checked=check_completion,
+    )
+
+
+def _required_provider_string(provider, key, provider_name):
+    """Read a provider string field and reject blank or unresolved values."""
+    value = provider.get(key)
+    if not isinstance(value, str) or not value.strip():
+        raise CliStartupError(
+            f"Provider '{provider_name}' is missing required string field '{key}'."
+        )
+    if "$" in value:
+        raise CliStartupError(
+            f"Provider '{provider_name}' field '{key}' still contains an "
+            "unresolved env placeholder."
+        )
+    return value.strip()
+
+
+def _provider_preflight_timeout():
+    """Read optional provider preflight timeout from the environment."""
+    raw_timeout = os.environ.get(
+        "APEX_INFINITE_PROVIDER_CHECK_TIMEOUT",
+        str(PROVIDER_PREFLIGHT_TIMEOUT),
+    )
+    try:
+        timeout_seconds = float(raw_timeout)
+    except ValueError as exc:
+        raise CliStartupError(
+            "APEX_INFINITE_PROVIDER_CHECK_TIMEOUT must be a positive number."
+        ) from exc
+    if timeout_seconds <= 0:
+        raise CliStartupError(
+            "APEX_INFINITE_PROVIDER_CHECK_TIMEOUT must be a positive number."
+        )
+    return timeout_seconds
+
+
+def _list_provider_model_ids(client):
+    """Return sorted model ids from an OpenAI-compatible models response."""
+    response = client.models.list()
+    raw_models = getattr(response, "data", None)
+    if raw_models is None:
+        raw_models = response
+
+    model_ids = []
+    for model in raw_models:
+        model_id = getattr(model, "id", None)
+        if model_id is None and isinstance(model, dict):
+            model_id = model.get("id")
+        if model_id:
+            model_ids.append(str(model_id))
+    return tuple(sorted(set(model_ids)))
+
+
+def _model_is_available(model_name, model_ids):
+    """Accept exact model ids and Ollama-style implicit latest tags."""
+    if model_name in model_ids:
+        return True
+    if ":" not in model_name and f"{model_name}:latest" in model_ids:
+        return True
+    return False
+
+
+def _format_model_sample(model_ids, limit=8):
+    """Format a short, deterministic model list for startup errors."""
+    sample = list(model_ids[:limit])
+    if len(model_ids) > limit:
+        sample.append(f"... {len(model_ids) - limit} more")
+    return ", ".join(sample)
+
+
+def _check_provider_chat_completion(client, provider_name, base_url, model_name):
+    """Run a tiny completion against the configured model."""
+    try:
+        client.chat.completions.create(
+            model=model_name,
+            messages=[{"role": "user", "content": "Reply with ok."}],
+            max_tokens=8,
+            temperature=0,
+        )
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        raise CliStartupError(
+            "Provider preflight failed for "
+            f"{provider_name} at {base_url}: tiny chat completion failed "
+            f"({exc.__class__.__name__}: {exc})"
+        ) from exc
+
+
+def _run_provider_preflight_or_exit(
+    config,
+    check_completion=False,
+    renderer=None,
+    event_emitter=None,
+    machine_output=False,
+):
+    """Run provider preflight and report errors through CLI startup handling."""
+    provider_name = config["provider"]
+    provider = config["providers"][provider_name]
+    model_name = provider.get("model", "")
+    base_url = provider.get("base_url", "")
+    _emit_event(
+        event_emitter,
+        "provider_check_started",
+        {
+            "provider_name": provider_name,
+            "model_name": model_name,
+            "base_url": base_url,
+            "completion_check": check_completion,
+        },
+        renderer=renderer,
+        machine_output=machine_output,
+    )
+    if renderer:
+        renderer.print_status(
+            f"Checking {provider_name} provider at {base_url} for model {model_name}.",
+            "Provider Preflight",
+        )
+    try:
+        result = run_provider_preflight(config, check_completion=check_completion)
+    except CliStartupError as exc:
+        _emit_event(
+            event_emitter,
+            "provider_check_failed",
+            {
+                "provider_name": provider_name,
+                "model_name": model_name,
+                "base_url": base_url,
+                "message": str(exc),
+            },
+            renderer=renderer,
+            machine_output=machine_output,
+        )
+        _exit_with_startup_error(
+            str(exc),
+            event_emitter=event_emitter,
+            machine_output=machine_output,
+            renderer=renderer,
+            title="Provider Preflight",
+        )
+
+    _emit_event(
+        event_emitter,
+        "provider_check_finished",
+        {
+            "provider_name": result.provider_name,
+            "model_name": result.model_name,
+            "base_url": result.base_url,
+            "model_count": result.model_count,
+            "completion_checked": result.completion_checked,
+        },
+        renderer=renderer,
+        machine_output=machine_output,
+    )
+    if renderer:
+        detail = (
+            "models plus chat completion"
+            if result.completion_checked
+            else "models endpoint"
+        )
+        renderer.print_status(
+            f"Provider check passed via {detail}; {result.model_count} models visible.",
+            "Provider Preflight",
+        )
+    return result
 
 
 def get_agent_config(config):
@@ -1757,6 +2009,21 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-arg
 @click.option("--ascii", "ascii_only", is_flag=True, help="Use ASCII-safe glyphs")
 @click.option("--compact", is_flag=True, help="Reduce vertical spacing")
 @click.option(
+    "--check-provider",
+    is_flag=True,
+    help="Run provider connectivity and model preflight, then exit.",
+)
+@click.option(
+    "--check-provider-chat",
+    is_flag=True,
+    help="Include a tiny chat completion in provider checks.",
+)
+@click.option(
+    "--skip-provider-check",
+    is_flag=True,
+    help="Skip startup provider preflight before the loop.",
+)
+@click.option(
     "--event-stream",
     default=None,
     help="Write machine-readable lifecycle JSONL to PATH, or '-' with --machine-output.",
@@ -1782,6 +2049,9 @@ def main(  # pylint: disable=too-many-arguments,too-many-positional-arguments,to
     plain,
     ascii_only,
     compact,
+    check_provider,
+    check_provider_chat,
+    skip_provider_check,
     event_stream,
     machine_output,
 ):
@@ -1793,6 +2063,10 @@ def main(  # pylint: disable=too-many-arguments,too-many-positional-arguments,to
         raise click.UsageError("--machine-output requires --event-stream")
     if event_stream == "-" and not machine_output:
         raise click.UsageError("--event-stream - requires --machine-output")
+    if check_provider and skip_provider_check:
+        raise click.UsageError(
+            "--check-provider cannot be combined with --skip-provider-check"
+        )
 
     try:
         event_stream_context = open_event_stream(
@@ -1812,6 +2086,8 @@ def main(  # pylint: disable=too-many-arguments,too-many-positional-arguments,to
                 "machine_output": machine_output,
                 "dry_run": dry_run,
                 "max_iterations": max_iterations,
+                "check_provider": check_provider,
+                "provider_completion_check": check_provider_chat,
             },
             machine_output=machine_output,
         )
@@ -1832,6 +2108,9 @@ def main(  # pylint: disable=too-many-arguments,too-many-positional-arguments,to
                 plain,
                 ascii_only,
                 compact,
+                check_provider,
+                check_provider_chat,
+                skip_provider_check,
                 event_emitter,
                 event_stream,
                 machine_output,
@@ -1857,6 +2136,9 @@ def _run_main(  # pylint: disable=too-many-arguments,too-many-positional-argumen
     plain,
     ascii_only,
     compact,
+    check_provider,
+    check_provider_chat,
+    skip_provider_check,
     event_emitter,
     event_stream,
     machine_output,
@@ -1947,6 +2229,16 @@ def _run_main(  # pylint: disable=too-many-arguments,too-many-positional-argumen
     )
     _ACTIVE_RENDERER = renderer
 
+    if check_provider:
+        _run_provider_preflight_or_exit(
+            config,
+            check_completion=check_provider_chat,
+            renderer=renderer,
+            event_emitter=event_emitter,
+            machine_output=machine_output,
+        )
+        return
+
     # History mode
     if history:
         db_show_history(project_path, renderer=renderer, verbose=verbose)
@@ -2019,6 +2311,15 @@ def _run_main(  # pylint: disable=too-many-arguments,too-many-positional-argumen
         renderer=renderer,
         machine_output=machine_output,
     )
+
+    if not skip_provider_check:
+        _run_provider_preflight_or_exit(
+            config,
+            check_completion=check_provider_chat,
+            renderer=renderer,
+            event_emitter=event_emitter,
+            machine_output=machine_output,
+        )
 
     # Display startup banner
     renderer.print_startup(

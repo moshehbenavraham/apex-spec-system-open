@@ -117,6 +117,7 @@ jobs:
           python -m pip install -r requirements.txt
           python apex_infinite.py --version
           python apex_infinite.py --help > /tmp/apex-infinite-help.txt
+          grep -q -- "--check-provider" /tmp/apex-infinite-help.txt
           grep -q -- "--event-stream" /tmp/apex-infinite-help.txt
           grep -q -- "--machine-output" /tmp/apex-infinite-help.txt
 

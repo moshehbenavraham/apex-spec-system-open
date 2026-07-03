@@ -19,9 +19,9 @@ ui:
 
 providers:
   ollama:
-    base_url: "http://localhost:11434/v1"
-    api_key: "ollama"
-    model: "qwen2.5:7b"
+    base_url: "http://${OLLAMA_HOST}:${OLLAMA_PORT}/v1"
+    api_key: "${OLLAMA_API_KEY}"
+    model: "${OLLAMA_MODEL}"
 
   grok:
     base_url: "https://api.x.ai/v1"

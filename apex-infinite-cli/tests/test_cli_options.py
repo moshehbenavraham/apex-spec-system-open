@@ -28,12 +28,38 @@ providers:
     model: "qwen2.5:7b"
 """
 
+OLLAMA_ENV_CONFIG_TEXT = """provider: ollama
+codex:
+  binary: "codex"
+  exec_flags: "--dangerously-auto-approve"
+  model_reasoning_effort: "high"
+ui:
+  theme: "auto"
+  effect_level: "low"
+  ascii: false
+  compact: false
+  show_elapsed: true
+  show_provider: true
+  themes: {}
+providers:
+  ollama:
+    base_url: "http://${OLLAMA_HOST}:${OLLAMA_PORT}/v1"
+    api_key: "${OLLAMA_API_KEY}"
+    model: "${OLLAMA_MODEL}"
+"""
+
 
 def write_config(tmp_path, text=CONFIG_TEXT):
     """Write a config file for CLI tests."""
     config_path = tmp_path / "config.yaml"
     config_path.write_text(text, encoding="ascii")
     return config_path
+
+
+def clear_ollama_env(monkeypatch):
+    """Clear Ollama env vars so config tests use explicit fixtures."""
+    for name in ("OLLAMA_HOST", "OLLAMA_PORT", "OLLAMA_API_KEY", "OLLAMA_MODEL"):
+        monkeypatch.delenv(name, raising=False)
 
 
 def prepare_cli(monkeypatch, tmp_path):
@@ -46,9 +72,22 @@ def prepare_cli(monkeypatch, tmp_path):
     def fake_loop(**kwargs):
         captured.update(kwargs)
 
+    def fake_preflight(config, check_completion=False):
+        provider_name = config["provider"]
+        provider = config["providers"][provider_name]
+        captured.setdefault("preflight_calls", []).append(check_completion)
+        return apex_infinite.ProviderPreflightResult(
+            provider_name=provider_name,
+            base_url=provider["base_url"],
+            model_name=provider["model"],
+            model_count=1,
+            completion_checked=check_completion,
+        )
+
     monkeypatch.setattr(apex_infinite, "DB_DIR", tmp_path / "db")
     monkeypatch.setattr(apex_infinite, "DB_PATH", tmp_path / "db" / "history.db")
     monkeypatch.setattr(apex_infinite, "infinite_loop", fake_loop)
+    monkeypatch.setattr(apex_infinite, "run_provider_preflight", fake_preflight)
     return config_path, project_path, captured
 
 
@@ -72,6 +111,42 @@ def invoke_cli(monkeypatch, tmp_path, args):
 def jsonl_rows(text):
     """Parse non-empty JSONL output lines."""
     return [json.loads(line) for line in text.splitlines() if line.strip()]
+
+
+def test_load_config_uses_ollama_env_defaults(monkeypatch, tmp_path):
+    clear_ollama_env(monkeypatch)
+    config_path = write_config(tmp_path, OLLAMA_ENV_CONFIG_TEXT)
+
+    config = apex_infinite.load_config(config_path)
+    provider = config["providers"]["ollama"]
+
+    assert provider["base_url"] == "http://localhost:11434/v1"
+    assert provider["api_key"] == "ollama"
+    assert provider["model"] == "qwen2.5:7b"
+
+
+def test_load_config_reads_ollama_env_file(monkeypatch, tmp_path):
+    clear_ollama_env(monkeypatch)
+    config_path = write_config(tmp_path, OLLAMA_ENV_CONFIG_TEXT)
+    (tmp_path / ".env").write_text(
+        "\n".join(
+            [
+                "OLLAMA_HOST=127.0.0.1",
+                "OLLAMA_PORT=11500",
+                "OLLAMA_API_KEY=local-test-key",
+                "OLLAMA_MODEL=llama3.1:8b",
+                "",
+            ]
+        ),
+        encoding="ascii",
+    )
+
+    config = apex_infinite.load_config(config_path)
+    provider = config["providers"]["ollama"]
+
+    assert provider["base_url"] == "http://127.0.0.1:11500/v1"
+    assert provider["api_key"] == "local-test-key"
+    assert provider["model"] == "llama3.1:8b"
 
 
 def test_theme_flag_reaches_resolved_renderer(monkeypatch, tmp_path):
@@ -246,6 +321,112 @@ def test_event_stream_open_error_is_click_error_without_traceback(
     assert result.exit_code == 1
     assert "failed to open event stream" in result.output
     assert "Traceback" not in result.output
+    assert captured == {}
+
+
+def test_check_provider_flag_runs_preflight_without_project_path(monkeypatch, tmp_path):
+    config_path = write_config(tmp_path)
+    captured = {}
+
+    def fake_loop(**_kwargs):
+        raise AssertionError("check-provider mode should not start the loop")
+
+    def fake_preflight(config, check_completion=False):
+        provider_name = config["provider"]
+        provider = config["providers"][provider_name]
+        captured["provider_name"] = provider_name
+        captured["model_name"] = provider["model"]
+        captured["completion_check"] = check_completion
+        return apex_infinite.ProviderPreflightResult(
+            provider_name=provider_name,
+            base_url=provider["base_url"],
+            model_name=provider["model"],
+            model_count=1,
+            completion_checked=check_completion,
+        )
+
+    monkeypatch.setattr(apex_infinite, "DB_DIR", tmp_path / "db")
+    monkeypatch.setattr(apex_infinite, "DB_PATH", tmp_path / "db" / "history.db")
+    monkeypatch.setattr(apex_infinite, "infinite_loop", fake_loop)
+    monkeypatch.setattr(apex_infinite, "run_provider_preflight", fake_preflight)
+
+    result = CliRunner().invoke(
+        apex_infinite.main,
+        [
+            "--config",
+            str(config_path),
+            "--check-provider",
+            "--check-provider-chat",
+            "--plain",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert captured == {
+        "provider_name": "ollama",
+        "model_name": "qwen2.5:7b",
+        "completion_check": True,
+    }
+    assert "Provider Preflight" in result.output
+
+
+def test_startup_provider_preflight_runs_before_loop(monkeypatch, tmp_path):
+    result, captured, _project_path = invoke_cli(
+        monkeypatch,
+        tmp_path,
+        ["--check-provider-chat", "--max-iterations", "0"],
+    )
+
+    assert result.exit_code == 0
+    assert captured["preflight_calls"] == [True]
+    assert "path" in captured
+
+
+def test_skip_provider_check_reaches_loop_without_preflight(monkeypatch, tmp_path):
+    result, captured, _project_path = invoke_cli(
+        monkeypatch,
+        tmp_path,
+        ["--skip-provider-check", "--max-iterations", "0"],
+    )
+
+    assert result.exit_code == 0
+    assert "preflight_calls" not in captured
+    assert "path" in captured
+
+
+def test_provider_preflight_failure_stops_before_loop(monkeypatch, tmp_path):
+    config_path, project_path, captured = prepare_cli(monkeypatch, tmp_path)
+
+    def fail_preflight(_config, check_completion=False):
+        raise apex_infinite.CliStartupError("local provider is down")
+
+    monkeypatch.setattr(apex_infinite, "run_provider_preflight", fail_preflight)
+
+    result = CliRunner().invoke(
+        apex_infinite.main,
+        [
+            "--config",
+            str(config_path),
+            "--path",
+            str(project_path),
+            "--plain",
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "local provider is down" in result.output
+    assert captured == {}
+
+
+def test_check_provider_conflicts_with_skip_provider_check(monkeypatch, tmp_path):
+    result, captured, _project_path = invoke_cli(
+        monkeypatch,
+        tmp_path,
+        ["--check-provider", "--skip-provider-check"],
+    )
+
+    assert result.exit_code == 2
+    assert "--check-provider cannot be combined" in result.output
     assert captured == {}
 
 

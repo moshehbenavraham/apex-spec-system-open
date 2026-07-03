@@ -19,12 +19,14 @@ Before the first run:
 
 1. Confirm `apex-infinite-cli/config.yaml` points at the intended provider and model.
 2. Confirm the `codex.exec_flags` value matches the autonomy level you want.
-3. Verify the target project already has the Apex Spec skill available if the
+3. Run `python apex_infinite.py --check-provider` or
+   `scripts/check-ollama.sh --chat` for local Ollama.
+4. Verify the target project already has the Apex Spec skill available if the
    run depends on `apex-spec` workflow commands.
-4. Decide whether you want a forced starting command with `--start` or manager
+5. Decide whether you want a forced starting command with `--start` or manager
    auto-selection from the first iteration.
-5. Decide whether you want the first instruction seeded with `--ceo`.
-6. Decide which display mode fits the terminal: styled interactive output,
+6. Decide whether you want the first instruction seeded with `--ceo`.
+7. Decide which display mode fits the terminal: styled interactive output,
    plain logs, ASCII-safe output, compact output, or machine-output JSONL.
 
 ## Common Run Modes
@@ -47,6 +49,19 @@ python apex_infinite.py --path ~/projects/my-app/ --start plansession
 ```
 
 Use this when the target path and first command are already known.
+
+### Provider preflight
+
+```bash
+cd apex-infinite-cli
+python apex_infinite.py --check-provider
+python apex_infinite.py --check-provider --check-provider-chat
+scripts/check-ollama.sh --chat
+```
+
+Use this before unattended runs. Normal runs execute the model-list preflight
+before the loop starts; `--check-provider-chat` adds a tiny chat completion.
+Use `--skip-provider-check` only for intentional offline wiring checks.
 
 ### Dry run
 
