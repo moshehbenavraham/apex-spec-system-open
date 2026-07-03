@@ -13,6 +13,26 @@ from typing import Callable, TextIO
 DEFAULT_CLEANUP_TIMEOUT = 5.0
 
 
+class ApexCliLaunchError(RuntimeError):
+    """Raised when the wrapper cannot launch the base CLI safely."""
+
+    def __init__(self, code: str, message: str):
+        super().__init__(message)
+        self.code = code
+        self.message = message
+
+
+class ApexCliTimeoutError(ApexCliLaunchError):
+    """Raised when the wrapped CLI exceeds its process timeout."""
+
+    def __init__(self, timeout_seconds: int):
+        super().__init__(
+            "timeout",
+            f"base CLI process timed out after {timeout_seconds} seconds",
+        )
+        self.timeout_seconds = timeout_seconds
+
+
 @dataclass(frozen=True)
 class ApexCliLaunchOptions:  # pylint: disable=too-many-instance-attributes
     """Validated command construction options for the wrapped CLI process."""
@@ -43,6 +63,7 @@ class ApexCliProcess:
         self.popen_factory = popen_factory
         self.command = build_apex_cli_command(options)
         self.process: subprocess.Popen | None = None
+        self._project_path = validate_project_path(options.project_path)
 
     @property
     def stdout(self) -> TextIO | None:
@@ -58,7 +79,8 @@ class ApexCliProcess:
         """Start the CLI process with stdout reserved for JSONL events."""
         if self.process is not None and self.process.poll() is None:
             raise RuntimeError("Apex CLI process is already running")
-        cli_script = resolve_cli_script(self.options.cli_script)
+        cli_script = validate_cli_script(self.options.cli_script)
+        project_path = validate_project_path(self.options.project_path)
         env = os.environ.copy()
         if self.options.extra_env:
             env.update(dict(self.options.extra_env))
@@ -71,6 +93,7 @@ class ApexCliProcess:
             bufsize=1,
             env=env,
         )
+        self._project_path = project_path
         return self
 
     def iter_stdout_lines(self) -> Iterator[str]:
@@ -84,6 +107,17 @@ class ApexCliProcess:
         if not self.process or not self.process.stderr:
             return ""
         return self.process.stderr.read() or ""
+
+    def wait(self) -> int:
+        """Wait for process completion, applying the configured timeout."""
+        if not self.process:
+            return 0
+        timeout = self.options.process_timeout_seconds
+        try:
+            return self.process.wait(timeout=timeout)
+        except subprocess.TimeoutExpired as exc:
+            self.terminate()
+            raise ApexCliTimeoutError(int(timeout or 0)) from exc
 
     def terminate(self, cleanup_timeout: float = DEFAULT_CLEANUP_TIMEOUT) -> None:
         """Terminate the process and kill it if graceful cleanup times out."""
@@ -109,8 +143,8 @@ def build_apex_cli_command(options: ApexCliLaunchOptions) -> list[str]:
     """Build the guarded CLI command consumed by the visual wrapper."""
     if not options.python_executable:
         raise ValueError("python_executable is required")
-    cli_script = resolve_cli_script(options.cli_script)
-    project_path = str(Path(options.project_path).expanduser())
+    cli_script = validate_cli_script(options.cli_script)
+    project_path = str(validate_project_path(options.project_path))
     if options.max_iterations is not None and options.max_iterations < 1:
         raise ValueError("max_iterations must be positive")
     if (
@@ -147,6 +181,28 @@ def resolve_cli_script(path: str | Path | None = None) -> Path:
     if path is None:
         return Path(__file__).resolve().parents[1] / "apex_infinite.py"
     return Path(path).expanduser().resolve()
+
+
+def validate_cli_script(path: str | Path | None = None) -> Path:
+    """Resolve and validate the source-tree CLI script."""
+    cli_script = resolve_cli_script(path)
+    if not cli_script.exists():
+        raise ApexCliLaunchError("missing_cli", "base CLI script was not found")
+    if not cli_script.is_file():
+        raise ApexCliLaunchError("missing_cli", "base CLI path is not a file")
+    if cli_script.name != "apex_infinite.py":
+        raise ApexCliLaunchError("invalid_cli", "base CLI script name is invalid")
+    return cli_script
+
+
+def validate_project_path(path: str | Path) -> Path:
+    """Resolve and validate the project path before launching the base CLI."""
+    project_path = Path(path).expanduser().resolve()
+    if not project_path.exists():
+        raise ApexCliLaunchError("invalid_project", "project path does not exist")
+    if not project_path.is_dir():
+        raise ApexCliLaunchError("invalid_project", "project path is not a directory")
+    return project_path
 
 
 def assert_machine_output_command(command: list[str]) -> None:

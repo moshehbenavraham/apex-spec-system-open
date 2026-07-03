@@ -14,6 +14,65 @@ from apex_infinite_events import (
     validate_payload,
 )
 
+FAILURE_STATE_TEXT: dict[str, tuple[str, str, str]] = {
+    "missing_cli": (
+        "CLI missing",
+        "Launch validation",
+        "Base CLI script was not found.",
+    ),
+    "invalid_cli": (
+        "CLI invalid",
+        "Launch validation",
+        "Base CLI script is not valid.",
+    ),
+    "invalid_project": (
+        "Project unavailable",
+        "Launch validation",
+        "Project path could not be opened.",
+    ),
+    "invalid_settings": (
+        "Settings issue",
+        "Settings validation",
+        "Wrapper settings are invalid.",
+    ),
+    "missing_pyside6": (
+        "Wrapper unavailable",
+        "Dependency check",
+        "PySide6 is not installed.",
+    ),
+    "display_backend": (
+        "Display unavailable",
+        "Display backend",
+        "Qt could not open the display backend.",
+    ),
+    "malformed_event": (
+        "Malformed event",
+        "Event recovery",
+        "An event line could not be parsed.",
+    ),
+    "timeout": (
+        "Timed out",
+        "Subprocess timeout",
+        "The base CLI process exceeded the wrapper timeout.",
+    ),
+    "stderr": (
+        "Subprocess stderr",
+        "Subprocess stderr",
+        "The base CLI process wrote stderr.",
+    ),
+    "non_zero_exit": (
+        "Process failed",
+        "Subprocess exit",
+        "The base CLI process exited non-zero.",
+    ),
+    "operator_stop": ("Stopped", "Stopped", "Operator stopped the run."),
+    "wrapper": (
+        "Wrapper issue",
+        "Wrapper runtime",
+        "The wrapper caught a runtime failure.",
+    ),
+}
+
 
 class EventLineError(ValueError):
     """Raised when one JSONL event line cannot be consumed by the wrapper."""
@@ -138,7 +197,7 @@ class EventStateAdapter:  # pylint: disable=too-many-instance-attributes
     def _record_error(self, sequence: int, error: EventLineError) -> None:
         self.has_error = True
         self.error_text = error.message
-        self.status = "Input issue"
+        self.status = "Malformed event"
         self.stage = "Event recovery"
         self._append_log(
             LogEntry(
@@ -215,10 +274,7 @@ class EventStateAdapter:  # pylint: disable=too-many-instance-attributes
             self.stage = "Codex"
             self.status = "Codex complete"
         elif event in {"codex_error", "codex_failed", "codex_timeout"}:
-            self.stage = "Codex issue"
-            self.status = "Attention needed"
-            self.has_error = True
-            self.error_text = _payload_string(payload, "error_type") or event
+            self._apply_failure(record)
         elif event in {"db_log_started", "db_log_finished", "db_logged"}:
             self.stage = "History log"
             self.status = "History updated"
@@ -232,15 +288,26 @@ class EventStateAdapter:  # pylint: disable=too-many-instance-attributes
             self.running = False
         elif event == "run_stopped":
             self.stage = "Stopped"
-            self.status = _payload_string(payload, "reason") or "Stopped"
             self.running = False
+            if _payload_string(payload, "reason") == "operator_stop":
+                self.status = "Stopped"
+                self.has_error = False
+                self.error_text = ""
+            else:
+                self.status = _payload_string(payload, "reason") or "Stopped"
         elif event in {"error", "event_stream_error"}:
-            self.stage = "Error"
-            self.status = "Attention needed"
-            self.has_error = True
-            self.error_text = _payload_string(payload, "message") or _payload_string(
-                payload, "error_type"
-            )
+            self._apply_failure(record)
+
+    def _apply_failure(self, record: EventRecord) -> None:
+        status, stage, detail = _failure_text(record)
+        self.status = status
+        self.stage = stage
+        self.running = False
+        self.has_error = True
+        self.error_text = detail
+        if _failure_code(record.payload, record.event) == "operator_stop":
+            self.running = False
+            self.has_error = False
 
 
 def parse_event_line(line: str, sequence: int = 0) -> EventRecord:
@@ -347,8 +414,8 @@ def _event_log_text(  # pylint: disable=too-many-return-statements,too-many-bran
     if event in {"codex_finished", "codex_completed"}:
         return "Codex complete", "Agent subprocess completed.", "success"
     if event in {"codex_error", "codex_failed", "codex_timeout"}:
-        detail = _payload_string(payload, "error_type") or event
-        return "Codex issue", detail, "error"
+        status, _stage, detail = _failure_text(record)
+        return status, detail, "error"
     if event in {"response_summarized", "output_summary"}:
         has_output = payload.get("has_output")
         return "Response summarized", f"Output present: {bool(has_output)}", "info"
@@ -361,11 +428,65 @@ def _event_log_text(  # pylint: disable=too-many-return-statements,too-many-bran
         count = _payload_int(payload, "max_iterations")
         return "Safety stop", f"Max iterations: {count or 0}", "warning"
     if event == "run_stopped":
-        return "Run stopped", _payload_string(payload, "reason"), "warning"
+        reason = _payload_string(payload, "reason")
+        if reason == "operator_stop":
+            return "Run stopped", "Operator stopped the run.", "warning"
+        return "Run stopped", reason, "warning"
     if event in {"error", "event_stream_error"}:
-        return "Run issue", _payload_string(payload, "message") or event, "error"
+        status, _stage, detail = _failure_text(record)
+        return status, detail, "error"
     return event.replace("_", " ").title(), "Event received.", "info"
 
 
 def _join_detail(*parts: str) -> str:
     return " | ".join(part for part in parts if part)
+
+
+def _failure_text(record: EventRecord) -> tuple[str, str, str]:
+    code = _failure_code(record.payload, record.event)
+    status, stage, default_detail = FAILURE_STATE_TEXT.get(
+        code, ("Attention needed", "Error", "The wrapper needs attention.")
+    )
+    detail = _failure_detail(record.payload, default_detail)
+    return status, stage, detail
+
+
+def _failure_code(  # pylint: disable=too-many-return-statements
+    payload: Mapping[str, JsonValue], event: str
+) -> str:
+    if event == "codex_timeout":
+        return "timeout"
+    stage = _payload_string(payload, "stage")
+    error_type = _payload_string(payload, "error_type")
+    reason = _payload_string(payload, "reason")
+    if reason == "operator_stop":
+        return "operator_stop"
+    if error_type in FAILURE_STATE_TEXT:
+        return error_type
+    if stage in {"stderr", "subprocess_stderr"}:
+        return "stderr"
+    if stage in {"launcher", "launch_validation"}:
+        return error_type or "missing_cli"
+    if stage in {"display", "display_backend"}:
+        return "display_backend"
+    if stage in {"wrapper", "dependency"} and error_type == "missing_pyside6":
+        return "missing_pyside6"
+    if error_type.startswith("return_"):
+        return "non_zero_exit"
+    if event == "event_stream_error":
+        return "malformed_event"
+    return error_type or stage or "wrapper"
+
+
+def _failure_detail(payload: Mapping[str, JsonValue], fallback: str) -> str:
+    message = _payload_string(payload, "message")
+    if message:
+        return message
+    return_code = _payload_int(payload, "return_code")
+    if return_code is not None:
+        return f"Exit code {return_code}"
+    timeout_seconds = _payload_int(payload, "timeout_seconds")
+    if timeout_seconds is not None:
+        return f"Timeout after {timeout_seconds} seconds"
+    error_type = _payload_string(payload, "error_type")
+    return error_type or fallback

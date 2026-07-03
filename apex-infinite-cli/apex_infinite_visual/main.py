@@ -12,7 +12,21 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from apex_infinite_visual.events import EventStateAdapter
-from apex_infinite_visual.launcher import ApexCliLaunchOptions, ApexCliProcess
+from apex_infinite_visual.launcher import (
+    ApexCliLaunchError,
+    ApexCliLaunchOptions,
+    ApexCliProcess,
+    ApexCliTimeoutError,
+)
+from apex_infinite_visual.settings import (
+    FONT_FAMILIES,
+    THEME_CRT_GREEN,
+    THEME_PLAIN,
+    WRAPPER_THEME_NAMES,
+    WrapperSettings,
+    WrapperSettingsError,
+    build_settings,
+)
 
 
 class VisualWrapperUnavailable(RuntimeError):
@@ -35,6 +49,11 @@ class VisualWrapperOptions:  # pylint: disable=too-many-instance-attributes
     reduced_effects: bool
     auto_close_ms: int | None
     qml_path: Path
+    effect_intensity: int | None = None
+    font_family: str = "monospace"
+    font_scale: float = 1.0
+    plain_fallback: bool = False
+    process_timeout_seconds: int | None = None
 
 
 def import_qt_modules():  # pylint: disable=import-outside-toplevel
@@ -99,12 +118,14 @@ def build_bridge_class(qt):  # pylint: disable=too-many-statements
             self._start_command = options.start_command
             self._max_iterations = options.max_iterations
             self._dry_run = options.dry_run
-            self._theme = options.theme
-            self._reduced_effects = options.reduced_effects
-            self._glow_enabled = not options.reduced_effects
-            self._scanlines_enabled = not options.reduced_effects
+            self._settings = _settings_from_options(options)
+            self._theme_names = list(WRAPPER_THEME_NAMES)
+            self._font_families = list(FONT_FAMILIES)
+            self._glow_enabled = False
+            self._scanlines_enabled = False
             self._flicker_enabled = False
-            self._curvature_enabled = not options.reduced_effects
+            self._curvature_enabled = False
+            self._sync_effects_from_settings()
             self._running = False
             self._queue: queue.Queue[tuple[str, str]] = queue.Queue()
             self._worker: threading.Thread | None = None
@@ -165,10 +186,73 @@ def build_bridge_class(qt):  # pylint: disable=too-many-statements
             return list(self._log_lines)
 
         def _get_theme(self) -> str:
-            return self._theme
+            return self._settings.theme_name
+
+        def _get_effective_theme(self) -> str:
+            return self._settings.effective_theme_name
+
+        def _get_theme_names(self) -> list[str]:
+            return list(self._theme_names)
+
+        def _get_theme_label(self) -> str:
+            return self._settings.preset.label
 
         def _get_reduced_effects(self) -> bool:
-            return self._reduced_effects
+            return self._settings.reduced_effects
+
+        def _get_plain_fallback(self) -> bool:
+            return (
+                self._settings.plain_fallback
+                or self._settings.theme_name == THEME_PLAIN
+            )
+
+        def _get_effect_intensity(self) -> int:
+            return self._settings.effect_intensity
+
+        def _get_effect_opacity(self) -> float:
+            return self._settings.effect_opacity
+
+        def _get_font_family(self) -> str:
+            return self._settings.font_family
+
+        def _get_font_scale(self) -> float:
+            return self._settings.font_scale
+
+        def _get_font_families(self) -> list[str]:
+            return list(self._font_families)
+
+        def _color(self, key: str) -> str:
+            return self._settings.color_map()[key]
+
+        def _get_background_color(self) -> str:
+            return self._color("background")
+
+        def _get_panel_color(self) -> str:
+            return self._color("panel")
+
+        def _get_panel_alt_color(self) -> str:
+            return self._color("panel_alt")
+
+        def _get_cell_color(self) -> str:
+            return self._color("cell")
+
+        def _get_border_color(self) -> str:
+            return self._color("border")
+
+        def _get_accent_color(self) -> str:
+            return self._color("accent")
+
+        def _get_text_color(self) -> str:
+            return self._color("text")
+
+        def _get_muted_color(self) -> str:
+            return self._color("muted")
+
+        def _get_warning_color(self) -> str:
+            return self._color("warning")
+
+        def _get_error_color(self) -> str:
+            return self._color("error")
 
         def _get_glow_enabled(self) -> bool:
             return self._glow_enabled
@@ -199,9 +283,44 @@ def build_bridge_class(qt):  # pylint: disable=too-many-statements
         managerOutput = property_factory(str, _get_manager_output, notify=statusChanged)
         logLines = property_factory("QStringList", _get_log_lines, notify=logChanged)
         themeName = property_factory(str, _get_theme, notify=effectsChanged)
+        effectiveThemeName = property_factory(
+            str, _get_effective_theme, notify=effectsChanged
+        )
+        themeNames = property_factory(
+            "QStringList", _get_theme_names, notify=effectsChanged
+        )
+        themeLabel = property_factory(str, _get_theme_label, notify=effectsChanged)
         reducedEffects = property_factory(
             bool, _get_reduced_effects, notify=effectsChanged
         )
+        plainFallback = property_factory(
+            bool, _get_plain_fallback, notify=effectsChanged
+        )
+        effectIntensity = property_factory(
+            int, _get_effect_intensity, notify=effectsChanged
+        )
+        effectOpacity = property_factory(
+            float, _get_effect_opacity, notify=effectsChanged
+        )
+        fontFamily = property_factory(str, _get_font_family, notify=effectsChanged)
+        fontScale = property_factory(float, _get_font_scale, notify=effectsChanged)
+        fontFamilies = property_factory(
+            "QStringList", _get_font_families, notify=effectsChanged
+        )
+        backgroundColor = property_factory(
+            str, _get_background_color, notify=effectsChanged
+        )
+        panelColor = property_factory(str, _get_panel_color, notify=effectsChanged)
+        panelAltColor = property_factory(
+            str, _get_panel_alt_color, notify=effectsChanged
+        )
+        cellColor = property_factory(str, _get_cell_color, notify=effectsChanged)
+        borderColor = property_factory(str, _get_border_color, notify=effectsChanged)
+        accentColor = property_factory(str, _get_accent_color, notify=effectsChanged)
+        textColor = property_factory(str, _get_text_color, notify=effectsChanged)
+        mutedColor = property_factory(str, _get_muted_color, notify=effectsChanged)
+        warningColor = property_factory(str, _get_warning_color, notify=effectsChanged)
+        errorColor = property_factory(str, _get_error_color, notify=effectsChanged)
         glowEnabled = property_factory(bool, _get_glow_enabled, notify=effectsChanged)
         scanlinesEnabled = property_factory(
             bool, _get_scanlines_enabled, notify=effectsChanged
@@ -242,6 +361,17 @@ def build_bridge_class(qt):  # pylint: disable=too-many-statements
             )
             self.statusChanged.emit()
 
+        @slot()
+        def shutdown(self) -> None:
+            """Release timers and subprocess resources before wrapper exit."""
+            if self._fixture_timer.isActive():
+                self._fixture_timer.stop()
+            if self._pump_timer.isActive():
+                self._pump_timer.stop()
+            if self._process:
+                self._process.terminate()
+            self._running = False
+
         @slot(str)
         def setProjectPath(self, value: str) -> None:
             """Update the project path control."""
@@ -277,25 +407,41 @@ def build_bridge_class(qt):  # pylint: disable=too-many-statements
         @slot(str)
         def setTheme(self, value: str) -> None:
             """Update the QML theme selector."""
-            if value in {"crt-green", "crt-amber", "ibm-dos", "plain"}:
-                self._theme = value
-                self.effectsChanged.emit()
+            plain_fallback = value == THEME_PLAIN
+            self._update_settings(theme_name=value, plain_fallback=plain_fallback)
 
         @slot(bool)
         def setReducedEffects(self, value: bool) -> None:
             """Apply the reduced-effects fallback."""
-            self._reduced_effects = bool(value)
-            if self._reduced_effects:
-                self._glow_enabled = False
-                self._scanlines_enabled = False
-                self._flicker_enabled = False
-                self._curvature_enabled = False
-            self.effectsChanged.emit()
+            self._update_settings(reduced_effects=bool(value))
+
+        @slot(int)
+        def setEffectIntensity(self, value: int) -> None:
+            """Update the bounded effect intensity."""
+            self._update_settings(effect_intensity=max(0, min(100, int(value))))
+
+        @slot(str)
+        def setFontFamily(self, value: str) -> None:
+            """Update the wrapper font family."""
+            self._update_settings(font_family=value.strip() or "monospace")
+
+        @slot(float)
+        def setFontScale(self, value: float) -> None:
+            """Update the wrapper font scale."""
+            self._update_settings(font_scale=round(float(value), 2))
+
+        @slot(bool)
+        def setPlainFallback(self, value: bool) -> None:
+            """Apply or clear the plain fallback surface."""
+            if self._settings.theme_name == THEME_PLAIN and not value:
+                self._update_settings(theme_name=THEME_CRT_GREEN, plain_fallback=False)
+                return
+            self._update_settings(plain_fallback=bool(value))
 
         @slot(str, bool)
         def setEffectEnabled(self, name: str, value: bool) -> None:
             """Update one independent visual effect control."""
-            enabled = bool(value) and not self._reduced_effects
+            enabled = bool(value) and self._settings.effects_available
             if name == "glow":
                 self._glow_enabled = enabled
             elif name == "scanlines":
@@ -340,33 +486,66 @@ def build_bridge_class(qt):  # pylint: disable=too-many-statements
                 model=self._options.model,
                 max_iterations=self._max_iterations,
                 dry_run=self._dry_run,
+                process_timeout_seconds=self._options.process_timeout_seconds,
             )
             try:
                 with ApexCliProcess(launch_options) as process:
                     self._process = process
                     stderr_chunks: list[str] = []
+                    stdout_reader = threading.Thread(
+                        target=self._read_stdout,
+                        args=(process,),
+                        daemon=True,
+                    )
                     stderr_reader = threading.Thread(
                         target=self._read_stderr,
                         args=(process, stderr_chunks),
                         daemon=True,
                     )
+                    stdout_reader.start()
                     stderr_reader.start()
-                    for line in process.iter_stdout_lines():
-                        self._queue.put(("line", line))
-                    return_code = process.process.wait() if process.process else 0
-                    stderr_reader.join()
+                    try:
+                        if hasattr(process, "wait"):
+                            return_code = process.wait()
+                        elif process.process:
+                            return_code = process.process.wait()
+                        else:
+                            return_code = 0
+                    finally:
+                        stdout_reader.join()
+                        stderr_reader.join()
                     stderr = "".join(stderr_chunks)
                     if self._stop_requested:
                         return
                     if stderr.strip():
                         self._queue.put(("stderr", stderr.strip()))
                     if return_code:
-                        self._queue.put(("return_code", str(return_code)))
+                        self._queue.put(("return_code", str(int(return_code))))
+            except ApexCliTimeoutError as exc:
+                self._queue.put(("timeout", str(exc.timeout_seconds)))
+            except ApexCliLaunchError as exc:
+                self._queue.put(
+                    (
+                        "launch_error",
+                        json.dumps(
+                            {
+                                "error_type": exc.code,
+                                "message": exc.message,
+                            },
+                            ensure_ascii=True,
+                            sort_keys=True,
+                        ),
+                    )
+                )
             except Exception as exc:  # pylint: disable=broad-exception-caught
                 self._queue.put(("error", exc.__class__.__name__))
             finally:
                 self._process = None
                 self._queue.put(("done", ""))
+
+        def _read_stdout(self, process: ApexCliProcess) -> None:
+            for line in process.iter_stdout_lines():
+                self._queue.put(("line", line))
 
         def _read_stderr(
             self, process: ApexCliProcess, stderr_chunks: list[str]
@@ -386,12 +565,35 @@ def build_bridge_class(qt):  # pylint: disable=too-many-statements
                 elif kind == "stderr":
                     self._ingest_synthetic_event(
                         "error",
-                        {"stage": "stderr", "message": value[:240]},
+                        {
+                            "stage": "stderr",
+                            "error_type": "stderr",
+                            "message": _stderr_summary(value),
+                        },
                     )
                 elif kind == "return_code":
                     self._ingest_synthetic_event(
                         "error",
-                        {"stage": "subprocess", "error_type": f"return_{value}"},
+                        {
+                            "stage": "subprocess",
+                            "error_type": "non_zero_exit",
+                            "return_code": int(value),
+                        },
+                    )
+                elif kind == "timeout":
+                    self._ingest_synthetic_event(
+                        "error",
+                        {
+                            "stage": "subprocess",
+                            "error_type": "timeout",
+                            "timeout_seconds": int(value),
+                        },
+                    )
+                elif kind == "launch_error":
+                    payload = json.loads(value)
+                    self._ingest_synthetic_event(
+                        "error",
+                        {"stage": "launch_validation", **payload},
                     )
                 elif kind == "error":
                     self._ingest_synthetic_event(
@@ -428,7 +630,40 @@ def build_bridge_class(qt):  # pylint: disable=too-many-statements
             self.statusChanged.emit()
             self.logChanged.emit()
 
+        def _update_settings(self, **changes: object) -> None:
+            try:
+                self._settings = self._settings.updated(**changes)
+            except WrapperSettingsError as exc:
+                self._ingest_synthetic_event(
+                    "error",
+                    {
+                        "stage": "settings",
+                        "error_type": "invalid_settings",
+                        "message": str(exc),
+                    },
+                )
+                return
+            self._sync_effects_from_settings()
+            self.effectsChanged.emit()
+
+        def _sync_effects_from_settings(self) -> None:
+            self._glow_enabled = self._settings.effect_enabled("glow")
+            self._scanlines_enabled = self._settings.effect_enabled("scanlines")
+            self._flicker_enabled = self._settings.effect_enabled("flicker")
+            self._curvature_enabled = self._settings.effect_enabled("curvature")
+
     return WrapperBridge
+
+
+def _settings_from_options(options: VisualWrapperOptions) -> WrapperSettings:
+    return build_settings(
+        theme_name=options.theme,
+        effect_intensity=options.effect_intensity,
+        font_family=options.font_family,
+        font_scale=options.font_scale,
+        reduced_effects=options.reduced_effects,
+        plain_fallback=options.plain_fallback,
+    )
 
 
 def build_fixture_event_lines(
@@ -514,7 +749,7 @@ def build_fixture_event_lines(
 
 def parse_args(argv: list[str] | None = None) -> VisualWrapperOptions:
     """Parse wrapper command-line arguments."""
-    parser = argparse.ArgumentParser(description="Apex Infinite visual wrapper spike")
+    parser = argparse.ArgumentParser(description="Apex Infinite visual wrapper")
     parser.add_argument("--path", default=os.getcwd(), help="Project path to display")
     parser.add_argument(
         "--start-command", default="implement", help="Optional start command"
@@ -531,14 +766,38 @@ def parse_args(argv: list[str] | None = None) -> VisualWrapperOptions:
     )
     parser.add_argument(
         "--theme",
-        choices=["crt-green", "crt-amber", "ibm-dos", "plain"],
-        default="crt-green",
+        choices=list(WRAPPER_THEME_NAMES),
+        default=THEME_CRT_GREEN,
     )
+    parser.add_argument("--effect-intensity", type=int, default=None)
+    parser.add_argument("--font-family", default="monospace")
+    parser.add_argument("--font-scale", type=float, default=1.0)
+    parser.add_argument(
+        "--plain-fallback",
+        action="store_true",
+        help="Start with the plain low-effects fallback active",
+    )
+    parser.add_argument("--process-timeout-seconds", type=int, default=None)
     parser.add_argument("--reduced-effects", action="store_true")
     parser.add_argument("--auto-close-ms", type=int, default=None)
     args = parser.parse_args(argv)
     if args.max_iterations < 1:
         parser.error("--max-iterations must be positive")
+    if args.auto_close_ms is not None and args.auto_close_ms < 1:
+        parser.error("--auto-close-ms must be positive")
+    if args.process_timeout_seconds is not None and args.process_timeout_seconds < 1:
+        parser.error("--process-timeout-seconds must be positive")
+    try:
+        build_settings(
+            theme_name=args.theme,
+            effect_intensity=args.effect_intensity,
+            font_family=args.font_family,
+            font_scale=args.font_scale,
+            reduced_effects=args.reduced_effects,
+            plain_fallback=args.plain_fallback,
+        )
+    except WrapperSettingsError as exc:
+        parser.error(str(exc))
     return VisualWrapperOptions(
         project_path=args.path,
         start_command=args.start_command,
@@ -552,6 +811,11 @@ def parse_args(argv: list[str] | None = None) -> VisualWrapperOptions:
         reduced_effects=args.reduced_effects,
         auto_close_ms=args.auto_close_ms,
         qml_path=Path(__file__).resolve().parent / "qml" / "Main.qml",
+        effect_intensity=args.effect_intensity,
+        font_family=args.font_family,
+        font_scale=args.font_scale,
+        plain_fallback=args.plain_fallback,
+        process_timeout_seconds=args.process_timeout_seconds,
     )
 
 
@@ -568,6 +832,7 @@ def run_app(options: VisualWrapperOptions) -> int:
     engine.load(qt["QUrl"].fromLocalFile(str(options.qml_path)))
     if not engine.rootObjects():
         raise VisualWrapperUnavailable("QML surface could not be loaded")
+    app.aboutToQuit.connect(bridge.shutdown)
     if options.dry_run:
         qt["QTimer"].singleShot(0, bridge.startRun)
     auto_close_ms = options.auto_close_ms
@@ -583,12 +848,29 @@ def _format_log_line(entry) -> str:
     return f"{entry.sequence:03d} [{entry.level.upper()}] {entry.title}{detail}"
 
 
+def _stderr_summary(stderr: str) -> str:
+    stripped = stderr.strip()
+    if not stripped:
+        return "Base CLI wrote stderr."
+    line_count = len(stripped.splitlines())
+    return (
+        f"Base CLI wrote {len(stripped)} stderr characters across {line_count} line(s)."
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     """CLI entrypoint for `python -m apex_infinite_visual.main`."""
     try:
         return run_app(parse_args(argv))
     except VisualWrapperUnavailable as exc:
         print(f"Visual wrapper unavailable: {exc}", file=sys.stderr)
+        return 2
+    except Exception as exc:  # pylint: disable=broad-exception-caught
+        print(
+            "Visual wrapper unavailable: display backend or Qt runtime failed "
+            f"({exc.__class__.__name__})",
+            file=sys.stderr,
+        )
         return 2
 
 

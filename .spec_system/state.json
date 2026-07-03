@@ -19,7 +19,8 @@
     "phase00-session03-subprocess-and-history-visibility",
     "phase00-session04-event-stream-boundary",
     "phase00-session05-docs-samples-and-runbooks",
-    "phase00-session06-linux-wrapper-spike"
+    "phase00-session06-linux-wrapper-spike",
+    "phase00-session07-linux-visual-wrapper-productization"
   ],
   "next_session_history": [
     {
@@ -110,6 +111,21 @@
     {
       "date": "2026-07-03",
       "session": "phase00-session06-linux-wrapper-spike",
+      "status": "completed"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session07-linux-visual-wrapper-productization",
+      "status": "planned"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session07-linux-visual-wrapper-productization",
+      "status": "validated"
+    },
+    {
+      "date": "2026-07-03",
+      "session": "phase00-session07-linux-visual-wrapper-productization",
       "status": "completed"
     }
   ]

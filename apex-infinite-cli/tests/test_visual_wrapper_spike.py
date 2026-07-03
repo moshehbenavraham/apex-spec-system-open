@@ -83,7 +83,7 @@ def test_event_state_adapter_bounds_log_and_maps_malformed_lines():
     adapter.ingest_line("{bad")
     snapshot = adapter.snapshot()
 
-    assert snapshot.status == "Input issue"
+    assert snapshot.status == "Malformed event"
     assert snapshot.has_error is True
     assert [entry.sequence for entry in snapshot.log] == [2, 3]
     assert snapshot.log[-1].event == "invalid_json"
@@ -383,7 +383,7 @@ def test_bridge_process_worker_drains_stderr_before_wait(monkeypatch, tmp_path):
 
     assert FakeApexCliProcess.instances[0].stderr_read_started.is_set()
     assert bridge.hasError is True
-    assert bridge.errorText == "return_1"
+    assert bridge.errorText == "Exit code 1"
 
 
 def test_bridge_operator_stop_suppresses_terminated_process_error(

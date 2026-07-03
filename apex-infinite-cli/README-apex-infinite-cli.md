@@ -67,7 +67,7 @@ For development, testing, and dependency audits:
 pip install -r requirements.txt -r requirements-dev.txt
 ```
 
-For the optional Linux visual wrapper prototype only:
+For the optional Linux visual wrapper source mode only:
 
 ```bash
 pip install -r requirements-wrapper.txt
@@ -298,12 +298,13 @@ full event contract and
 [machine-output-events.jsonl](../docs/apex-infinite-cli/transcripts/machine-output-events.jsonl)
 for a deterministic JSONL sample.
 
-## Visual Wrapper Prototype
+## Visual Wrapper Source Mode
 
-The optional Linux visual wrapper prototype is separate from the base terminal
-CLI. It uses PySide6 with Qt Quick/QML as an optional dependency and consumes
-the JSONL event stream through the guarded `--event-stream - --machine-output`
-boundary.
+The optional Linux visual wrapper is separate from the base terminal CLI. It
+uses PySide6 with Qt Quick/QML as an optional dependency and consumes the JSONL
+event stream through the guarded `--event-stream - --machine-output` boundary.
+Session 07 productizes source/dev visual mode only; binary publishing remains
+gated on release verification.
 
 Install the optional dependencies, then run the fixture-backed smoke path:
 
@@ -311,6 +312,19 @@ Install the optional dependencies, then run the fixture-backed smoke path:
 cd apex-infinite-cli
 pip install -r requirements-wrapper.txt
 python -m apex_infinite_visual.main --dry-run --max-iterations 1
+```
+
+The wrapper exposes green CRT, amber CRT, IBM DOS, and plain presets, effect
+intensity, font family, font scale, reduced effects, and plain fallback
+controls. The same settings can be passed on the command line:
+
+```bash
+python -m apex_infinite_visual.main \
+  --theme crt-amber \
+  --effect-intensity 55 \
+  --font-family "monospace" \
+  --font-scale 1.05 \
+  --plain-fallback
 ```
 
 For headless smoke checks:
@@ -333,12 +347,14 @@ python -m apex_infinite_visual.main \
 
 PyQt, qmltermwidget, QTermWidget, copied terminal emulators, copied QML, copied
 shaders, copied images, copied icons, copied fonts, copied resource manifests,
-copied build scripts, and copied profile data remain excluded. The prototype
+copied build scripts, and copied profile data remain excluded. The wrapper
 does not parse Rich panels, plain human output, terminal frames, or history
 display rows.
 
-See [Visual wrapper spike](../docs/apex-infinite-cli/visual-wrapper-spike.md)
-for the decision record and
+See [Visual wrapper productization](../docs/apex-infinite-cli/visual-wrapper-productization.md)
+for source-mode setup, packaging gates, license notes, checksums, and clean-room
+verification. See [Visual wrapper spike](../docs/apex-infinite-cli/visual-wrapper-spike.md)
+for the original decision record and
 [Visual wrapper boundary](../docs/apex-infinite-cli/visual-wrapper-boundary.md)
 for the clean-room no-copy rules.
 
@@ -361,6 +377,7 @@ Click option wiring, renderer semantics, and SQLite history safety.
 - [History DB reference](../docs/apex-infinite-cli/history-db.md)
 - [Prompt contract](../docs/apex-infinite-cli/prompt-contract.md)
 - [Troubleshooting guide](../docs/apex-infinite-cli/troubleshooting.md)
+- [Visual wrapper productization](../docs/apex-infinite-cli/visual-wrapper-productization.md)
 - [Visual wrapper spike](../docs/apex-infinite-cli/visual-wrapper-spike.md)
 - [Visual wrapper boundary](../docs/apex-infinite-cli/visual-wrapper-boundary.md)
 - [Transcript samples](../docs/apex-infinite-cli/transcripts/README.md)

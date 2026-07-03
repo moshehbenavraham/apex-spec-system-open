@@ -139,6 +139,32 @@ Confirmed constraints:
 - Productization must complete license, generated-bundle, AppImage, and Qt
   module review before publishing a binary.
 
+## Session 07 Productization Boundary
+
+Session 07 turns the prototype into source/dev visual mode only. It adds:
+
+- Python-owned settings for theme presets, effect intensity, font family, font
+  scale, reduced effects, and plain fallback.
+- Product-facing failure states for missing CLI, missing PySide6, display
+  backend failure, malformed JSONL, timeout, stderr, non-zero exit, invalid
+  project path, and operator stop.
+- Focused tests and offscreen smoke coverage for the optional wrapper lane.
+- A productization guide for source setup, smoke checks, packaging gates,
+  license notices, checksums, source/relink obligations, and clean-room
+  verification.
+
+Session 07 does not publish a binary, commit generated packaging output, move
+PySide6 into the base CLI requirements, or change the base workflow engine.
+
+Before binary release, Session 08 or a later release session must verify:
+
+- Qt for Python license path and required notices.
+- Generated bundle contents and Qt module set.
+- AppImage replacement/relink rights and source availability instructions.
+- SHA256 checksums for published artifacts.
+- Clean-room source, QML, asset, shader, font, profile, manifest, and build
+  boundaries.
+
 ## Exclusions
 
 Do not use PyQt unless a later explicit license decision changes the scope.
@@ -201,5 +227,6 @@ Before starting wrapper implementation:
 - [Event stream contract](event-stream.md)
 - [Operator runbook](operator-runbook.md)
 - [Troubleshooting guide](troubleshooting.md)
+- [Visual wrapper productization](visual-wrapper-productization.md)
 - [Visual wrapper spike](visual-wrapper-spike.md)
 - [Transcript samples](transcripts/README.md)

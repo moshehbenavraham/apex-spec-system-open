@@ -30,6 +30,8 @@ Start here before deeper debugging:
 | Output shows broken glyphs | Terminal encoding cannot render non-ASCII glyphs | Use `--ascii`, usually with `--plain` |
 | Output wraps too much | Terminal width or log viewer is narrow | Use `--compact` and inspect details with `--verbose` only when needed |
 | JSONL has terminal text mixed in | Human rendering and stdout events were mixed by a wrapper | Use `--event-stream - --machine-output` or write events to a file |
+| Visual wrapper shows `CLI missing` | The wrapper could not find the source-tree `apex_infinite.py` script | Run from `apex-infinite-cli/`, reinstall the source tree, or launch the base CLI directly |
+| Visual wrapper shows `Timed out` | The wrapped base CLI exceeded the wrapper process timeout | Re-run the base CLI command directly, reduce scope, or increase `--process-timeout-seconds` |
 
 ## Path And History Issues
 
@@ -240,7 +242,7 @@ What to do:
 - read [Visual wrapper boundary](visual-wrapper-boundary.md) before adding
   wrapper behavior
 
-## Visual Wrapper Prototype Issues
+## Visual Wrapper Source Mode Issues
 
 ### `Visual wrapper unavailable: PySide6 is not installed`
 
@@ -276,6 +278,19 @@ QT_QPA_PLATFORM=offscreen python -m apex_infinite_visual.main \
 If offscreen mode is not enough for local operation, use the base terminal CLI
 until the display backend is fixed.
 
+### Wrapper shows `CLI missing`
+
+Cause:
+
+- the wrapper cannot resolve the source-tree `apex_infinite.py` file
+- the wrapper is being launched from a moved or partial source checkout
+
+What to do:
+
+- run from the `apex-infinite-cli/` source directory
+- confirm `apex_infinite.py` exists next to `apex_infinite_visual/`
+- use the base terminal CLI until the source checkout is repaired
+
 ### Wrapper shows malformed event state
 
 Cause:
@@ -307,6 +322,38 @@ What to do:
   and `--machine-output`
 - fix the base CLI startup error first
 - use fixture-backed wrapper dry-run when provider credentials are unavailable
+
+### Wrapper shows timeout state
+
+Cause:
+
+- the wrapped base CLI exceeded `--process-timeout-seconds`
+- the underlying Codex or provider step is slow or waiting on an external
+  requirement
+
+What to do:
+
+- rerun the equivalent base CLI command directly with `--verbose`
+- narrow the target project task or use `--dry-run`
+- increase `--process-timeout-seconds` only when the longer wait is expected
+
+### AppImage or packaging review fails
+
+Cause:
+
+- generated bundle contents, Qt modules, notices, source/relink instructions,
+  or checksums have not been reviewed
+- `pyside6-deploy` or Nuitka generated files are unstable in the local
+  environment
+
+What to do:
+
+- do not publish the binary artifact
+- keep generated files out of the repo unless a release session scopes them
+- follow [Visual wrapper productization](visual-wrapper-productization.md)
+  for license notices, checksums, source/relink obligations, and clean-room
+  checks
+- use source visual mode until release verification passes
 
 ### Clean-room audit fails
 
@@ -379,6 +426,7 @@ Code changes are justified for:
 - [Event stream contract](event-stream.md)
 - [History DB reference](history-db.md)
 - [Prompt contract](prompt-contract.md)
+- [Visual wrapper productization](visual-wrapper-productization.md)
 - [Visual wrapper spike](visual-wrapper-spike.md)
 - [Visual wrapper boundary](visual-wrapper-boundary.md)
 - [Transcript samples](transcripts/README.md)

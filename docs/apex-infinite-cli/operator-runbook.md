@@ -124,7 +124,7 @@ combination so human output never mixes with JSONL on stdout. If a human should
 watch the run while automation observes it, write events to a file path instead
 of stdout.
 
-### Optional visual wrapper prototype
+### Optional visual wrapper source mode
 
 ```bash
 cd apex-infinite-cli
@@ -132,8 +132,25 @@ pip install -r requirements-wrapper.txt
 python -m apex_infinite_visual.main --dry-run --max-iterations 1
 ```
 
-Use this only for the Linux visual wrapper prototype. The base CLI install
+Use this only for the Linux visual wrapper source mode. The base CLI install
 remains `requirements.txt`; PySide6 and QML stay in the optional wrapper lane.
+Session 07 productizes source/dev operation; final AppImage or binary release
+verification is separate.
+
+Source-mode settings can be selected before launch:
+
+```bash
+cd apex-infinite-cli
+python -m apex_infinite_visual.main \
+  --theme crt-amber \
+  --effect-intensity 55 \
+  --font-family "monospace" \
+  --font-scale 1.05 \
+  --plain-fallback
+```
+
+The wrapper supports green CRT, amber CRT, IBM DOS, and plain presets, plus
+effect intensity, font family, font scale, reduced effects, and plain fallback.
 
 For a headless smoke check:
 
@@ -158,6 +175,8 @@ Fallback behavior:
   bounded instead of crashing.
 - If the subprocess writes stderr or exits non-zero, the wrapper maps that to a
   visible error state.
+- If the subprocess times out or the base CLI script is missing, the wrapper
+  maps that to `Timed out` or `CLI missing`.
 
 ### History inspection
 
@@ -259,7 +278,10 @@ For an existing project:
   verbose history display semantics.
 - [Machine-output JSONL sample](transcripts/machine-output-events.jsonl) shows
   the stdout JSONL shape for wrappers and automation.
-- [Visual wrapper spike](visual-wrapper-spike.md) records the wrapper prototype
+- [Visual wrapper productization](visual-wrapper-productization.md) records
+  source-mode setup, settings, packaging gates, checksums, license notes, and
+  clean-room verification.
+- [Visual wrapper spike](visual-wrapper-spike.md) records the original wrapper
   decision, license notes, packaging risks, and backup path.
 
 ## Related Docs
@@ -268,6 +290,7 @@ For an existing project:
 - [Event stream contract](event-stream.md)
 - [Prompt contract](prompt-contract.md)
 - [Troubleshooting guide](troubleshooting.md)
+- [Visual wrapper productization](visual-wrapper-productization.md)
 - [Visual wrapper spike](visual-wrapper-spike.md)
 - [Visual wrapper boundary](visual-wrapper-boundary.md)
 - [Transcript samples](transcripts/README.md)
