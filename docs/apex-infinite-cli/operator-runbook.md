@@ -56,6 +56,28 @@ python apex_infinite.py --path ~/projects/my-app/ --start plansession --dry-run
 Use this before changing providers, models, or Codex flags. It exercises the
 manager loop and prints the exact `codex exec` command without launching Codex.
 
+### Event stream file
+
+```bash
+cd apex-infinite-cli
+python apex_infinite.py --path ~/projects/my-app/ --event-stream /tmp/apex-events.jsonl
+```
+
+Use this when another process should observe lifecycle facts while a human
+operator still sees the normal CLI surface. The file is JSONL and is flushed
+after every event.
+
+### Machine-output JSONL
+
+```bash
+cd apex-infinite-cli
+python apex_infinite.py --path ~/projects/my-app/ --event-stream - --machine-output
+```
+
+Use this for wrappers or automation that read stdout. In this mode stdout is
+reserved for JSONL events. Human rendering, terminal bell, and desktop
+notifications are disabled.
+
 ### History inspection
 
 ```bash
@@ -137,6 +159,7 @@ For an existing project:
 | `[TIMEOUT]` | `codex exec` exceeded the timeout | Narrow scope or inspect the underlying command |
 | `[ERROR exit code N]` | Codex exited non-zero | Read stderr in the logged response |
 | `LLM call failed after 3 attempts` | Provider call exhausted retries | Check API key, base URL, model, or connectivity |
+| `event_stream_error` | Machine-readable event stream failure | Inspect the source event and retry with a writable path |
 
 ## Safe Shutdown
 
@@ -147,5 +170,6 @@ For an existing project:
 ## Related Docs
 
 - [History DB reference](history-db.md)
+- [Event stream contract](event-stream.md)
 - [Prompt contract](prompt-contract.md)
 - [Troubleshooting guide](troubleshooting.md)

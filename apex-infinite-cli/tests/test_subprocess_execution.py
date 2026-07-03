@@ -28,6 +28,22 @@ class CapturingRenderer:
         self.responses.append((output, verbose))
 
 
+class RecordingEmitter:
+    """Capture event emissions made by execute_codex()."""
+
+    enabled = True
+
+    def __init__(self):
+        self.events = []
+
+    def emit(self, name, payload=None):
+        self.events.append((name, dict(payload or {})))
+
+    @property
+    def names(self):
+        return [name for name, _payload in self.events]
+
+
 def set_process_result(monkeypatch, stdout="", stderr="", returncode=0):
     """Patch the active process boundary for success/failure tests."""
     captured = {}
@@ -118,6 +134,28 @@ def test_execute_codex_dry_run_returns_existing_command_text(monkeypatch, tmp_pa
     assert renderer.commands[0][1].timeout == apex_infinite.COMMAND_TIMEOUT
 
 
+def test_execute_codex_dry_run_emits_events(monkeypatch, tmp_path):
+    def fail_if_called(*_args, **_kwargs):
+        raise AssertionError("dry-run must not launch a subprocess")
+
+    monkeypatch.setattr(apex_infinite, "run_codex_process", fail_if_called)
+    emitter = RecordingEmitter()
+
+    output = apex_infinite.execute_codex(
+        str(tmp_path),
+        "Run the apex-spec skill command /implement",
+        AGENT_CFG,
+        dry_run=True,
+        event_emitter=emitter,
+    )
+
+    assert output == "[DRY RUN] Command: Run the apex-spec skill command /implement"
+    assert emitter.names == ["codex_dry_run", "response_summarized"]
+    assert emitter.events[0][1]["prompt_length"] == len(
+        "Run the apex-spec skill command /implement"
+    )
+
+
 def test_execute_codex_returns_stdout_and_renders_summary(monkeypatch, tmp_path):
     captured = set_process_result(monkeypatch, stdout="agent output\n")
     renderer = CapturingRenderer()
@@ -140,6 +178,28 @@ def test_execute_codex_returns_stdout_and_renders_summary(monkeypatch, tmp_path)
     assert captured["timeout"] == apex_infinite.COMMAND_TIMEOUT
     assert renderer.commands[0][0] == "start"
     assert renderer.responses == [("agent output\n", False)]
+
+
+def test_execute_codex_success_emits_start_finish_and_summary(monkeypatch, tmp_path):
+    set_process_result(monkeypatch, stdout="agent output\n")
+    emitter = RecordingEmitter()
+
+    output = apex_infinite.execute_codex(
+        str(tmp_path),
+        "prompt",
+        AGENT_CFG,
+        event_emitter=emitter,
+    )
+
+    assert output == "agent output\n"
+    assert emitter.names == [
+        "codex_started",
+        "codex_finished",
+        "response_summarized",
+    ]
+    assert emitter.events[0][1]["binary"] == "codex"
+    assert emitter.events[1][1]["return_code"] == 0
+    assert emitter.events[2][1]["has_output"] is True
 
 
 def test_execute_codex_renders_running_and_completed_process_state(
@@ -196,6 +256,34 @@ def test_execute_codex_wraps_non_zero_exit(monkeypatch, tmp_path):
     assert any(state == "non-zero" for state, _snapshot in renderer.commands)
 
 
+def test_execute_codex_non_zero_emits_error_and_preserves_text(monkeypatch, tmp_path):
+    set_process_result(
+        monkeypatch,
+        stdout="partial stdout",
+        stderr="failure stderr",
+        returncode=7,
+    )
+    emitter = RecordingEmitter()
+
+    output = apex_infinite.execute_codex(
+        str(tmp_path),
+        "prompt",
+        AGENT_CFG,
+        event_emitter=emitter,
+    )
+
+    assert output == (
+        "[ERROR exit code 7]\n" "stdout: partial stdout\n" "stderr: failure stderr"
+    )
+    assert emitter.names == [
+        "codex_started",
+        "codex_error",
+        "response_summarized",
+    ]
+    assert emitter.events[1][1]["error_type"] == "non_zero_exit"
+    assert emitter.events[1][1]["return_code"] == 7
+
+
 def test_execute_codex_timeout_text_is_stable(monkeypatch, tmp_path):
     renderer = CapturingRenderer()
     set_process_error(
@@ -216,6 +304,31 @@ def test_execute_codex_timeout_text_is_stable(monkeypatch, tmp_path):
     assert any(state == "timeout" for state, _snapshot in renderer.commands)
 
 
+def test_execute_codex_timeout_emits_timeout_event(monkeypatch, tmp_path):
+    set_process_error(
+        monkeypatch,
+        subprocess.TimeoutExpired(["codex", "exec"], apex_infinite.COMMAND_TIMEOUT),
+    )
+    emitter = RecordingEmitter()
+
+    output = apex_infinite.execute_codex(
+        str(tmp_path),
+        "prompt",
+        AGENT_CFG,
+        event_emitter=emitter,
+    )
+
+    assert output == (
+        f"[TIMEOUT] Codex command timed out after {apex_infinite.COMMAND_TIMEOUT}s"
+    )
+    assert emitter.names == [
+        "codex_started",
+        "codex_timeout",
+        "response_summarized",
+    ]
+    assert emitter.events[1][1]["timeout_seconds"] == apex_infinite.COMMAND_TIMEOUT
+
+
 def test_execute_codex_missing_binary_text_is_stable(monkeypatch, tmp_path):
     renderer = CapturingRenderer()
     set_process_error(monkeypatch, FileNotFoundError())
@@ -231,6 +344,26 @@ def test_execute_codex_missing_binary_text_is_stable(monkeypatch, tmp_path):
     assert any(state == "missing" for state, _snapshot in renderer.commands)
 
 
+def test_execute_codex_missing_binary_emits_error_event(monkeypatch, tmp_path):
+    set_process_error(monkeypatch, FileNotFoundError())
+    emitter = RecordingEmitter()
+
+    output = apex_infinite.execute_codex(
+        str(tmp_path),
+        "prompt",
+        AGENT_CFG,
+        event_emitter=emitter,
+    )
+
+    assert output == "[ERROR] 'codex' command not found. Is Codex CLI installed?"
+    assert emitter.names == [
+        "codex_started",
+        "codex_error",
+        "response_summarized",
+    ]
+    assert emitter.events[1][1]["error_type"] == "missing_binary"
+
+
 def test_execute_codex_generic_exception_text_is_stable(monkeypatch, tmp_path):
     renderer = CapturingRenderer()
     set_process_error(monkeypatch, RuntimeError("boom"))
@@ -244,6 +377,26 @@ def test_execute_codex_generic_exception_text_is_stable(monkeypatch, tmp_path):
 
     assert output == "[ERROR] Failed to execute codex: boom"
     assert any(state == "error" for state, _snapshot in renderer.commands)
+
+
+def test_execute_codex_generic_exception_emits_error_event(monkeypatch, tmp_path):
+    set_process_error(monkeypatch, RuntimeError("boom"))
+    emitter = RecordingEmitter()
+
+    output = apex_infinite.execute_codex(
+        str(tmp_path),
+        "prompt",
+        AGENT_CFG,
+        event_emitter=emitter,
+    )
+
+    assert output == "[ERROR] Failed to execute codex: boom"
+    assert emitter.names == [
+        "codex_started",
+        "codex_error",
+        "response_summarized",
+    ]
+    assert emitter.events[1][1]["error_type"] == "RuntimeError"
 
 
 def test_execute_codex_verbose_flag_reaches_response_renderer(monkeypatch, tmp_path):

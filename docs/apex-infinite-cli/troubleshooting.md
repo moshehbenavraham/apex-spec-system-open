@@ -23,6 +23,9 @@ Start here before deeper debugging:
 | `[TIMEOUT] Codex command timed out after 1800s` | The underlying Codex step ran too long | Narrow the task, inspect the project state, or re-run with clearer CEO guidance |
 | `LLM call failed after 3 attempts` | Provider outage, bad API key, wrong base URL, or bad model name | Check `.env`, `config.yaml`, connectivity, and provider status |
 | `Could not parse LLM response as JSON, using raw output` | Manager returned malformed JSON | Review the raw output in history and decide whether the manager prompt needs tightening |
+| `--event-stream - requires --machine-output` | Stdout JSONL was requested while human output was still enabled | Add `--machine-output` or write events to a file path |
+| `--machine-output requires --event-stream` | Machine-output mode has no JSONL destination | Pass `--event-stream -` or a file path |
+| `Event stream error: ...` | The event path is not writable or a payload failed validation | Use a writable path and inspect recent changes for unsafe event payload values |
 
 ## Path And History Issues
 
@@ -97,11 +100,54 @@ What to do:
 Cause:
 
 - `notify-send` is optional and Linux-specific
+- notifications are intentionally disabled in `--machine-output` mode
 
 What to do:
 
 - nothing, unless you rely on desktop notifications
 - the terminal bell still fires
+- in machine-output mode, consume the JSONL stop/help/error events instead
+
+## Event Stream Issues
+
+### JSONL output contains human text
+
+Cause:
+
+- `--event-stream -` was not used with `--machine-output`
+- another wrapper or shell script is writing to stdout around the CLI
+
+What to do:
+
+- run `python apex_infinite.py --event-stream - --machine-output ...`
+- if you need human output too, write events to a file path instead of stdout
+
+### Event file is empty
+
+Cause:
+
+- the process failed before startup events were written
+- the path points somewhere different than expected
+- the process could not write the file
+
+What to do:
+
+- retry with an absolute path under `/tmp`
+- check the terminal for an `Event Stream` error
+- verify parent directory permissions
+
+### Wrapper sees malformed events
+
+Cause:
+
+- the wrapper is reading partial lines
+- the wrapper is parsing human output instead of JSONL
+
+What to do:
+
+- read one full line at a time
+- parse only the JSONL stream from `--event-stream` or the importable event API
+- ignore Rich output and history display rows
 
 ## Config Issues
 
@@ -155,5 +201,6 @@ Code changes are justified for:
 ## Related Docs
 
 - [Operator runbook](operator-runbook.md)
+- [Event stream contract](event-stream.md)
 - [History DB reference](history-db.md)
 - [Prompt contract](prompt-contract.md)

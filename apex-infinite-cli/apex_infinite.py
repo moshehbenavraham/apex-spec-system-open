@@ -25,11 +25,18 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
+from apex_infinite_events import (
+    EventStreamError,
+    NoOpEventEmitter,
+    open_event_stream,
+    summarize_text,
+)
 from apex_infinite_ui import (
     ApexRenderer,
     CodexCommandSnapshot,
     DbLogSnapshot,
     IterationSnapshot,
+    NoHumanOutputRenderer,
     StartupSnapshot,
     UiCliOverrides,
     UiConfigError,
@@ -71,6 +78,66 @@ LLM_RETRY_WAIT = 5  # seconds (matches n8n waitBetweenTries: 5000)
 
 console = Console()
 _ACTIVE_RENDERER = None
+_ACTIVE_EVENT_EMITTER = None
+_MACHINE_OUTPUT_ACTIVE = False
+
+
+class CliStartupError(RuntimeError):
+    """Raised for startup failures that need CLI-aware reporting."""
+
+
+def _emit_event(
+    event_emitter,
+    name,
+    payload=None,
+    renderer=None,
+    machine_output=False,
+):
+    """Emit an event without letting event failures alter workflow state."""
+    if not event_emitter or not getattr(event_emitter, "enabled", False):
+        return
+    try:
+        event_emitter.emit(name, payload or {})
+    except EventStreamError as exc:
+        if name != "event_stream_error" and machine_output:
+            try:
+                event_emitter.emit(
+                    "event_stream_error",
+                    {
+                        "source_event": name,
+                        "error_type": exc.__class__.__name__,
+                        "message": str(exc),
+                    },
+                )
+            except EventStreamError:
+                return
+        if renderer and not machine_output:
+            renderer.print_error(f"Event stream error: {exc}", "Event Stream")
+        elif not machine_output:
+            console.print(f"[red]Event stream error: {exc}[/red]")
+
+
+def _exit_with_startup_error(
+    message,
+    event_emitter=None,
+    machine_output=False,
+    renderer=None,
+    title="Startup",
+):
+    """Report a startup failure without contaminating machine-output stdout."""
+    _emit_event(
+        event_emitter,
+        "error",
+        {"stage": title.lower().replace(" ", "_"), "message": message},
+        renderer=renderer,
+        machine_output=machine_output,
+    )
+    if not machine_output:
+        if renderer:
+            renderer.print_error(message, title)
+        else:
+            console.print(f"[red]{message}[/red]")
+    sys.exit(1)
 
 
 @dataclass(frozen=True)
@@ -501,12 +568,26 @@ _INTERRUPTED = False
 def _handle_sigint(_sig, _frame):
     global _INTERRUPTED  # pylint: disable=global-statement
     if _INTERRUPTED:
+        _emit_event(
+            _ACTIVE_EVENT_EMITTER,
+            "operator_interrupt_quit",
+            {"state": "force-quit"},
+            renderer=_ACTIVE_RENDERER,
+            machine_output=_MACHINE_OUTPUT_ACTIVE,
+        )
         if _ACTIVE_RENDERER:
             _ACTIVE_RENDERER.print_interrupt("force-quit", "Force quit.")
         else:
             console.print("\n[bold red]Force quit.[/bold red]")
         sys.exit(1)
     _INTERRUPTED = True
+    _emit_event(
+        _ACTIVE_EVENT_EMITTER,
+        "operator_interrupt_requested",
+        {"state": "requested"},
+        renderer=_ACTIVE_RENDERER,
+        machine_output=_MACHINE_OUTPUT_ACTIVE,
+    )
     if _ACTIVE_RENDERER:
         _ACTIVE_RENDERER.print_interrupt("requested", "Will pause after current step.")
     else:
@@ -526,8 +607,7 @@ def load_config(config_path, provider_override=None, model_override=None):
     """Load YAML config, apply overrides, expand env vars in api_key."""
     path = Path(config_path)
     if not path.exists():
-        console.print(f"[red]Config file not found: {config_path}[/red]")
-        sys.exit(1)
+        raise CliStartupError(f"Config file not found: {config_path}")
 
     with open(path, encoding="utf-8") as f:
         config = yaml.safe_load(f)
@@ -537,8 +617,7 @@ def load_config(config_path, provider_override=None, model_override=None):
 
     provider_name = config["provider"]
     if provider_name not in config["providers"]:
-        console.print(f"[red]Unknown provider: {provider_name}[/red]")
-        sys.exit(1)
+        raise CliStartupError(f"Unknown provider: {provider_name}")
 
     # Load .env from same directory as config file
     load_dotenv(path.parent / ".env")
@@ -855,13 +934,21 @@ def build_codex_prompt(output_cmd, raw_output):
     return raw_output
 
 
-def execute_codex(  # pylint: disable=too-many-positional-arguments,too-many-branches,too-many-statements
-    path, prompt, agent_cfg, dry_run=False, verbose=False, renderer=None
+def execute_codex(  # pylint: disable=too-many-positional-arguments,too-many-branches,too-many-statements,too-many-locals
+    path,
+    prompt,
+    agent_cfg,
+    dry_run=False,
+    verbose=False,
+    renderer=None,
+    event_emitter=None,
+    machine_output=False,
 ):
     """Run codex exec subprocess in project directory. Returns stdout."""
     expanded_path = os.path.expanduser(path)
     binary = agent_cfg["binary"]
     exec_flags = agent_cfg["exec_flags"]
+    emitter = event_emitter or NoOpEventEmitter()
 
     def build_command_snapshot(
         snapshot_prompt,
@@ -881,6 +968,18 @@ def execute_codex(  # pylint: disable=too-many-positional-arguments,too-many-bra
         )
 
     if dry_run:
+        _emit_event(
+            emitter,
+            "codex_dry_run",
+            {
+                "binary": binary,
+                "project_path": expanded_path,
+                "prompt_length": len(prompt),
+                "timeout_seconds": COMMAND_TIMEOUT,
+            },
+            renderer=renderer,
+            machine_output=machine_output,
+        )
         if renderer:
             renderer.print_codex_command(
                 "dry-run",
@@ -889,7 +988,15 @@ def execute_codex(  # pylint: disable=too-many-positional-arguments,too-many-bra
         else:
             console.print(f"  [dim][DRY RUN] Would execute in {expanded_path}:[/dim]")
             console.print(f'  [dim]{binary} exec {exec_flags} "{prompt}"[/dim]')
-        return f"[DRY RUN] Command: {prompt}"
+        output = f"[DRY RUN] Command: {prompt}"
+        _emit_event(
+            emitter,
+            "response_summarized",
+            {"source": "codex_dry_run", **summarize_text(output, limit=0)},
+            renderer=renderer,
+            machine_output=machine_output,
+        )
+        return output
 
     if renderer:
         renderer.print_codex_command(
@@ -907,6 +1014,18 @@ def execute_codex(  # pylint: disable=too-many-positional-arguments,too-many-bra
         )
 
     started_at = time.monotonic()
+    _emit_event(
+        emitter,
+        "codex_started",
+        {
+            "binary": binary,
+            "project_path": expanded_path,
+            "prompt_length": len(prompt),
+            "timeout_seconds": COMMAND_TIMEOUT,
+        },
+        renderer=renderer,
+        machine_output=machine_output,
+    )
     try:
         cmd = [binary, "exec", *exec_flags.split(), prompt]
 
@@ -920,6 +1039,19 @@ def execute_codex(  # pylint: disable=too-many-positional-arguments,too-many-bra
         if result.returncode != 0:
             error_msg = result.stderr or "Unknown error"
             output = f"[ERROR exit code {result.returncode}]\nstdout: {result.stdout}\nstderr: {error_msg}"
+            _emit_event(
+                emitter,
+                "codex_error",
+                {
+                    "error_type": "non_zero_exit",
+                    "return_code": result.returncode,
+                    "elapsed_seconds": elapsed_seconds,
+                    "stdout_length": len(result.stdout or ""),
+                    "stderr_length": len(result.stderr or ""),
+                },
+                renderer=renderer,
+                machine_output=machine_output,
+            )
             if renderer:
                 renderer.print_codex_command(
                     "non-zero",
@@ -934,18 +1066,31 @@ def execute_codex(  # pylint: disable=too-many-positional-arguments,too-many-bra
                 console.print(
                     f"  [red]Codex exited with code {result.returncode}[/red]"
                 )
-        elif renderer:
-            renderer.print_codex_command(
-                "complete",
-                build_command_snapshot(
-                    prompt,
-                    return_code=result.returncode,
-                    process_state="completed",
-                    elapsed_seconds=elapsed_seconds,
-                ),
-            )
         else:
-            console.print(f"  [dim]Codex completed in {elapsed_seconds:.1f}s[/dim]")
+            _emit_event(
+                emitter,
+                "codex_finished",
+                {
+                    "return_code": result.returncode,
+                    "elapsed_seconds": elapsed_seconds,
+                    "stdout_length": len(result.stdout or ""),
+                    "stderr_length": len(result.stderr or ""),
+                },
+                renderer=renderer,
+                machine_output=machine_output,
+            )
+            if renderer:
+                renderer.print_codex_command(
+                    "complete",
+                    build_command_snapshot(
+                        prompt,
+                        return_code=result.returncode,
+                        process_state="completed",
+                        elapsed_seconds=elapsed_seconds,
+                    ),
+                )
+            else:
+                console.print(f"  [dim]Codex completed in {elapsed_seconds:.1f}s[/dim]")
 
         if renderer:
             renderer.print_agent_response(output, verbose=verbose)
@@ -961,11 +1106,28 @@ def execute_codex(  # pylint: disable=too-many-positional-arguments,too-many-bra
                 )
             console.print(Panel(truncated, title="Agent Response", border_style="blue"))
 
+        _emit_event(
+            emitter,
+            "response_summarized",
+            {"source": "codex", **summarize_text(output, limit=0)},
+            renderer=renderer,
+            machine_output=machine_output,
+        )
         return output
 
     except subprocess.TimeoutExpired:
         msg = f"[TIMEOUT] Codex command timed out after {COMMAND_TIMEOUT}s"
         elapsed_seconds = time.monotonic() - started_at
+        _emit_event(
+            emitter,
+            "codex_timeout",
+            {
+                "elapsed_seconds": elapsed_seconds,
+                "timeout_seconds": COMMAND_TIMEOUT,
+            },
+            renderer=renderer,
+            machine_output=machine_output,
+        )
         if renderer:
             renderer.print_codex_command(
                 "timeout",
@@ -977,10 +1139,28 @@ def execute_codex(  # pylint: disable=too-many-positional-arguments,too-many-bra
             )
         else:
             console.print(f"  [red]{msg}[/red]")
+        _emit_event(
+            emitter,
+            "response_summarized",
+            {"source": "codex_timeout", **summarize_text(msg, limit=0)},
+            renderer=renderer,
+            machine_output=machine_output,
+        )
         return msg
     except FileNotFoundError:
         msg = f"[ERROR] '{binary}' command not found. Is Codex CLI installed?"
         elapsed_seconds = time.monotonic() - started_at
+        _emit_event(
+            emitter,
+            "codex_error",
+            {
+                "error_type": "missing_binary",
+                "elapsed_seconds": elapsed_seconds,
+                "binary": binary,
+            },
+            renderer=renderer,
+            machine_output=machine_output,
+        )
         if renderer:
             renderer.print_codex_command(
                 "missing",
@@ -992,10 +1172,28 @@ def execute_codex(  # pylint: disable=too-many-positional-arguments,too-many-bra
             )
         else:
             console.print(f"  [red]{msg}[/red]")
+        _emit_event(
+            emitter,
+            "response_summarized",
+            {"source": "codex_missing", **summarize_text(msg, limit=0)},
+            renderer=renderer,
+            machine_output=machine_output,
+        )
         return msg
     except Exception as e:  # pylint: disable=broad-exception-caught
         msg = f"[ERROR] Failed to execute {binary}: {e}"
         elapsed_seconds = time.monotonic() - started_at
+        _emit_event(
+            emitter,
+            "codex_error",
+            {
+                "error_type": e.__class__.__name__,
+                "elapsed_seconds": elapsed_seconds,
+                "binary": binary,
+            },
+            renderer=renderer,
+            machine_output=machine_output,
+        )
         if renderer:
             renderer.print_codex_command(
                 "error",
@@ -1007,6 +1205,13 @@ def execute_codex(  # pylint: disable=too-many-positional-arguments,too-many-bra
             )
         else:
             console.print(f"  [red]{msg}[/red]")
+        _emit_event(
+            emitter,
+            "response_summarized",
+            {"source": "codex_error", **summarize_text(msg, limit=0)},
+            renderer=renderer,
+            machine_output=machine_output,
+        )
         return msg
 
 
@@ -1038,7 +1243,7 @@ def notify(title, message):
 # ---------------------------------------------------------------------------
 
 
-def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-statements,too-many-locals,too-many-branches
+def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-arguments,too-many-statements,too-many-locals,too-many-branches
     path,
     config,
     start_command=None,
@@ -1047,10 +1252,14 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
     dry_run=False,
     verbose=False,
     renderer=None,
+    event_emitter=None,
+    machine_output=False,
+    notifications_enabled=True,
 ):
     """The main autonomous loop replacing n8n webhook->LLM->SSH->webhook cycle."""
     global _INTERRUPTED  # pylint: disable=global-statement
 
+    emitter = event_emitter or NoOpEventEmitter()
     client, model = get_llm_client(config)
     agent_cfg = get_agent_config(config)
     agent_response = ""
@@ -1064,25 +1273,73 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
         # Check interrupt flag
         if _INTERRUPTED:
             _INTERRUPTED = False
+            _emit_event(
+                emitter,
+                "operator_interrupt_requested",
+                {"state": "pause", "iteration": iteration},
+                renderer=renderer,
+                machine_output=machine_output,
+            )
             if renderer:
                 renderer.print_interrupt("pause", "CEO interrupt - input requested.")
             else:
                 console.print("\n[bold yellow]--- CEO INTERRUPT ---[/bold yellow]")
-            notify("Apex Infinite", "CEO interrupt - input requested")
+            if notifications_enabled:
+                notify("Apex Infinite", "CEO interrupt - input requested")
             ceo_input = console.input(
                 renderer.input_prompt("CEO instructions (or 'quit')")
                 if renderer
                 else "[bold]CEO instructions (or 'quit'): [/bold]"
             )
             if ceo_input.strip().lower() == "quit":
+                _emit_event(
+                    emitter,
+                    "operator_input_received",
+                    {"context": "interrupt", "action": "quit"},
+                    renderer=renderer,
+                    machine_output=machine_output,
+                )
                 if renderer:
                     renderer.print_interrupt("quit", "Quitting by CEO request.")
                 else:
                     console.print("[bold red]Quitting by CEO request.[/bold red]")
+                _emit_event(
+                    emitter,
+                    "run_stopped",
+                    {"reason": "operator_quit", "iteration": iteration},
+                    renderer=renderer,
+                    machine_output=machine_output,
+                )
                 break
+            _emit_event(
+                emitter,
+                "operator_input_received",
+                {
+                    "context": "interrupt",
+                    "action": "continue",
+                    "input_length": len(ceo_input),
+                },
+                renderer=renderer,
+                machine_output=machine_output,
+            )
             ceo_msg = ceo_input
 
         # Banner
+        provider_name = config["provider"]
+        _emit_event(
+            emitter,
+            "iteration_started",
+            {
+                "project_path": path,
+                "provider_name": provider_name,
+                "model_name": config["providers"][provider_name]["model"],
+                "iteration": iteration,
+                "operation": "history summary",
+                "dry_run": dry_run,
+            },
+            renderer=renderer,
+            machine_output=machine_output,
+        )
         if renderer:
             renderer.print_iteration(
                 build_iteration_snapshot(
@@ -1101,6 +1358,17 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
 
         # 1. Fetch + summarize history
         records = db_fetch_history(path, limit=15)
+        _emit_event(
+            emitter,
+            "history_fetched",
+            {
+                "project_path": path,
+                "iteration": iteration,
+                "record_count": len(records),
+            },
+            renderer=renderer,
+            machine_output=machine_output,
+        )
         if renderer:
             renderer.print_status(
                 f"Summarizing history from {len(records)} prior records.",
@@ -1108,9 +1376,51 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
             )
         else:
             console.print(f"  Summarizing history... ({len(records)} prior records)")
-        summary = llm_summarize(client, model, records, renderer=renderer)
+        _emit_event(
+            emitter,
+            "history_summarize_started",
+            {"iteration": iteration, "record_count": len(records)},
+            renderer=renderer,
+            machine_output=machine_output,
+        )
+        try:
+            summary = llm_summarize(client, model, records, renderer=renderer)
+        except Exception as exc:
+            _emit_event(
+                emitter,
+                "error",
+                {
+                    "stage": "history_summary",
+                    "iteration": iteration,
+                    "error_type": exc.__class__.__name__,
+                },
+                renderer=renderer,
+                machine_output=machine_output,
+            )
+            raise
+        _emit_event(
+            emitter,
+            "history_summarize_finished",
+            {"iteration": iteration, "summary_length": len(summary or "")},
+            renderer=renderer,
+            machine_output=machine_output,
+        )
 
         # 2. Manager LLM decides next action
+        _emit_event(
+            emitter,
+            "manager_decision_started",
+            {
+                "iteration": iteration,
+                "source": (
+                    "start_command"
+                    if start_command and iteration == 1
+                    else "manager_llm"
+                ),
+            },
+            renderer=renderer,
+            machine_output=machine_output,
+        )
         if start_command and iteration == 1:
             decision = {
                 "output": start_command,
@@ -1121,9 +1431,23 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
                 renderer.print_status("Manager deciding next action.", "Manager")
             else:
                 console.print("  Manager deciding next action...")
-            decision = llm_manager_decide(
-                client, model, agent_response, ceo_msg, summary, renderer=renderer
-            )
+            try:
+                decision = llm_manager_decide(
+                    client, model, agent_response, ceo_msg, summary, renderer=renderer
+                )
+            except Exception as exc:
+                _emit_event(
+                    emitter,
+                    "error",
+                    {
+                        "stage": "manager_decision",
+                        "iteration": iteration,
+                        "error_type": exc.__class__.__name__,
+                    },
+                    renderer=renderer,
+                    machine_output=machine_output,
+                )
+                raise
 
         output_val = decision.get("output", "").strip()
         reason_val = decision.get("reason", "")
@@ -1131,6 +1455,18 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
         # 3. Route on decision
         # Strip leading slash - LLM sometimes outputs "/plansession" instead of "plansession"
         output_lower = output_val.lower().lstrip("/")
+        _emit_event(
+            emitter,
+            "manager_decision_finished",
+            {
+                "iteration": iteration,
+                "output": output_val,
+                "reason": reason_val,
+                "known_command": output_lower in KNOWN_COMMANDS,
+            },
+            renderer=renderer,
+            machine_output=machine_output,
+        )
         if renderer:
             renderer.print_manager_decision(
                 output_val, reason_val, output_lower in KNOWN_COMMANDS
@@ -1147,13 +1483,43 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
                     "\n[bold yellow]*** MANAGER NEEDS CEO HELP ***[/bold yellow]"
                 )
                 console.print(f"[yellow]Reason: {reason_val}[/yellow]")
-            notify("Apex Infinite - HELP", reason_val)
+            _emit_event(
+                emitter,
+                "help_requested",
+                {"iteration": iteration, "reason": reason_val},
+                renderer=renderer,
+                machine_output=machine_output,
+            )
+            if notifications_enabled:
+                notify("Apex Infinite - HELP", reason_val)
+            _emit_event(
+                emitter,
+                "db_log_started",
+                {
+                    "project_path": path,
+                    "iteration": iteration,
+                    "stored_state": "help pause",
+                },
+                renderer=renderer,
+                machine_output=machine_output,
+            )
             db_log(
                 path,
                 agent_response,
                 output_val,
                 reason_val,
                 help_or_done_msg=reason_val,
+            )
+            _emit_event(
+                emitter,
+                "db_log_finished",
+                {
+                    "project_path": path,
+                    "iteration": iteration,
+                    "stored_state": "help pause",
+                },
+                renderer=renderer,
+                machine_output=machine_output,
             )
             if renderer:
                 renderer.print_db_log(
@@ -1165,17 +1531,64 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
                 else "[bold]CEO response (or 'quit'): [/bold]"
             )
             if ceo_input.strip().lower() == "quit":
+                _emit_event(
+                    emitter,
+                    "operator_input_received",
+                    {"context": "help", "action": "quit"},
+                    renderer=renderer,
+                    machine_output=machine_output,
+                )
+                _emit_event(
+                    emitter,
+                    "run_stopped",
+                    {"reason": "operator_quit", "iteration": iteration},
+                    renderer=renderer,
+                    machine_output=machine_output,
+                )
                 break
+            _emit_event(
+                emitter,
+                "operator_input_received",
+                {
+                    "context": "help",
+                    "action": "continue",
+                    "input_length": len(ceo_input),
+                },
+                renderer=renderer,
+                machine_output=machine_output,
+            )
             ceo_msg = ceo_input
             continue
 
         if output_lower == "alldonebaby":
+            _emit_event(
+                emitter,
+                "workflow_completed",
+                {
+                    "iteration": iteration,
+                    "reason": reason_val,
+                },
+                renderer=renderer,
+                machine_output=machine_output,
+            )
             if renderer:
                 renderer.print_completion(reason_val, iteration)
             else:
                 console.print("\n[bold green]*** PROJECT COMPLETE! ***[/bold green]")
                 console.print(f"[green]Reason: {reason_val}[/green]")
-            notify("Apex Infinite - ALL DONE!", "Project complete!")
+            if notifications_enabled:
+                notify("Apex Infinite - ALL DONE!", "Project complete!")
+            _emit_event(
+                emitter,
+                "db_log_started",
+                {
+                    "project_path": path,
+                    "iteration": iteration,
+                    "stored_state": "completion",
+                },
+                renderer=renderer,
+                machine_output=machine_output,
+            )
             db_log(
                 path,
                 agent_response,
@@ -1183,27 +1596,93 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
                 reason_val,
                 help_or_done_msg="ALL DONE BABY!",
             )
+            _emit_event(
+                emitter,
+                "db_log_finished",
+                {
+                    "project_path": path,
+                    "iteration": iteration,
+                    "stored_state": "completion",
+                },
+                renderer=renderer,
+                machine_output=machine_output,
+            )
             if renderer:
                 renderer.print_db_log(
                     build_db_log_snapshot(path, output_val, "completion")
                 )
             if not renderer:
                 console.print(f"\n[bold]Total iterations: {iteration}[/bold]")
+            _emit_event(
+                emitter,
+                "run_stopped",
+                {"reason": "workflow_completed", "iteration": iteration},
+                renderer=renderer,
+                machine_output=machine_output,
+            )
             break
 
         # 4. Build prompt and execute codex
         prompt = build_codex_prompt(output_lower, output_val)
+        _emit_event(
+            emitter,
+            "prompt_built",
+            {
+                "iteration": iteration,
+                "manager_output": output_val,
+                "known_command": output_lower in KNOWN_COMMANDS,
+                "prompt_length": len(prompt),
+            },
+            renderer=renderer,
+            machine_output=machine_output,
+        )
         if renderer:
             renderer.print_prompt_preview(prompt)
         else:
             console.print(f"  [dim]Prompt: {prompt[:100]}...[/dim]")
 
+        _emit_event(
+            emitter,
+            "prompt_dispatched",
+            {"iteration": iteration, "prompt_length": len(prompt)},
+            renderer=renderer,
+            machine_output=machine_output,
+        )
         agent_response = execute_codex(
-            path, prompt, agent_cfg, dry_run=dry_run, verbose=verbose, renderer=renderer
+            path,
+            prompt,
+            agent_cfg,
+            dry_run=dry_run,
+            verbose=verbose,
+            renderer=renderer,
+            event_emitter=emitter,
+            machine_output=machine_output,
         )
 
         # 5. Log to DB
+        _emit_event(
+            emitter,
+            "db_log_started",
+            {
+                "project_path": path,
+                "iteration": iteration,
+                "stored_state": "iteration result",
+            },
+            renderer=renderer,
+            machine_output=machine_output,
+        )
         db_log(path, agent_response, output_val, reason_val)
+        _emit_event(
+            emitter,
+            "db_log_finished",
+            {
+                "project_path": path,
+                "iteration": iteration,
+                "stored_state": "iteration result",
+            },
+            renderer=renderer,
+            machine_output=machine_output,
+        )
         if renderer:
             renderer.print_db_log(
                 build_db_log_snapshot(path, output_val, "iteration result")
@@ -1219,7 +1698,22 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
             console.print(
                 f"\n[bold yellow]Reached max iterations ({max_iterations}). Stopping.[/bold yellow]"
             )
-        notify("Apex Infinite", f"Reached max iterations ({max_iterations})")
+        _emit_event(
+            emitter,
+            "max_iterations_reached",
+            {"max_iterations": max_iterations},
+            renderer=renderer,
+            machine_output=machine_output,
+        )
+        if notifications_enabled:
+            notify("Apex Infinite", f"Reached max iterations ({max_iterations})")
+        _emit_event(
+            emitter,
+            "run_stopped",
+            {"reason": "max_iterations", "max_iterations": max_iterations},
+            renderer=renderer,
+            machine_output=machine_output,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -1260,6 +1754,16 @@ def infinite_loop(  # pylint: disable=too-many-positional-arguments,too-many-sta
 @click.option("--plain", is_flag=True, help="Disable color and effects")
 @click.option("--ascii", "ascii_only", is_flag=True, help="Use ASCII-safe glyphs")
 @click.option("--compact", is_flag=True, help="Reduce vertical spacing")
+@click.option(
+    "--event-stream",
+    default=None,
+    help="Write machine-readable lifecycle JSONL to PATH, or '-' with --machine-output.",
+)
+@click.option(
+    "--machine-output",
+    is_flag=True,
+    help="Disable human output and reserve stdout for event JSONL.",
+)
 @click.version_option(version="2.0.0", prog_name="apex-infinite")
 def main(  # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals,too-many-branches,too-many-statements
     project_path,
@@ -1276,8 +1780,86 @@ def main(  # pylint: disable=too-many-arguments,too-many-positional-arguments,to
     plain,
     ascii_only,
     compact,
+    event_stream,
+    machine_output,
 ):
     """Apex Spec System Infinite CLI - Autonomous Codex CLI session manager."""
+    global _ACTIVE_RENDERER, _ACTIVE_EVENT_EMITTER  # pylint: disable=global-statement
+    global _MACHINE_OUTPUT_ACTIVE  # pylint: disable=global-statement
+
+    if machine_output and not event_stream:
+        raise click.UsageError("--machine-output requires --event-stream")
+    if event_stream == "-" and not machine_output:
+        raise click.UsageError("--event-stream - requires --machine-output")
+
+    try:
+        event_stream_context = open_event_stream(
+            event_stream, stdout_allowed=machine_output
+        )
+    except EventStreamError as exc:
+        raise click.ClickException(str(exc)) from exc
+
+    with event_stream_context as event_emitter:
+        _ACTIVE_EVENT_EMITTER = event_emitter
+        _MACHINE_OUTPUT_ACTIVE = machine_output
+        _emit_event(
+            event_emitter,
+            "startup_begin",
+            {
+                "event_stream": bool(event_stream),
+                "machine_output": machine_output,
+                "dry_run": dry_run,
+                "max_iterations": max_iterations,
+            },
+            machine_output=machine_output,
+        )
+
+        try:
+            _run_main(
+                project_path,
+                start,
+                ceo,
+                provider,
+                model,
+                config_path,
+                history,
+                max_iterations,
+                dry_run,
+                verbose,
+                theme,
+                plain,
+                ascii_only,
+                compact,
+                event_emitter,
+                event_stream,
+                machine_output,
+            )
+        finally:
+            _ACTIVE_RENDERER = None
+            _ACTIVE_EVENT_EMITTER = None
+            _MACHINE_OUTPUT_ACTIVE = False
+
+
+def _run_main(  # pylint: disable=too-many-arguments,too-many-positional-arguments,too-many-locals,too-many-branches,too-many-statements
+    project_path,
+    start,
+    ceo,
+    provider,
+    model,
+    config_path,
+    history,
+    max_iterations,
+    dry_run,
+    verbose,
+    theme,
+    plain,
+    ascii_only,
+    compact,
+    event_emitter,
+    event_stream,
+    machine_output,
+):
+    """Run CLI startup after event stream validation."""
     global _ACTIVE_RENDERER  # pylint: disable=global-statement
 
     # Init database
@@ -1292,12 +1874,36 @@ def main(  # pylint: disable=too-many-arguments,too-many-positional-arguments,to
         elif Path("config.yaml").exists():
             config_path = "config.yaml"
         else:
-            console.print(
-                "[red]No config.yaml found. Use --config to specify path.[/red]"
+            _exit_with_startup_error(
+                "No config.yaml found. Use --config to specify path.",
+                event_emitter=event_emitter,
+                machine_output=machine_output,
+                title="Config",
             )
-            sys.exit(1)
 
-    config = load_config(config_path, provider_override=provider, model_override=model)
+    try:
+        config = load_config(
+            config_path, provider_override=provider, model_override=model
+        )
+    except CliStartupError as exc:
+        _exit_with_startup_error(
+            str(exc),
+            event_emitter=event_emitter,
+            machine_output=machine_output,
+            title="Config",
+        )
+    provider_name = config["provider"]
+    model_name = config["providers"][provider_name]["model"]
+    _emit_event(
+        event_emitter,
+        "config_loaded",
+        {
+            "config_path": config_path,
+            "provider_name": provider_name,
+            "model_name": model_name,
+        },
+        machine_output=machine_output,
+    )
     try:
         ui_settings = resolve_ui_settings(
             config,
@@ -1311,9 +1917,32 @@ def main(  # pylint: disable=too-many-arguments,too-many-positional-arguments,to
             console=console,
         )
     except UiConfigError as exc:
-        console.print(f"[red]Invalid UI configuration: {exc}[/red]")
-        sys.exit(1)
-    renderer = ApexRenderer(ui_settings, console)
+        _exit_with_startup_error(
+            f"Invalid UI configuration: {exc}",
+            event_emitter=event_emitter,
+            machine_output=machine_output,
+            title="UI Configuration",
+        )
+    _emit_event(
+        event_emitter,
+        "ui_resolved",
+        {
+            "requested_theme": ui_settings.requested_theme,
+            "theme_name": ui_settings.theme_name,
+            "effect_level": ui_settings.effect_level,
+            "plain": ui_settings.plain,
+            "ascii_only": ui_settings.ascii_only,
+            "compact": ui_settings.compact,
+            "color_enabled": ui_settings.color_enabled,
+            "constraint_reason": ui_settings.constraint_reason,
+        },
+        machine_output=machine_output,
+    )
+    renderer = (
+        NoHumanOutputRenderer(ui_settings)
+        if machine_output
+        else ApexRenderer(ui_settings, console)
+    )
     _ACTIVE_RENDERER = renderer
 
     # History mode
@@ -1371,16 +2000,25 @@ def main(  # pylint: disable=too-many-arguments,too-many-positional-arguments,to
     # Expand and validate path
     project_path = os.path.expanduser(project_path)
     if not os.path.isdir(project_path):
-        renderer.print_error(f"Directory not found: {project_path}", "Project Path")
-        sys.exit(1)
+        _exit_with_startup_error(
+            f"Directory not found: {project_path}",
+            event_emitter=event_emitter,
+            machine_output=machine_output,
+            renderer=renderer,
+            title="Project Path",
+        )
 
     # Normalize path (remove trailing slash for consistent DB keys)
     project_path = project_path.rstrip("/") + "/"
+    _emit_event(
+        event_emitter,
+        "project_resolved",
+        {"project_path": project_path},
+        renderer=renderer,
+        machine_output=machine_output,
+    )
 
     # Display startup banner
-    provider_name = config["provider"]
-    model_name = config["providers"][provider_name]["model"]
-
     renderer.print_startup(
         StartupSnapshot(
             project_path=project_path,
@@ -1395,6 +2033,25 @@ def main(  # pylint: disable=too-many-arguments,too-many-positional-arguments,to
             ceo_present=bool(ceo),
         )
     )
+    _emit_event(
+        event_emitter,
+        "startup",
+        {
+            "project_path": project_path,
+            "provider_name": provider_name,
+            "model_name": model_name,
+            "config_path": config_path,
+            "theme_name": ui_settings.theme_name,
+            "max_iterations": max_iterations,
+            "dry_run": dry_run,
+            "start_command": start,
+            "ceo_present": bool(ceo),
+            "event_stream_path": event_stream,
+            "machine_output": machine_output,
+        },
+        renderer=renderer,
+        machine_output=machine_output,
+    )
 
     # Run the loop
     infinite_loop(
@@ -1406,6 +2063,9 @@ def main(  # pylint: disable=too-many-arguments,too-many-positional-arguments,to
         dry_run=dry_run,
         verbose=verbose,
         renderer=renderer,
+        event_emitter=event_emitter,
+        machine_output=machine_output,
+        notifications_enabled=not machine_output,
     )
 
 

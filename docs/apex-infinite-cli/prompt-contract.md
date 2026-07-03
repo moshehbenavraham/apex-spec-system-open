@@ -152,6 +152,25 @@ Examples:
 
 For unknown manager outputs, the CLI passes the raw text straight to Codex.
 
+## Event Stream Boundary
+
+`--event-stream` and `--machine-output` do not change prompt routing. Event
+payloads observe the existing flow by recording bounded facts such as manager
+output, whether the output matched a known command, prompt length, subprocess
+state, and DB log state.
+
+The event stream does not alter:
+
+- `MANAGER_SYSTEM_PROMPT`
+- `SUMMARIZER_SYSTEM_PROMPT`
+- `build_codex_prompt()` output
+- manager output normalization
+- the SQLite `history` schema or `cc_response` column
+- `execute_codex()` return text
+
+Wrappers and tests should consume events instead of parsing the manager prompt,
+Codex prompt, Rich output, or history rendering.
+
 ## Important Nuance
 
 The runtime prompt string above is a wrapper convention used by
@@ -186,5 +205,6 @@ If you change any of these behaviors, update all of the following together:
 ## Related Docs
 
 - [Operator runbook](operator-runbook.md)
+- [Event stream contract](event-stream.md)
 - [History DB reference](history-db.md)
 - [Troubleshooting guide](troubleshooting.md)

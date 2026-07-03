@@ -537,6 +537,80 @@ def resolve_ui_settings(
     )
 
 
+class NoHumanOutputRenderer:  # pylint: disable=too-many-public-methods
+    """Renderer adapter that suppresses all human-facing output."""
+
+    def __init__(self, settings: UiSettings | None = None):
+        self.settings = settings
+
+    def input_prompt(self, _label: str) -> str:
+        """Return an empty prompt so stdout stays machine-readable."""
+        return ""
+
+    def print_block(self, *_args, **_kwargs) -> None:
+        """Suppress generic blocks."""
+
+    def print_startup(self, *_args, **_kwargs) -> None:
+        """Suppress startup output."""
+
+    def print_intro(self, *_args, **_kwargs) -> None:
+        """Suppress intro output."""
+
+    def print_project_list(self, *_args, **_kwargs) -> None:
+        """Suppress project list output."""
+
+    def print_error(self, *_args, **_kwargs) -> None:
+        """Suppress human errors."""
+
+    def print_warning(self, *_args, **_kwargs) -> None:
+        """Suppress warnings."""
+
+    def print_status(self, *_args, **_kwargs) -> None:
+        """Suppress status output."""
+
+    def print_history(self, *_args, **_kwargs) -> None:
+        """Suppress history output."""
+
+    def print_iteration(self, *_args, **_kwargs) -> None:
+        """Suppress iteration output."""
+
+    def print_manager_decision(self, *_args, **_kwargs) -> None:
+        """Suppress manager decisions."""
+
+    def print_prompt_preview(self, *_args, **_kwargs) -> None:
+        """Suppress prompt previews."""
+
+    def print_codex_command(self, *_args, **_kwargs) -> None:
+        """Suppress subprocess status output."""
+
+    def print_agent_response(self, *_args, **_kwargs) -> None:
+        """Suppress agent response output."""
+
+    def print_db_log(self, *_args, **_kwargs) -> None:
+        """Suppress DB log output."""
+
+    def print_interrupt(self, *_args, **_kwargs) -> None:
+        """Suppress interrupt output."""
+
+    def print_help(self, *_args, **_kwargs) -> None:
+        """Suppress help output."""
+
+    def print_completion(self, *_args, **_kwargs) -> None:
+        """Suppress completion output."""
+
+    def print_max_iterations(self, *_args, **_kwargs) -> None:
+        """Suppress safety-stop output."""
+
+    def print_llm_retry(self, *_args, **_kwargs) -> None:
+        """Suppress retry output."""
+
+    def print_json_fallback(self, *_args, **_kwargs) -> None:
+        """Suppress manager parse fallback output."""
+
+    def print_status_strip(self, *_args, **_kwargs) -> None:
+        """Suppress status strip output."""
+
+
 class ApexRenderer:  # pylint: disable=too-many-public-methods
     """Semantic renderer for operator-facing CLI output."""
 

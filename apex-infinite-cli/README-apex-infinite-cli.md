@@ -201,6 +201,12 @@ python apex_infinite.py --path ~/projects/my-app/ --start plansession --max-iter
 # Choose display modes
 python apex_infinite.py --path ~/projects/my-app/ --theme crt-amber
 python apex_infinite.py --path ~/projects/my-app/ --plain --ascii --compact
+
+# Write machine-readable events to a file while keeping human output
+python apex_infinite.py --path ~/projects/my-app/ --event-stream /tmp/apex-events.jsonl
+
+# Reserve stdout for JSONL events
+python apex_infinite.py --path ~/projects/my-app/ --event-stream - --machine-output
 ```
 
 ## Options
@@ -220,6 +226,8 @@ python apex_infinite.py --path ~/projects/my-app/ --plain --ascii --compact
 --plain                   Disable color and effects
 --ascii                   Use ASCII-safe glyphs
 --compact                 Reduce vertical spacing
+--event-stream TEXT       Write lifecycle JSONL to PATH, or '-' with --machine-output
+--machine-output          Disable human output and reserve stdout for JSONL
 --version                 Show version
 ```
 
@@ -249,6 +257,22 @@ History display derives a compact ledger at render time with timestamp,
 status, project key, command, reason, and response summary. `--history
 --verbose` expands reason, response, and stored-state detail without adding a
 separate history-only flag or changing the SQLite schema.
+
+## Event Stream
+
+Use `--event-stream PATH` to write line-buffered JSONL lifecycle events for
+automation or future wrappers. File event streams are a side channel and do not
+change normal human output. Use `--event-stream - --machine-output` when stdout
+must contain JSONL only; this disables human rendering, terminal bell, and
+desktop notifications.
+
+The stream emits startup, config/UI resolution, iteration, history summary,
+manager decision, prompt dispatch, Codex subprocess, DB log, help, interrupt,
+completion, max-iteration, and stop events. Payloads contain bounded raw facts
+and exclude provider API keys, Rich markup, ANSI escapes, frame glyphs, theme
+token values, and renderer snapshots.
+
+See `docs/apex-infinite-cli/event-stream.md` for the full event contract.
 
 ## Testing
 

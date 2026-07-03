@@ -1,5 +1,8 @@
 """Click option wiring tests for display settings."""
 
+import json
+
+import pytest
 from click.testing import CliRunner
 
 import apex_infinite
@@ -65,6 +68,11 @@ def invoke_cli(monkeypatch, tmp_path, args):
     return result, captured, project_path
 
 
+def jsonl_rows(text):
+    """Parse non-empty JSONL output lines."""
+    return [json.loads(line) for line in text.splitlines() if line.strip()]
+
+
 def test_theme_flag_reaches_resolved_renderer(monkeypatch, tmp_path):
     result, captured, _project_path = invoke_cli(
         monkeypatch,
@@ -115,6 +123,167 @@ def test_dry_run_startup_wiring_reaches_loop(monkeypatch, tmp_path):
     assert captured["start_command"] == "implement"
     assert captured["dry_run"] is True
     assert captured["renderer"].settings.theme_name == "crt-green"
+
+
+def test_event_stream_path_writes_startup_events_and_reaches_loop(
+    monkeypatch, tmp_path
+):
+    event_path = tmp_path / "events.jsonl"
+
+    result, captured, project_path = invoke_cli(
+        monkeypatch,
+        tmp_path,
+        [
+            "--start",
+            "implement",
+            "--dry-run",
+            "--event-stream",
+            str(event_path),
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert captured["event_emitter"].enabled is True
+    assert captured["machine_output"] is False
+    assert captured["notifications_enabled"] is True
+    assert captured["path"] == f"{project_path}/"
+    rows = jsonl_rows(event_path.read_text(encoding="ascii"))
+    assert [row["event"] for row in rows[:4]] == [
+        "startup_begin",
+        "config_loaded",
+        "ui_resolved",
+        "project_resolved",
+    ]
+    assert rows[-1]["event"] == "startup"
+
+
+def test_event_stream_stdout_requires_machine_output(monkeypatch, tmp_path):
+    result, captured, _project_path = invoke_cli(
+        monkeypatch,
+        tmp_path,
+        ["--event-stream", "-"],
+    )
+
+    assert result.exit_code == 2
+    assert "--event-stream - requires --machine-output" in result.output
+    assert captured == {}
+
+
+def test_machine_output_requires_event_stream(monkeypatch, tmp_path):
+    result, captured, _project_path = invoke_cli(
+        monkeypatch,
+        tmp_path,
+        ["--machine-output"],
+    )
+
+    assert result.exit_code == 2
+    assert "--machine-output requires --event-stream" in result.output
+    assert captured == {}
+
+
+def test_machine_output_stdout_is_jsonl_only(monkeypatch, tmp_path):
+    result, captured, _project_path = invoke_cli(
+        monkeypatch,
+        tmp_path,
+        ["--event-stream", "-", "--machine-output", "--max-iterations", "0"],
+    )
+
+    assert result.exit_code == 0
+    assert "BOOT" not in result.output
+    assert "Apex Infinite Operator Console" not in result.output
+    rows = jsonl_rows(result.output)
+    assert rows
+    assert all("event" in row and "payload" in row for row in rows)
+    assert [row["event"] for row in rows[:3]] == [
+        "startup_begin",
+        "config_loaded",
+        "ui_resolved",
+    ]
+    assert captured["machine_output"] is True
+    assert captured["notifications_enabled"] is False
+
+
+def test_machine_output_startup_error_is_jsonl_only(monkeypatch, tmp_path):
+    project_path = tmp_path / "project"
+    project_path.mkdir()
+    missing_config = tmp_path / "missing.yaml"
+    monkeypatch.setattr(apex_infinite, "DB_DIR", tmp_path / "db")
+    monkeypatch.setattr(apex_infinite, "DB_PATH", tmp_path / "db" / "history.db")
+
+    result = CliRunner().invoke(
+        apex_infinite.main,
+        [
+            "--config",
+            str(missing_config),
+            "--path",
+            str(project_path),
+            "--event-stream",
+            "-",
+            "--machine-output",
+        ],
+    )
+
+    assert result.exit_code == 1
+    rows = jsonl_rows(result.output)
+    assert [row["event"] for row in rows] == ["startup_begin", "error"]
+    assert rows[-1]["payload"]["stage"] == "config"
+    assert rows[-1]["payload"]["message"] == f"Config file not found: {missing_config}"
+
+
+def test_event_stream_open_error_is_click_error_without_traceback(
+    monkeypatch, tmp_path
+):
+    event_path = tmp_path / "events-as-directory"
+    event_path.mkdir()
+
+    result, captured, _project_path = invoke_cli(
+        monkeypatch,
+        tmp_path,
+        ["--event-stream", str(event_path)],
+    )
+
+    assert result.exit_code == 1
+    assert "failed to open event stream" in result.output
+    assert "Traceback" not in result.output
+    assert captured == {}
+
+
+@pytest.mark.parametrize(
+    ("extra_args", "env"),
+    [
+        ([], {}),
+        (["--plain"], {}),
+        (["--ascii"], {}),
+        (["--compact"], {}),
+        ([], {"NO_COLOR": "1"}),
+        ([], {"TERM": "dumb"}),
+    ],
+)
+def test_event_stream_file_coexists_with_human_output_modes(
+    monkeypatch, tmp_path, extra_args, env
+):
+    for key, value in env.items():
+        monkeypatch.setenv(key, value)
+    event_path = tmp_path / f"events-{len(extra_args)}-{len(env)}.jsonl"
+
+    result, captured, _project_path = invoke_cli(
+        monkeypatch,
+        tmp_path,
+        [
+            "--event-stream",
+            str(event_path),
+            "--max-iterations",
+            "0",
+            *extra_args,
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "Apex Infinite Operator Console" in result.output
+    assert captured["machine_output"] is False
+    rows = jsonl_rows(event_path.read_text(encoding="ascii"))
+    assert rows[0]["event"] == "startup_begin"
+    assert rows[-1]["event"] == "startup"
 
 
 def test_history_mode_uses_renderer_and_does_not_start_loop(monkeypatch, tmp_path):

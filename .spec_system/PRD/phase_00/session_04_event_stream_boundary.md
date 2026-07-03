@@ -1,7 +1,7 @@
 # Session 04: Event Stream Boundary
 
 **Session ID**: `phase00-session04-event-stream-boundary`
-**Status**: Not Started
+**Status**: Complete
 **Estimated Tasks**: ~12-25
 **Estimated Duration**: 2-4 hours
 
@@ -44,9 +44,9 @@ renderers and wrappers.
 
 ## Prerequisites
 
-- [ ] Sessions 01 through 03 validated.
-- [ ] Renderer lifecycle labels and subprocess facts are available.
-- [ ] Security findings about raw payloads and stdout isolation are reviewed.
+- [x] Sessions 01 through 03 validated.
+- [x] Renderer lifecycle labels and subprocess facts are available.
+- [x] Security findings about raw payloads and stdout isolation are reviewed.
 
 ---
 
@@ -61,11 +61,11 @@ renderers and wrappers.
 
 ## Success Criteria
 
-- [ ] Rich output and future wrappers can consume the same lifecycle facts.
-- [ ] A future wrapper can observe state without scraping terminal frames.
-- [ ] Prompt routing, autonomous handoffs, and SQLite compatibility remain
+- [x] Rich output and future wrappers can consume the same lifecycle facts.
+- [x] A future wrapper can observe state without scraping terminal frames.
+- [x] Prompt routing, autonomous handoffs, and SQLite compatibility remain
   unchanged.
-- [ ] Event payloads contain raw operational facts with no Rich markup, ANSI
+- [x] Event payloads contain raw operational facts with no Rich markup, ANSI
   escapes, frame glyphs, copied visual tokens, or secrets.
 
 ---

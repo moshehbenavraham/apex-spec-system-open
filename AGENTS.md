@@ -5,7 +5,7 @@ as an Agent Skill (agentskills.io) with a Codex plugin wrapper.
 
 Philosophy: 1 session = 1 spec = 1 clear objective = 2-4 hours (12-25 tasks).
 
-Current version: 2.1.10-codex
+Current version: 2.1.11-codex
 
 Note: CLAUDE.md and GEMINI.md are symlinks to this file. Edit AGENTS.md only.
 

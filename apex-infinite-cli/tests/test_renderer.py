@@ -12,6 +12,7 @@ from apex_infinite_ui import (
     CodexCommandSnapshot,
     DbLogSnapshot,
     StartupSnapshot,
+    NoHumanOutputRenderer,
     UiCliOverrides,
     resolve_ui_settings,
 )
@@ -184,6 +185,50 @@ def test_ascii_only_renderer_keeps_styled_layout_with_ascii_glyphs():
     assert "Apex Infinite - History" in text
     assert "ACCENT Apex Infinite CLI" not in text
     assert all(ord(character) < 128 for character in text)
+
+
+def test_no_human_output_renderer_suppresses_all_output(capsys):
+    renderer = NoHumanOutputRenderer()
+
+    renderer.print_startup(
+        StartupSnapshot(
+            project_path="/tmp/project/",
+            provider_name="ollama",
+            model_name="qwen2.5:7b",
+            config_path="config.yaml",
+            max_iterations=5,
+            theme_name="plain",
+            requested_theme="plain",
+            dry_run=True,
+        )
+    )
+    renderer.print_iteration(1, "history summary")
+    renderer.print_manager_decision("implement", "reason", True)
+    renderer.print_prompt_preview("prompt")
+    renderer.print_codex_command(
+        "dry-run",
+        CodexCommandSnapshot(
+            binary="codex",
+            exec_flags="--dangerously-auto-approve",
+            prompt="prompt",
+            project_path="/tmp/project/",
+            timeout=1800,
+        ),
+    )
+    renderer.print_agent_response("agent output")
+    renderer.print_db_log(
+        DbLogSnapshot(
+            project_path="/tmp/project/",
+            manager_output="implement",
+            stored_state="iteration result",
+        )
+    )
+    renderer.print_help("reason")
+    renderer.print_completion("done", 1)
+    renderer.print_max_iterations(1)
+
+    assert renderer.input_prompt("CEO") == ""
+    assert capsys.readouterr().out == ""
 
 
 def test_sqlite_history_stores_raw_values_without_renderer_labels(
