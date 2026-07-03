@@ -10,14 +10,3 @@ updates:
     labels:
       - "dependencies"
     open-pull-requests-limit: 5
-
-  - package-ecosystem: "pip"
-    directory: "/apex-infinite-cli"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-    commit-message:
-      prefix: "deps"
-    labels:
-      - "dependencies"
-    open-pull-requests-limit: 5

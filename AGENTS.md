@@ -5,7 +5,7 @@ as an Agent Skill (agentskills.io) with a Codex plugin wrapper.
 
 Philosophy: 1 session = 1 spec = 1 clear objective = 2-4 hours (12-25 tasks).
 
-Current version: 2.1.18-codex
+Current version: 2.1.19-codex
 
 Note: CLAUDE.md and GEMINI.md are symlinks to this file. Edit AGENTS.md only.
 
@@ -79,7 +79,6 @@ workflow rather than guessing.
 | plugins/apex-spec/ | Codex plugin wrapper + generated skill payload (do not edit) |
 | .agents/plugins/ | Codex plugin marketplace metadata |
 | agent-skills/ | Companion engineering-skills collection (has its own AGENTS.md) |
-| apex-infinite-cli/ | Autonomous session manager, Python CLI (has its own README) |
 | docs/ | ARCHITECTURE.md, CONVENTIONS.md, development.md, adr/ |
 | skills/ | Legacy pre-port skill directory (archived) |
 

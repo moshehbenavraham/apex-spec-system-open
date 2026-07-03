@@ -37,12 +37,6 @@ apex-spec-system-open/
 |   |-- analyze-project.sh    # Deterministic project state analysis
 |   |-- check-prereqs.sh      # Environment verification
 |   \-- common.sh             # Shared functions
-|-- apex-infinite-cli/        # Autonomous session manager
-|   |-- pyproject.toml        # Package, dependency, and tool config
-|   |-- src/apex_infinite/    # CLI entry point, events, UI, config
-|   |-- src/apex_infinite_visual/ # Optional Linux visual wrapper source mode
-|   |-- tests/                # pytest suite for CLI, renderer, events, wrapper
-|   \-- n8n-workflow/         # Original n8n workflow (reference archive)
 \-- docs/                     # Project documentation
 ```
 
@@ -132,57 +126,10 @@ Long-term goal: cross-compatible single format that works on both platforms.
 
 ## Apex Infinite CLI
 
-The `apex-infinite-cli/` directory contains an autonomous session manager -- a
-standalone Python package that runs the full Apex Spec System workflow in a loop
-without human intervention.
-
-### Components
-
-| Component | Purpose |
-|-----------|---------|
-| `pyproject.toml` | Package metadata, dependencies, console scripts, and Python tool config |
-| `src/apex_infinite/cli.py` | Click entry point, config loading, manager loop, Codex subprocess execution, SQLite history, notifications |
-| `src/apex_infinite/ui.py` | Rich/plain renderer boundary, display settings, themes, width-aware output helpers |
-| `src/apex_infinite/events.py` | Importable event emitter and line-buffered JSONL lifecycle event writer |
-| `src/apex_infinite/config.yaml` | Packaged default provider, Codex, and UI config |
-| `src/apex_infinite_visual/` | Optional PySide6/Qt Quick Linux visual wrapper over the event stream |
-| `requirements*.txt` | Compatibility shims that install `pyproject.toml` dependencies and extras |
-| `tests/` | pytest coverage for prompt routing, CLI flags, renderer, history, subprocess, events, and wrapper behavior |
-| `n8n-workflow/` | Original n8n workflow JSON (reference archive) |
-
-### How It Works
-
-1. Manager LLM decides the next workflow command
-2. CLI executes `codex exec` with the chosen command
-3. Response is logged to SQLite (`~/.apex-infinite/history.db`)
-4. Optional JSONL lifecycle events are emitted to a file or machine-output
-   stdout
-5. Loop repeats until `alldonebaby`, an operator stop, or max iterations
-
-### Tech Stack
-
-| Technology | Purpose |
-|------------|---------|
-| Python 3.10+ | CLI runtime |
-| SQLite (WAL mode) | Interaction history |
-| OpenAI-compatible API | Manager and summarizer LLM calls |
-| Codex CLI (`codex exec`) | Agent execution subprocess |
-| Rich | Human terminal rendering with plain and ASCII fallbacks |
-| pytest + pytest-mock | Test suite |
-| black, pylint, mypy | Python formatting, linting, and type checks |
-| pip-audit | Local Python dependency vulnerability audit |
-| PySide6 / Qt Quick / QML | Optional Linux visual wrapper source mode |
-
-See [apex-infinite-cli/README.md](../apex-infinite-cli/README.md) for usage details.
-
-Deep-dive docs:
-
-- [Operator runbook](../apex-infinite-cli/docs/operator-runbook.md)
-- [Event stream contract](../apex-infinite-cli/docs/event-stream.md)
-- [History DB reference](../apex-infinite-cli/docs/history-db.md)
-- [Prompt contract](../apex-infinite-cli/docs/prompt-contract.md)
-- [Troubleshooting guide](../apex-infinite-cli/docs/troubleshooting.md)
-- [Visual wrapper boundary](../apex-infinite-cli/docs/visual-wrapper-boundary.md)
+Apex Infinite CLI is a companion autonomous session manager for Apex Spec
+workflows. It now lives outside this repository as a standalone Python package.
+This repository only owns the Apex Spec skill, references, scripts, plugin
+wrapper, and documentation for the skill package itself.
 
 ## Key Decisions
 

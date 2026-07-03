@@ -1,3 +1,0 @@
-# Optional Linux visual wrapper and packaging dependencies.
-# The canonical optional dependencies live in pyproject.toml.
--e .[visual]

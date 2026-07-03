@@ -81,7 +81,6 @@ Tag  --> Release inventory + base CLI health --> GitHub Release
    - Verify ASCII encoding (no non-ASCII in core files)
    - Verify version sync (SKILL.md and README.md match tag)
    - Verify file inventory (23+ references, 3 scripts, all executable)
-   - Verify Apex Infinite CLI health (`--version` and help-output smoke)
    - Create GitHub Release with installation instructions
 
 The optional Linux visual wrapper is source-mode only. Do not publish a binary

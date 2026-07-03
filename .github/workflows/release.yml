@@ -36,14 +36,14 @@ jobs:
               LC_ALL=C grep -Pn '[^\x00-\x7F]' "$f"
               FAILURES=$((FAILURES + 1))
             fi
-          done < <(find . -type f \( -name '*.md' -o -name '*.yml' -o -name '*.yaml' -o -name '*.sh' -o -name '*.json' \) -not -path './.git/*' -not -path './.spec_system/*' -not -path './apex-infinite-cli/*')
+          done < <(find . -type f \( -name '*.md' -o -name '*.yml' -o -name '*.yaml' -o -name '*.sh' -o -name '*.json' \) -not -path './.git/*' -not -path './.spec_system/*')
           echo "Checking for CRLF line endings..."
           while IFS= read -r f; do
             if grep -Pq '\r$' "$f" 2>/dev/null; then
               echo "FAIL: CRLF in $f"
               FAILURES=$((FAILURES + 1))
             fi
-          done < <(find . -type f \( -name '*.md' -o -name '*.yml' -o -name '*.yaml' -o -name '*.sh' -o -name '*.json' \) -not -path './.git/*' -not -path './.spec_system/*' -not -path './apex-infinite-cli/*')
+          done < <(find . -type f \( -name '*.md' -o -name '*.yml' -o -name '*.yaml' -o -name '*.sh' -o -name '*.json' \) -not -path './.git/*' -not -path './.spec_system/*')
           if [[ "$FAILURES" -gt 0 ]]; then
             echo "::error::Found $FAILURES encoding violations"
             exit 1
@@ -104,22 +104,6 @@ jobs:
             exit 1
           fi
           echo "File inventory and script checks passed."
-
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.10'
-
-      - name: Verify Apex Infinite CLI health
-        working-directory: apex-infinite-cli
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -e .
-          apex-infinite --version
-          apex-infinite --help > /tmp/apex-infinite-help.txt
-          grep -q -- "--check-provider" /tmp/apex-infinite-help.txt
-          grep -q -- "--event-stream" /tmp/apex-infinite-help.txt
-          grep -q -- "--machine-output" /tmp/apex-infinite-help.txt
 
       - name: Create Release
         uses: softprops/action-gh-release@v3

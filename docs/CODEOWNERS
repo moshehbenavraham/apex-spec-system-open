@@ -14,9 +14,6 @@ references/ @aiwithapex
 # Scripts (project analysis, prerequisites)
 scripts/ @aiwithapex
 
-# Apex Infinite CLI (autonomous session manager)
-apex-infinite-cli/ @aiwithapex
-
 # CI/CD workflows
 .github/ @aiwithapex
 

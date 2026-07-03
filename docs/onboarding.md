@@ -63,7 +63,6 @@ shellcheck scripts/*.sh
 | SKILL.md | Root orchestrator (entry point) |
 | references/ | Command and supporting reference files |
 | scripts/ | Bash utilities |
-| apex-infinite-cli/ | Autonomous session manager (Python CLI) |
 | docs/ | Development documentation |
 
 ### 4. Make Changes

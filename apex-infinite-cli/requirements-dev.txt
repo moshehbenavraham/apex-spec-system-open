@@ -1,2 +1,0 @@
-# Compatibility shim. The canonical dev dependencies live in pyproject.toml.
--e .[dev]

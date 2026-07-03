@@ -1,9 +1,10 @@
 # Security & Compliance
 
-Current security and compliance posture for this repository lives in
-[.spec_system/SECURITY-COMPLIANCE.md](../.spec_system/SECURITY-COMPLIANCE.md).
+This repository contains the Apex Spec skill and Codex plugin wrapper. Security
+review should focus on the authored skill files, generated plugin payload,
+shell scripts, GitHub Actions workflows, and release artifacts.
 
-This file is kept only as a public documentation pointer so there is one source
-of truth. The current Phase 00 record includes the Apex Infinite CLI local
-history risks, provider-bound data transfer notes, dependency-audit status, and
-optional visual-wrapper license gates.
+Apex Infinite CLI now lives outside this repository as a standalone companion
+package. Its local history, provider-bound data transfer, dependency audit, and
+optional visual-wrapper license posture are maintained in that package's own
+repository.
