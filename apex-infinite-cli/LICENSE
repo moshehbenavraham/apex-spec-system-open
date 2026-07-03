@@ -1,0 +1,42 @@
+MIT License
+
+Copyright (c) 2026 Apex Spec System Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+Third-Party and Optional Components
+-----------------------------------
+
+This license applies to the Apex Infinite CLI source code and documentation
+authored in this directory. It does not relicense third-party software,
+services, tools, generated artifacts, or dependencies.
+
+Runtime, development, and optional wrapper dependencies remain governed by
+their own license terms. This includes, without limitation, Python, Click,
+Rich, OpenAI Python SDK, python-dotenv, PyYAML, pytest, pytest-cov,
+pytest-mock, black, pylint, pip-audit, PySide6, Nuitka, Codex CLI, system
+packages such as patchelf, and any LLM provider APIs used at runtime.
+
+The optional Linux visual wrapper path must keep graphical dependencies
+separate from the base CLI. PySide6/Qt components and Nuitka packaging tools
+must be reviewed under their own license terms before distribution.
+
+Reference-only material is not part of this licensed work and must not be
+copied or redistributed as Apex Infinite CLI source unless its separate
+license allows that use.

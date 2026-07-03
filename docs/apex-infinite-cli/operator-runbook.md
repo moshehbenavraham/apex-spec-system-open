@@ -24,6 +24,8 @@ Before the first run:
 4. Decide whether you want a forced starting command with `--start` or manager
    auto-selection from the first iteration.
 5. Decide whether you want the first instruction seeded with `--ceo`.
+6. Decide which display mode fits the terminal: styled interactive output,
+   plain logs, ASCII-safe output, compact output, or machine-output JSONL.
 
 ## Common Run Modes
 
@@ -56,16 +58,140 @@ python apex_infinite.py --path ~/projects/my-app/ --start plansession --dry-run
 Use this before changing providers, models, or Codex flags. It exercises the
 manager loop and prints the exact `codex exec` command without launching Codex.
 
+### Styled interactive terminal
+
+```bash
+cd apex-infinite-cli
+python apex_infinite.py --path ~/projects/my-app/ --theme crt-green
+python apex_infinite.py --path ~/projects/my-app/ --theme crt-amber
+python apex_infinite.py --path ~/projects/my-app/ --theme ibm-dos
+```
+
+Use this when the terminal supports color and normal Rich rendering. `auto`
+selects `crt-green` in capable interactive terminals. Use an explicit
+`--theme` when you want to opt back into styled output after an environment
+constraint such as `NO_COLOR`.
+
+### Plain, ASCII, and compact fallbacks
+
+```bash
+cd apex-infinite-cli
+python apex_infinite.py --path ~/projects/my-app/ --plain
+python apex_infinite.py --path ~/projects/my-app/ --plain --ascii
+python apex_infinite.py --path ~/projects/my-app/ --plain --ascii --compact
+```
+
+Use `--plain` for CI, logs, redirected output, remote shells, unreadable color
+schemes, or `TERM=dumb`. Use `--ascii` when the terminal cannot render
+non-ASCII glyphs reliably. Use `--compact` when the terminal height is limited
+or you are collecting logs, but still expect errors, manager reasons, prompts,
+DB writes, completion, timeouts, interrupts, and non-zero exits to remain
+visible.
+
+Environment behavior:
+
+- `NO_COLOR` behaves like plain mode unless you pass an explicit `--theme`.
+- `TERM=dumb`, non-TTY output, redirected output, and non-terminal Rich console
+  paths default to plain output unless you force a theme.
+- Non-UTF terminals should use `--ascii`, usually with `--plain`.
+- Narrow terminals should use `--compact` and inspect history with
+  `--history --verbose` only when needed.
+
+### Event stream file
+
+```bash
+cd apex-infinite-cli
+python apex_infinite.py --path ~/projects/my-app/ --event-stream /tmp/apex-events.jsonl
+```
+
+Use this when another process should observe lifecycle facts while a human
+operator still sees the normal CLI surface. The file is JSONL and is flushed
+after every event.
+
+### Machine-output JSONL
+
+```bash
+cd apex-infinite-cli
+python apex_infinite.py --path ~/projects/my-app/ --event-stream - --machine-output
+```
+
+Use this for wrappers or automation that read stdout. In this mode stdout is
+reserved for JSONL events. Human rendering, terminal bell, and desktop
+notifications are disabled.
+
+Do not use `--event-stream -` without `--machine-output`; the CLI rejects that
+combination so human output never mixes with JSONL on stdout. If a human should
+watch the run while automation observes it, write events to a file path instead
+of stdout.
+
+### Optional visual wrapper source mode
+
+```bash
+cd apex-infinite-cli
+pip install -r requirements-wrapper.txt
+python -m apex_infinite_visual.main --dry-run --max-iterations 1
+```
+
+Use this only for the Linux visual wrapper source mode. The base CLI install
+remains `requirements.txt`; PySide6 and QML stay in the optional wrapper lane.
+Session 08 release verification keeps source/dev operation shippable after
+final gates; final AppImage or binary publication remains gated for future
+packaging, license, notice, checksum, and source/relink review.
+
+Source-mode settings can be selected before launch:
+
+```bash
+cd apex-infinite-cli
+python -m apex_infinite_visual.main \
+  --theme crt-amber \
+  --effect-intensity 55 \
+  --font-family "monospace" \
+  --font-scale 1.05 \
+  --plain-fallback
+```
+
+The wrapper supports green CRT, amber CRT, IBM DOS, and plain presets, plus
+effect intensity, font family, font scale, reduced effects, and plain fallback.
+
+For a headless smoke check:
+
+```bash
+cd apex-infinite-cli
+QT_QPA_PLATFORM=offscreen python -m apex_infinite_visual.main \
+  --dry-run --max-iterations 1 --auto-close-ms 900
+```
+
+By default, wrapper dry-run uses fixture events so it does not require provider
+API keys or live Codex execution. To launch the real CLI subprocess, pass
+`--launch-cli`; the wrapper will build a guarded
+`--event-stream - --machine-output` command and keep stderr separate for
+failure display.
+
+Fallback behavior:
+
+- If PySide6 is missing, install `requirements-wrapper.txt`.
+- If a display backend is unavailable, run the offscreen smoke command or use
+  the base terminal CLI.
+- If events are malformed, the wrapper shows an error state and keeps the log
+  bounded instead of crashing.
+- If the subprocess writes stderr or exits non-zero, the wrapper maps that to a
+  visible error state.
+- If the subprocess times out or the base CLI script is missing, the wrapper
+  maps that to `Timed out` or `CLI missing`.
+
 ### History inspection
 
 ```bash
 cd apex-infinite-cli
 python apex_infinite.py --history
 python apex_infinite.py --history --path ~/projects/my-app/
+python apex_infinite.py --history --verbose
 ```
 
 Use this to inspect the last 50 logged records globally or for a single
-normalized project path.
+normalized project path. Default history is a compact ledger with timestamp,
+status, project key, command, reason, and response summary. Add `--verbose` to
+expand reason, response, and stored-state detail.
 
 ## What Happens Per Iteration
 
@@ -105,6 +231,8 @@ normalized project path.
 - Default mode prints a truncated agent response panel.
 - `--verbose` prints a larger panel with up to 2000 characters of the full
   response.
+- With `--history`, `--verbose` expands ledger details instead of adding a
+  separate history-only flag.
 
 ## Recommended Operating Pattern
 
@@ -132,6 +260,10 @@ For an existing project:
 | `[TIMEOUT]` | `codex exec` exceeded the timeout | Narrow scope or inspect the underlying command |
 | `[ERROR exit code N]` | Codex exited non-zero | Read stderr in the logged response |
 | `LLM call failed after 3 attempts` | Provider call exhausted retries | Check API key, base URL, model, or connectivity |
+| `event_stream_error` | Machine-readable event stream failure | Inspect the source event and retry with a writable path |
+| `Output fallback: NO_COLOR` | Color was disabled by environment | Use plain output or pass an explicit `--theme` if color is intentional |
+| `Output fallback: TERM=dumb` | Terminal reported a constrained mode | Use `--plain --ascii --compact` or a richer terminal |
+| `Output fallback: non-terminal output` | Output is redirected or not attached to a terminal | Keep plain logs or pass an explicit `--theme` only for a capable destination |
 
 ## Safe Shutdown
 
@@ -139,8 +271,27 @@ For an existing project:
 - Acceptable: terminate the process if you do not need another history record.
 - After exit, use `--history --path ...` to confirm the last recorded state.
 
+## Sample References
+
+- [Plain dry-run transcript](transcripts/dry-run-plain.txt) shows a
+  deterministic `--plain --ascii --compact --dry-run` run.
+- [History ledger transcript](transcripts/history-ledger.txt) shows compact and
+  verbose history display semantics.
+- [Machine-output JSONL sample](transcripts/machine-output-events.jsonl) shows
+  the stdout JSONL shape for wrappers and automation.
+- [Visual wrapper productization](visual-wrapper-productization.md) records
+  source-mode setup, settings, packaging gates, checksums, license notes, and
+  clean-room verification.
+- [Visual wrapper spike](visual-wrapper-spike.md) records the original wrapper
+  decision, license notes, packaging risks, and backup path.
+
 ## Related Docs
 
 - [History DB reference](history-db.md)
+- [Event stream contract](event-stream.md)
 - [Prompt contract](prompt-contract.md)
 - [Troubleshooting guide](troubleshooting.md)
+- [Visual wrapper productization](visual-wrapper-productization.md)
+- [Visual wrapper spike](visual-wrapper-spike.md)
+- [Visual wrapper boundary](visual-wrapper-boundary.md)
+- [Transcript samples](transcripts/README.md)

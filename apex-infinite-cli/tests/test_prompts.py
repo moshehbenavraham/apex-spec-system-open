@@ -3,6 +3,7 @@
 Verifies that system prompts reference Codex CLI (not Claude Code),
 and that build_codex_prompt() produces correct output for all known commands.
 """
+
 import re
 from unittest.mock import MagicMock, patch
 
@@ -38,15 +39,18 @@ class TestManagerSystemPrompt:
 
     def test_no_claude_code_references(self):
         for forbidden in FORBIDDEN_STRINGS:
-            assert forbidden not in MANAGER_SYSTEM_PROMPT, (
-                f"Found forbidden string '{forbidden}' in MANAGER_SYSTEM_PROMPT"
-            )
+            assert (
+                forbidden not in MANAGER_SYSTEM_PROMPT
+            ), f"Found forbidden string '{forbidden}' in MANAGER_SYSTEM_PROMPT"
+
+    def test_no_claude_artifacts(self):
+        assert "CLAUDE.md" not in MANAGER_SYSTEM_PROMPT
 
     def test_no_cc_abbreviation(self):
         matches = CC_PATTERN.findall(MANAGER_SYSTEM_PROMPT)
-        assert len(matches) == 0, (
-            f"Found {len(matches)} standalone 'CC' abbreviation(s) in MANAGER_SYSTEM_PROMPT"
-        )
+        assert (
+            len(matches) == 0
+        ), f"Found {len(matches)} standalone 'CC' abbreviation(s) in MANAGER_SYSTEM_PROMPT"
 
     def test_role_section_references_codex(self):
         assert "'Codex CLI'" in MANAGER_SYSTEM_PROMPT
@@ -66,10 +70,13 @@ class TestManagerSystemPrompt:
         parts = re.split(r"```.*?```", MANAGER_SYSTEM_PROMPT, flags=re.DOTALL)
         prose = " ".join(parts)
         # Check for /commandname patterns that reference workflow commands
-        slash_cmds = re.findall(r"/(?:plansession|implement|creview|validate|updateprd|audit|pipeline|infra|carryforward|documents|phasebuild)\b", prose)
-        assert len(slash_cmds) == 0, (
-            f"Found slash-command references in prose: {slash_cmds}"
+        slash_cmds = re.findall(
+            r"/(?:plansession|implement|creview|validate|updateprd|audit|pipeline|infra|carryforward|documents|phasebuild)\b",
+            prose,
         )
+        assert (
+            len(slash_cmds) == 0
+        ), f"Found slash-command references in prose: {slash_cmds}"
 
     def test_output_section_references_codex(self):
         assert "Codex CLI" in MANAGER_SYSTEM_PROMPT
@@ -89,6 +96,45 @@ class TestManagerSystemPrompt:
         assert "primary routing signal" in MANAGER_SYSTEM_PROMPT
         assert "Use the command's `Next command:` line" in MANAGER_SYSTEM_PROMPT
 
+    def test_manager_prompt_is_post_initialization_scoped(self):
+        assert "post-initialization staged loop only" in MANAGER_SYSTEM_PROMPT
+        assert "Do not choose initialization commands" in MANAGER_SYSTEM_PROMPT
+        assert "11 post-initialization staged commands" in MANAGER_SYSTEM_PROMPT
+
+    def test_manager_prompt_keeps_utilities_out_of_scope(self):
+        utility_commands = [
+            "copush",
+            "sculpt-ui",
+            "seshsplit",
+            "dockbuild",
+            "dockcleanbuild",
+            "up2imp",
+            "qimpl",
+            "qfrontdev",
+            "qbackenddev",
+            "pullndoc",
+        ]
+        for command in utility_commands:
+            assert command not in MANAGER_SYSTEM_PROMPT
+
+    def test_creview_is_required_between_implement_and_validate(self):
+        assert "After implement succeeds, the next command is creview." in (
+            MANAGER_SYSTEM_PROMPT
+        )
+        assert "After creview succeeds and its report is resolved" in (
+            MANAGER_SYSTEM_PROMPT
+        )
+        assert "code-review.md Result: RESOLVED" in MANAGER_SYSTEM_PROMPT
+
+    def test_phase_transition_order_is_current(self):
+        assert (
+            "audit -> pipeline -> infra -> carryforward -> documents -> phasebuild"
+            in (MANAGER_SYSTEM_PROMPT)
+        )
+        assert "When: After pipeline, before carryforward" in MANAGER_SYSTEM_PROMPT
+        assert "When: After infra, before documents" in MANAGER_SYSTEM_PROMPT
+        assert "carryover" not in MANAGER_SYSTEM_PROMPT
+
     def test_prompt_is_well_structured(self):
         """Verify key structural sections exist."""
         assert "# Role" in MANAGER_SYSTEM_PROMPT
@@ -103,15 +149,15 @@ class TestSummarizerSystemPrompt:
 
     def test_no_claude_code_references(self):
         for forbidden in FORBIDDEN_STRINGS:
-            assert forbidden not in SUMMARIZER_SYSTEM_PROMPT, (
-                f"Found forbidden string '{forbidden}' in SUMMARIZER_SYSTEM_PROMPT"
-            )
+            assert (
+                forbidden not in SUMMARIZER_SYSTEM_PROMPT
+            ), f"Found forbidden string '{forbidden}' in SUMMARIZER_SYSTEM_PROMPT"
 
     def test_no_cc_abbreviation(self):
         matches = CC_PATTERN.findall(SUMMARIZER_SYSTEM_PROMPT)
-        assert len(matches) == 0, (
-            f"Found standalone 'CC' abbreviation(s) in SUMMARIZER_SYSTEM_PROMPT"
-        )
+        assert (
+            len(matches) == 0
+        ), f"Found standalone 'CC' abbreviation(s) in SUMMARIZER_SYSTEM_PROMPT"
 
     def test_codex_aware_language(self):
         assert "Codex CLI" in SUMMARIZER_SYSTEM_PROMPT
@@ -133,10 +179,14 @@ class TestUserMessageTemplate:
         mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.choices = [MagicMock()]
-        mock_response.choices[0].message.content = '{"output": "implement", "reason": "test"}'
+        mock_response.choices[0].message.content = (
+            '{"output": "implement", "reason": "test"}'
+        )
         mock_client.chat.completions.create.return_value = mock_response
 
-        llm_manager_decide(mock_client, "test-model", "agent response", "ceo msg", "summary")
+        llm_manager_decide(
+            mock_client, "test-model", "agent response", "ceo msg", "summary"
+        )
 
         # Inspect the messages passed to the LLM call
         call_args = mock_client.chat.completions.create.call_args
@@ -150,7 +200,9 @@ class TestUserMessageTemplate:
         mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.choices = [MagicMock()]
-        mock_response.choices[0].message.content = '{"output": "validate", "reason": "next"}'
+        mock_response.choices[0].message.content = (
+            '{"output": "validate", "reason": "next"}'
+        )
         mock_client.chat.completions.create.return_value = mock_response
 
         llm_manager_decide(mock_client, "test-model", "test agent output", "", "")
@@ -164,7 +216,9 @@ class TestUserMessageTemplate:
         mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.choices = [MagicMock()]
-        mock_response.choices[0].message.content = '{"output": "audit", "reason": "ceo said"}'
+        mock_response.choices[0].message.content = (
+            '{"output": "audit", "reason": "ceo said"}'
+        )
         mock_client.chat.completions.create.return_value = mock_response
 
         llm_manager_decide(mock_client, "test-model", "", "run audit now", "")
@@ -178,7 +232,9 @@ class TestUserMessageTemplate:
         mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.choices = [MagicMock()]
-        mock_response.choices[0].message.content = '{"output": "implement", "reason": "test"}'
+        mock_response.choices[0].message.content = (
+            '{"output": "implement", "reason": "test"}'
+        )
         mock_client.chat.completions.create.return_value = mock_response
 
         llm_manager_decide(mock_client, "test-model", "", "", "")
@@ -264,7 +320,9 @@ class TestJsonParsing:
         mock_client = MagicMock()
         mock_response = MagicMock()
         mock_response.choices = [MagicMock()]
-        mock_response.choices[0].message.content = '{"output": "implement", "reason": "ready"}'
+        mock_response.choices[0].message.content = (
+            '{"output": "implement", "reason": "ready"}'
+        )
         mock_client.chat.completions.create.return_value = mock_response
 
         result = llm_manager_decide(mock_client, "test-model", "done", "", "summary")

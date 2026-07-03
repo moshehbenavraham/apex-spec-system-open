@@ -34,6 +34,13 @@ The CLI recognizes 14 Apex Spec workflow commands as structured outputs:
 Anything else is treated as free-form instructions unless it is `help` or
 `alldonebaby`.
 
+The autonomous manager prompt is scoped to initialized projects. It documents
+and normally chooses only the 11 post-initialization staged commands:
+`plansession`, `implement`, `creview`, `validate`, `updateprd`, `audit`,
+`pipeline`, `infra`, `carryforward`, `documents`, and `phasebuild`.
+Initialization commands remain structured commands for explicit starts or
+external routing, but they are not part of the normal manager decision loop.
+
 ## Summarizer Contract
 
 ### Input
@@ -99,7 +106,7 @@ unsafe.
 
 ### Allowed Output Classes
 
-- Known workflow command, such as `creview` or `validate`
+- Known post-initialization workflow command, such as `creview` or `validate`
 - `alldonebaby`
 - Arbitrary instruction text, such as `Fix the two failing tests then rerun validate`
 
@@ -145,6 +152,45 @@ Examples:
 
 For unknown manager outputs, the CLI passes the raw text straight to Codex.
 
+## Event Stream Boundary
+
+`--event-stream` and `--machine-output` do not change prompt routing. Event
+payloads observe the existing flow by recording bounded facts such as manager
+output, whether the output matched a known command, prompt length, subprocess
+state, and DB log state.
+
+The event stream does not alter:
+
+- `MANAGER_SYSTEM_PROMPT`
+- `SUMMARIZER_SYSTEM_PROMPT`
+- `build_codex_prompt()` output
+- manager output normalization
+- the SQLite `history` schema or `cc_response` column
+- `execute_codex()` return text
+
+Wrappers and tests should consume events instead of parsing the manager prompt,
+Codex prompt, Rich output, or history rendering.
+
+## Display, History, And Wrapper Boundary
+
+UI settings, history display, event-stream samples, machine-output mode, and
+visual-wrapper documentation are observational surfaces. They do not change
+the prompt contract.
+
+Specifically, these do not alter manager or Codex routing:
+
+- `--theme`, `--plain`, `--ascii`, and `--compact`
+- history status labels and truncation
+- `--event-stream PATH`
+- `--event-stream - --machine-output`
+- deterministic transcript files under `docs/apex-infinite-cli/transcripts/`
+- the optional visual wrapper boundary
+
+Future visual wrappers must consume JSONL events or the importable event API.
+They must not infer workflow state by scraping `MANAGER_SYSTEM_PROMPT`,
+`SUMMARIZER_SYSTEM_PROMPT`, Codex prompts, Rich panels, plain output, or
+history display rows.
+
 ## Important Nuance
 
 The runtime prompt string above is a wrapper convention used by
@@ -179,5 +225,8 @@ If you change any of these behaviors, update all of the following together:
 ## Related Docs
 
 - [Operator runbook](operator-runbook.md)
+- [Event stream contract](event-stream.md)
 - [History DB reference](history-db.md)
 - [Troubleshooting guide](troubleshooting.md)
+- [Visual wrapper boundary](visual-wrapper-boundary.md)
+- [Transcript samples](transcripts/README.md)
